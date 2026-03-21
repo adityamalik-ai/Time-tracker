@@ -780,8 +780,15 @@ input,select,textarea{font-family:inherit;outline:none}
   </div><!-- /main -->
 </div><!-- /app -->
 
+
 <script>
-/* ═══ QUOTES (changes daily — index = day of year % count) ═══ */
+/* ═══════════════════════════════════════════════════════
+   PW TIMETRACKER — CLEAN SINGLE-BLOCK JS
+   All state declared once, no redeclarations, all
+   constants defined before use.
+   ═══════════════════════════════════════════════════════ */
+
+/* ── QUOTES ── */
 const QUOTES=[
   {q:"The secret of getting ahead is getting started.",a:"Mark Twain"},
   {q:"Quality is not an act, it is a habit.",a:"Aristotle"},
@@ -806,64 +813,80 @@ const QUOTES=[
   {q:"Your questions today will light someone's path tomorrow.",a:"Anonymous"},
   {q:"Hard work beats talent when talent doesn't work hard.",a:"Tim Notke"},
   {q:"The best preparation for tomorrow is doing your best today.",a:"H. Jackson Brown Jr."},
-  {q:"Success is not final, failure is not fatal — it is the courage to continue.",a:"Winston Churchill"},
+  {q:"Success is not final, failure is not fatal — courage to continue counts.",a:"Winston Churchill"},
   {q:"Act as if what you do makes a difference. It does.",a:"William James"},
   {q:"The expert in anything was once a beginner.",a:"Helen Hayes"},
   {q:"Work hard in silence, let your success be the noise.",a:"Frank Ocean"},
-  {q:"Productivity is never an accident. It's always the result of commitment.",a:"Paul J. Meyer"},
+  {q:"Productivity is never an accident. It is always the result of commitment.",a:"Paul J. Meyer"},
   {q:"One day or day one — you decide.",a:"Anonymous"},
   {q:"Strive for progress, not perfection.",a:"Anonymous"},
   {q:"Your limitation is only your imagination.",a:"Anonymous"},
 ];
-
 function getDailyQuote(){
-  const now=new Date();
-  const start=new Date(now.getFullYear(),0,0);
-  const dayOfYear=Math.floor((now-start)/(1000*60*60*24));
-  return QUOTES[dayOfYear%QUOTES.length];
+  const now=new Date(),start=new Date(now.getFullYear(),0,0);
+  const day=Math.floor((now-start)/(864e5));
+  return QUOTES[day%QUOTES.length];
 }
-
 function getGreeting(){
-  const h=new Date().getHours();
+  const h=getISTNow().getHours();
   if(h>=5&&h<12)return{text:'Good morning',icon:'☀️',time:'GOOD MORNING'};
   if(h>=12&&h<17)return{text:'Good afternoon',icon:'🌤️',time:'GOOD AFTERNOON'};
   if(h>=17&&h<21)return{text:'Good evening',icon:'🌆',time:'GOOD EVENING'};
   return{text:'Good night',icon:'🌙',time:'GOOD NIGHT'};
 }
-
 function renderGreeting(prefix,name){
   const g=getGreeting(),q=getDailyQuote();
-  const setT=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v};
-  setT(prefix+'greeting-time',g.time);
-  setT(prefix+'greeting-name',g.text+', '+name+' 👋');
-  setT(prefix+'greeting-quote','"'+q.q+'"');
-  setT(prefix+'greeting-attr','— '+q.a);
-  setT(prefix+'greeting-icon',g.icon);
+  const s=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};
+  s(prefix+'greeting-time',g.time);
+  s(prefix+'greeting-name',g.text+', '+name+' 👋');
+  s(prefix+'greeting-quote','"'+q.q+'"');
+  s(prefix+'greeting-attr','— '+q.a);
+  s(prefix+'greeting-icon',g.icon);
 }
 
-/* ═══ STATE ═══ */
-let currentUser=null,selectedRole='employee',tracking=false;
-let timerInterval=null,totalSeconds=0,idleSeconds=0,activeSeconds=0,sessionCount=0;
-let activityLog=[],qHistory=[],chartInstances={};
-let lastActivity=Date.now(),isIdle=false,activeDomain=null;
-let awayStart=null,awayDomain=null;
-let attendanceStatus='present'; // 'present' | 'halfday' | 'leave' | 'off'
+/* ── CONSTANTS ── */
 const LS='pwtracker_emp_';
-const AV_COLS=['#6366f1','#059669','#d97706','#dc2626','#7c3aed','#0891b2','#ea580c','#16a34a','#db2777','#0d9488'];
-const WORK=['docs.google.com','drive.google.com','gmail.com','github.com','notion.so','figma.com','jira.atlassian.com','slack.com','meet.google.com','calendar.google.com','trello.com','linear.app','zoom.us','confluence.atlassian.com','asana.com','clickup.com','airtable.com','pw.live'];
-const DIST=['instagram.com','twitter.com','x.com','facebook.com','tiktok.com','reddit.com','snapchat.com'];
+const SS_KEY='pwtracker_session';
+const ORG_PASS='PW@2026';
+const IDLE_THRESHOLD=3*60*1000;   // 3 min no input → idle
+const TAB_HIDDEN_GRACE=30*1000;   // 30 s hidden grace
+const WORK_DOMAINS=['docs.google.com','drive.google.com','gmail.com','github.com',
+  'notion.so','figma.com','jira.atlassian.com','slack.com','meet.google.com',
+  'calendar.google.com','trello.com','linear.app','zoom.us',
+  'confluence.atlassian.com','asana.com','clickup.com','airtable.com','pw.live',
+  'classroom.google.com','forms.google.com','sheets.google.com','docs.google.com'];
+const DIST_DOMAINS=['instagram.com','twitter.com','x.com','facebook.com',
+  'tiktok.com','reddit.com','snapchat.com','youtube.com'];
+const AV_COLS=['#6366f1','#059669','#d97706','#dc2626','#7c3aed',
+               '#0891b2','#ea580c','#16a34a','#db2777','#0d9488'];
 
-const fmtS=s=>{const h=Math.floor(s/3600),m=Math.floor((s%3600)/60);return h>0?`${h}h ${m}m`:`${m}m`};
+/* ── ALL STATE (declared ONCE) ── */
+let currentUser=null, selectedRole='employee', tracking=false;
+let timerInterval=null, totalSeconds=0, idleSeconds=0, activeSeconds=0, sessionCount=0;
+let activityLog=[], qHistory=[], chartInstances={};
+let attendanceStatus='present';
+let lastActivity=Date.now(), isIdle=false;
+let hiddenSince=null;
+let activeDomain=null;
+let awayStart=null, awayDomain=null;
+let bc=null;
+let workWatchdog=null, idleDetectInterval=null;
+
+/* ── UTILS ── */
+const secToMin=s=>{ const m=Math.round(s/60); return m+'m'; };
+const fmtS=s=>{ const h=Math.floor(s/3600),m=Math.floor((s%3600)/60); return h>0?`${h}h ${m}m`:`${m}m`; };
 const avI=n=>n.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-const avC=e=>{let h=0;for(const c of e)h=((h<<5)-h)+c.charCodeAt(0);return AV_COLS[Math.abs(h)%AV_COLS.length]};
-const catD=d=>{const c=d.toLowerCase().replace(/^www\./,'');if(DIST.some(x=>c.includes(x)))return'distract';if(WORK.some(x=>c.includes(x)))return'work';return'neutral'};
+const avC=e=>{ let h=0; for(const c of e)h=((h<<5)-h)+c.charCodeAt(0); return AV_COLS[Math.abs(h)%AV_COLS.length]; };
+const catD=d=>{
+  const c=d.toLowerCase().replace(/^www\./,'');
+  if(DIST_DOMAINS.some(x=>c.includes(x)))return'distract';
+  if(WORK_DOMAINS.some(x=>c.includes(x)))return'work';
+  return'neutral';
+};
 const $=id=>document.getElementById(id);
-const setTxt=(id,v)=>{const el=$(id);if(el)el.textContent=v};
+const setTxt=(id,v)=>{ const el=$(id); if(el)el.textContent=v; };
 
-/* Start BroadcastChannel immediately — before login */
-initBroadcastChannel();
-
-/* ── IST helpers ── */
+/* ── IST HELPERS ── */
 function getISTNow(){
   return new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Kolkata'}));
 }
@@ -873,37 +896,49 @@ function getTodayIST(){
 }
 function isWithinWorkHours(){
   const h=getISTNow().getHours();
-  return h>=9&&h<21; // 9:00 AM – 9:00 PM IST
+  return h>=9&&h<21;
 }
-function getWorkHoursEndMs(){
-  /* ms until 9 PM IST today */
-  const ist=getISTNow();
-  const minsLeft=(21*60)-(ist.getHours()*60+ist.getMinutes());
-  return minsLeft*60*1000-ist.getSeconds()*1000;
-}
-
-function totalQuestionsToday(){return qHistory.reduce((s,e)=>s+(parseInt(e.count)||0),0)}
-
 function isSunday(){ return getISTNow().getDay()===0; }
 
-/* Target minutes based on attendance */
+/* ── GLOBAL CLOCK (runs before login) ── */
+function updateAllClocks(){
+  const ist=getISTNow();
+  const h=ist.getHours(),mi=ist.getMinutes(),s=ist.getSeconds();
+  const p=n=>String(n).padStart(2,'0');
+  const t=`${p(h)}:${p(mi)}:${p(s)} IST`;
+  document.querySelectorAll('[id$="ist-clock"]').forEach(el=>el.textContent=t);
+}
+setInterval(updateAllClocks,1000);
+updateAllClocks();
+
+/* ── DAILY RESET ── */
+function checkDailyReset(email){
+  try{
+    const raw=localStorage.getItem(LS+email);
+    if(!raw)return;
+    const d=JSON.parse(raw);
+    const today=getTodayIST();
+    if(d.savedDate&&d.savedDate!==today){
+      localStorage.setItem(LS+'prev_'+email,JSON.stringify({...d,archivedDate:d.savedDate}));
+      localStorage.removeItem(LS+email);
+      totalSeconds=0;activeSeconds=0;idleSeconds=0;sessionCount=0;
+      activityLog=[];qHistory=[];activeDomain=null;
+    }
+  }catch(_){}
+}
+
+/* ── ATTENDANCE ── */
 function getTargetMins(){
   if(attendanceStatus==='leave'||attendanceStatus==='off')return 0;
-  if(attendanceStatus==='halfday')return 3.75*60; // 225 min
-  return 7.5*60; // 450 min full day
+  if(attendanceStatus==='halfday')return 225;
+  return 450;
 }
-
-/* EXACT formula: (tracked_mins + questions×5) × 100 / target_mins */
 function computeScore(){
   if(attendanceStatus==='leave'||attendanceStatus==='off')return null;
-  const target=getTargetMins();
-  if(target===0)return null;
-  const trackedMins=totalSeconds/60;
-  const qBonus=totalQuestionsToday()*5;
-  return Math.min(100,Math.round(((trackedMins+qBonus)*100)/target));
+  const t=getTargetMins();
+  if(!t)return null;
+  return Math.min(100,Math.round(((totalSeconds/60)+totalQuestionsToday()*5)*100/t));
 }
-
-/* attendance display helpers */
 function attendLabel(s){
   return{present:'Present ✅',halfday:'Half Day 🕐',leave:'On Leave 🏖️',off:'Off / Sunday 🔴'}[s]||s;
 }
@@ -911,50 +946,33 @@ function attendColor(s){
   return{present:'var(--green)',halfday:'var(--amber)',leave:'var(--red)',off:'var(--text3)'}[s]||'var(--text3)';
 }
 
-/* ── Daily reset: if saved data is from a previous IST date, archive it ── */
-function checkDailyReset(email){
-  try{
-    const raw=localStorage.getItem(LS+email);
-    if(!raw)return;
-    const d=JSON.parse(raw);
-    const savedDate=d.savedDate||'';
-    const today=getTodayIST();
-    if(savedDate&&savedDate!==today){
-      /* Archive yesterday's data */
-      localStorage.setItem(LS+'prev_'+email,JSON.stringify({...d,archivedDate:savedDate}));
-      /* Wipe today's slate */
-      localStorage.removeItem(LS+email);
-      totalSeconds=0;activeSeconds=0;idleSeconds=0;sessionCount=0;
-      activityLog=[];qHistory=[];
-    }
-  }catch(_){}
-}
+/* ── QUESTIONS ── */
+function totalQuestionsToday(){ return qHistory.reduce((s,e)=>s+(parseInt(e.count)||0),0); }
 
-/* ── localStorage bridge ── */
+/* ── LOCALSTORAGE BRIDGE ── */
 function saveEmp(){
   if(!currentUser||currentUser.role!=='employee')return;
   const payload={
-    name:currentUser.name,email:currentUser.email,
-    tracking,totalSeconds,activeSeconds,idleSeconds,sessionCount,
-    activityLog,qHistory,totalQuestions:totalQuestionsToday(),
-    score:computeScore(),attendance:attendanceStatus,
-    savedAt:Date.now(),savedDate:getTodayIST()
+    name:currentUser.name, email:currentUser.email,
+    tracking, totalSeconds, activeSeconds, idleSeconds, sessionCount,
+    activityLog, qHistory, totalQuestions:totalQuestionsToday(),
+    score:computeScore(), attendance:attendanceStatus,
+    savedAt:Date.now(), savedDate:getTodayIST()
   };
-  try{localStorage.setItem(LS+currentUser.email,JSON.stringify(payload));}catch(e){}
-  /* Broadcast to other tabs (manager sees live updates) */
-  try{if(bc)bc.postMessage({type:'emp_state',email:currentUser.email,payload});}catch(_){}
+  try{ localStorage.setItem(LS+currentUser.email,JSON.stringify(payload)); }catch(_){}
+  /* Broadcast to other tabs */
+  try{ if(bc)bc.postMessage({type:'emp_state',email:currentUser.email,payload}); }catch(_){}
 }
 function loadEmps(){
   const list=[];
   try{
     for(let i=0;i<localStorage.length;i++){
       const k=localStorage.key(i);
-      /* today's records only (skip prev_ archives) */
       if(k&&k.startsWith(LS)&&!k.startsWith(LS+'prev_')){
-        try{const d=JSON.parse(localStorage.getItem(k));if(d&&d.email&&d.email.endsWith('@pw.live'))list.push(d);}catch(e){}
+        try{ const d=JSON.parse(localStorage.getItem(k)); if(d&&d.email&&d.email.endsWith('@pw.live'))list.push(d); }catch(_){}
       }
     }
-  }catch(e){}
+  }catch(_){}
   return list;
 }
 function loadPrevEmps(){
@@ -963,201 +981,26 @@ function loadPrevEmps(){
     for(let i=0;i<localStorage.length;i++){
       const k=localStorage.key(i);
       if(k&&k.startsWith(LS+'prev_')){
-        try{const d=JSON.parse(localStorage.getItem(k));if(d&&d.email&&d.email.endsWith('@pw.live'))list.push(d);}catch(e){}
+        try{ const d=JSON.parse(localStorage.getItem(k)); if(d&&d.email)list.push(d); }catch(_){}
       }
     }
-  }catch(e){}
+  }catch(_){}
   return list;
 }
 
-/* ─── ORG PASSWORD ───
-   All @pw.live accounts share this org password for this demo.
-   In production replace with real OAuth + backend auth.               */
-const ORG_PASS='PW@2026';
-const SS_KEY='pwtracker_session'; // sessionStorage key — survives refresh, NOT new tabs
-
-/* Restore session on page load (fixes auto-logout on refresh) */
-(function restoreSession(){
-  try{
-    const s=sessionStorage.getItem(SS_KEY);
-    if(!s)return;
-    const u=JSON.parse(s);
-    if(u&&u.email&&u.email.endsWith('@pw.live')){
-      // Restore state vars for employee before calling loginSuccess
-      if(u.role==='employee'){
-        try{
-          const emp=localStorage.getItem(LS+u.email);
-          if(emp){
-            const d=JSON.parse(emp);
-            totalSeconds=d.totalSeconds||0;activeSeconds=d.activeSeconds||0;
-            idleSeconds=d.idleSeconds||0;sessionCount=d.sessionCount||0;
-            activityLog=d.activityLog||[];qHistory=d.qHistory||[];
-          }
-        }catch(_){}
-      }
-      loginSuccess(u,true/*skipSave*/);
-    }
-  }catch(_){}
-})();
-
-function selectRole(r,el){selectedRole=r;document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active')}
-
-function doLogin(){
-  const raw=$('email-input').value.trim();
-  const pass=$('pass-input').value;
-  const email=raw.includes('@')?raw:raw+'@pw.live';
-  const err=$('login-error');
-
-  if(!raw){err.textContent='⚠ Enter your username.';err.classList.remove('hidden');return}
-  if(!email.endsWith('@pw.live')){err.textContent='⚠ Only @pw.live accounts are allowed.';err.classList.remove('hidden');return}
-  if(!pass){err.textContent='⚠ Password is required.';err.classList.remove('hidden');return}
-  if(pass!==ORG_PASS){
-    err.innerHTML='⚠ Incorrect password. <span style="color:var(--text2);font-size:11px">Hint: PW@2026</span>';
-    err.classList.remove('hidden');
-    $('pass-input').value='';
-    return;
-  }
-  err.classList.add('hidden');
-  const name=email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
-  loginSuccess({name,email,role:selectedRole});
-}
-
-/* OAuth: show email-confirm modal to verify @pw.live domain */
-function oauthLogin(provider){
-  const modal=$('oauth-modal');
-  $('oauth-modal-title').textContent='Sign in with '+(provider==='google'?'Google Workspace':'Microsoft 365');
-  $('oauth-email-input').value='';
-  $('oauth-error').classList.add('hidden');
-  $('oauth-provider-hidden').value=provider;
-  modal.style.display='flex';
-  setTimeout(()=>$('oauth-email-input').focus(),80);
-}
-function closeOAuthModal(){$('oauth-modal').style.display='none'}
-function confirmOAuth(){
-  const raw=$('oauth-email-input').value.trim();
-  const email=raw.includes('@')?raw:raw+'@pw.live';
-  const err=$('oauth-error');
-  if(!raw){err.textContent='⚠ Enter your @pw.live email.';err.classList.remove('hidden');return}
-  if(!email.endsWith('@pw.live')){err.textContent='⚠ Must be a @pw.live account to access this tracker.';err.classList.remove('hidden');return}
-  err.classList.add('hidden');
-  closeOAuthModal();
-  const name=email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
-  loginSuccess({name,email,role:selectedRole});
-}
-
-function loginSuccess(user, skipSave=false){
-  currentUser=user;
-  // Persist session so refresh doesn't log out
-  if(!skipSave)try{sessionStorage.setItem(SS_KEY,JSON.stringify(user))}catch(_){}
-  // Store email for bookmarklet to reference
-  try{localStorage.setItem('pwtracker_logged_email',user.email);}catch(_){}
-
-  $('login-screen').style.display='none';
-  $('app').style.display='flex';
-  const av=$('sb-avatar');av.textContent=avI(user.name);av.style.background=avC(user.email);
-  setTxt('sb-name',user.name);
-  setTxt('sb-role',user.role==='manager'?'Manager · @pw.live':'Employee · @pw.live');
-  setTxt('trans-email',user.email);
-  const dateStr=new Date().toLocaleDateString('en-IN',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
-  setTxt('today-date',dateStr);setTxt('topbar-date',dateStr);
-
-  if(user.role==='employee'){
-    // Check if it's a new IST day — archive yesterday if so
-    checkDailyReset(user.email);
-    // Auto-detect Sunday → mark as Off
-    if(isSunday()){ attendanceStatus='off'; }
-    // Only load from localStorage if not already restored by restoreSession
-    if(!skipSave){
-      try{
-        const saved=localStorage.getItem(LS+user.email);
-        if(saved){
-          const d=JSON.parse(saved);
-          totalSeconds=d.totalSeconds||0;activeSeconds=d.activeSeconds||0;
-          idleSeconds=d.idleSeconds||0;sessionCount=d.sessionCount||0;
-          activityLog=d.activityLog||[];qHistory=d.qHistory||[];
-          attendanceStatus=d.attendance||attendanceStatus;
-        }
-      }catch(_){}
-    }
-    updateTimer();renderActivity();renderQHistory();
-    renderAttendanceCard();renderTabBarChart();
-    $('emp-nav').classList.remove('hidden');$('mgr-nav').classList.add('hidden');
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-    $('page-tracker').classList.add('active');
-    renderGreeting('emp-',user.name);
-    /* Start work-hours enforcement watchdog + idle detection */
-    startWorkHoursWatchdog();
-    startIdleDetection();
-    setupAwayDetection();
-    setupBookmarkletReceiver();
-  }else{
-    $('emp-nav').classList.add('hidden');$('mgr-nav').classList.remove('hidden');
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-    $('page-overview').classList.add('active');
-    renderGreeting('mgr-',user.name);
-    initMgr();
-  }
-}
-
-function logout(){
-  if(tracking)stopTracking();
-  saveEmp();
-  try{sessionStorage.removeItem(SS_KEY)}catch(_){}
-  currentUser=null;tracking=false;
-  totalSeconds=0;idleSeconds=0;activeSeconds=0;sessionCount=0;
-  activityLog=[];qHistory=[];
-  $('app').style.display='none';$('login-screen').style.display='flex';
-  $('email-input').value='';$('pass-input').value='';
-}
-
-/* ═══ NAV ═══ */
-function showPage(page,el){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  $('page-'+page).classList.add('active');
-  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
-  el.classList.add('active');
-  if(['overview','employees','reports'].includes(page)){
-    manualRefresh();
-    /* Reinit charts after page is visible so Chart.js can measure canvas dimensions */
-    setTimeout(()=>initCharts(),60);
-  }
-}
-
-/* ═══════════════════════════════════════════════
-   GLOBAL CLOCK — runs immediately, regardless of
-   login state, updates ALL ist-clock elements
-   ═══════════════════════════════════════════════ */
-function updateAllClocks(){
-  const ist=getISTNow();
-  const h=ist.getHours(),mi=ist.getMinutes(),s=ist.getSeconds();
-  const pad=n=>String(n).padStart(2,'0');
-  const tStr=`${pad(h)}:${pad(mi)}:${pad(s)} IST`;
-  /* Update every clock element on the page */
-  document.querySelectorAll('[id$="ist-clock"]').forEach(el=>el.textContent=tStr);
-}
-/* Start clock immediately — don't wait for login */
-setInterval(updateAllClocks,1000);
-updateAllClocks(); // populate instantly on load
-
-/* ═══════════════════════════════════════════════
-   CROSS-TAB SYNC via BroadcastChannel
-   All tabs of this app on same origin share data.
-   Employee tabs broadcast their state; manager &
-   other employee tabs receive it.
-   ═══════════════════════════════════════════════ */
-let bc=null;
+/* ── BROADCAST CHANNEL ── */
 function initBroadcastChannel(){
   try{
     bc=new BroadcastChannel('pwtracker_channel');
     bc.onmessage=e=>{
       const msg=e.data;
       if(!msg||!msg.type)return;
+
+      /* Employee state sync from another tab */
       if(msg.type==='emp_state'&&msg.email&&msg.email.endsWith('@pw.live')){
-        try{localStorage.setItem(LS+msg.email,JSON.stringify(msg.payload));}catch(_){}
-        if(currentUser&&currentUser.role==='manager'){
-          manualRefresh();
-        }
-        /* Sync another tab of same employee (only if not actively tracking here) */
+        try{ localStorage.setItem(LS+msg.email,JSON.stringify(msg.payload)); }catch(_){}
+        if(currentUser&&currentUser.role==='manager') manualRefresh();
+        /* Sync same-employee tab that isn't actively tracking */
         if(currentUser&&currentUser.role==='employee'&&currentUser.email===msg.email&&!tracking){
           const d=msg.payload;
           totalSeconds=d.totalSeconds||totalSeconds;
@@ -1167,363 +1010,45 @@ function initBroadcastChannel(){
           activityLog=d.activityLog||activityLog;
           qHistory=d.qHistory||qHistory;
           attendanceStatus=d.attendance||attendanceStatus;
-          updateTimer();renderActivity();renderQHistory();renderAttendanceCard();
+          updateTimerDisplay();renderActivity();renderQHistory();renderAttendanceCard();renderTabBarChart();
         }
       }
+
+      /* Bookmarklet sent a tab domain */
+      if(msg.type==='tab_report'&&msg.domain){
+        const domain=msg.domain.toLowerCase().replace(/^www\./,'');
+        awayDomain=domain;
+        if(currentUser&&currentUser.role==='employee'&&tracking){
+          if(!document.hidden){
+            const inp=$('domain-input');
+            if(inp){inp.value=domain;inp.focus();}
+            const cat=$('cat-select');if(cat)cat.value=catD(domain);
+            showBanner(`📌 Bookmarklet: <b>${domain}</b> auto-filled — set minutes and click + Log tab`,'accent');
+          }
+        }
+      }
+
       if(msg.type==='heartbeat'&&currentUser&&currentUser.role==='manager'){
         setTxt('last-refreshed','🟢 Live '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'}));
       }
     };
-  }catch(_){bc=null;}
+  }catch(_){ bc=null; }
 
-  /* Fallback: listen to localStorage changes for same-browser cross-tab (Safari compat) */
+  /* Storage event fallback (Safari/cross-origin) */
   window.addEventListener('storage',ev=>{
-    if(!ev.key||!ev.key.startsWith(LS))return;
-    if(currentUser&&currentUser.role==='manager')manualRefresh();
-  });
-}
-
-function bcBroadcast(type,extra={}){
-  if(!bc||!currentUser)return;
-  try{
-    bc.postMessage({type,email:currentUser.email,...extra});
-  }catch(_){}
-}
-
-/* ═══════════════════════════════════════════════
-   IDLE DETECTION
-   Tracks real user input. Tab hidden does NOT
-   immediately = idle; we give a 30s grace period
-   since the user could be reading in another tab.
-   ═══════════════════════════════════════════════ */
-let idleDetectInterval=null;
-let hiddenSince=null;
-const TAB_HIDDEN_GRACE=30*1000; // 30s grace before tab-hidden counts as idle
-
-function startIdleDetection(){
-  clearInterval(idleDetectInterval);
-  const resetActivity=()=>{
-    lastActivity=Date.now();
-    hiddenSince=null;
-    if(isIdle)wakeFromIdle();
-  };
-  ['mousemove','mousedown','keydown','touchstart','scroll','click','wheel']
-    .forEach(ev=>document.addEventListener(ev,resetActivity,{passive:true}));
-
-  document.addEventListener('visibilitychange',()=>{
-    if(document.hidden){
-      hiddenSince=Date.now();
-    }else{
-      hiddenSince=null;
-      resetActivity();
+    if(!ev.key)return;
+    if(ev.key.startsWith(LS)&&!ev.key.startsWith(LS+'prev_')){
+      if(currentUser&&currentUser.role==='manager')manualRefresh();
     }
-  });
-
-  /* Poll every 5s for idle state */
-  idleDetectInterval=setInterval(()=>{
-    if(!tracking)return;
-    const now=Date.now();
-    /* Check keyboard/mouse idle */
-    const inputIdle=now-lastActivity>IDLE_THRESHOLD;
-    /* Check tab-hidden idle (only after grace period) */
-    const tabIdle=hiddenSince!==null&&(now-hiddenSince)>TAB_HIDDEN_GRACE;
-    if((inputIdle||tabIdle)&&!isIdle)goIdle();
-  },5000);
-}
-
-function goIdle(){
-  isIdle=true;
-  const pill=$('idle-indicator');if(pill)pill.style.display='flex';
-  const tag=$('tracking-status-tag');
-  if(tag){tag.className='tag tag-idle';tag.textContent='💤 Idle';}
-}
-function wakeFromIdle(){
-  isIdle=false;
-  const pill=$('idle-indicator');if(pill)pill.style.display='none';
-  const tag=$('tracking-status-tag');
-  if(tag&&tracking){tag.className='tag tag-live';tag.textContent='● Tracking';}
-}
-
-/* ═══════════════════════════════════════════════
-   WORK HOURS WATCHDOG
-   Also broadcasts heartbeat every 15s while active
-   ═══════════════════════════════════════════════ */
-let workWatchdog=null;
-function startWorkHoursWatchdog(){
-  clearInterval(workWatchdog);
-  let heartbeatTick=0;
-  workWatchdog=setInterval(()=>{
-    const ist=getISTNow();
-    const h=ist.getHours(),mi=ist.getMinutes(),s=ist.getSeconds();
-
-    /* Auto-stop at 9 PM */
-    if(h===21&&mi===0&&s===0&&tracking){
-      stopTracking();
-      showWorkHoursBanner('🕘 9:00 PM IST — tracking stopped automatically. Great work today!');
-    }
-    /* Midnight reset */
-    if(h===0&&mi===0&&s===0&&currentUser){
-      checkDailyReset(currentUser.email);
-      totalSeconds=0;activeSeconds=0;idleSeconds=0;sessionCount=0;
-      activityLog=[];qHistory=[];
-      attendanceStatus=isSunday()?'off':'present';
-      updateTimer();renderActivity();renderQHistory();renderAttendanceCard();
-      showWorkHoursBanner('🌅 New day! Tracker reset. Tracking opens at 9 AM IST.');
-    }
-    /* 5-min warning */
-    if(h===20&&mi===55&&s===0&&tracking){
-      showWorkHoursBanner('⏰ 5 minutes left! Tracking auto-stops at 9 PM IST.');
-    }
-    /* Broadcast heartbeat every 15s while tracking */
-    if(tracking){
-      heartbeatTick++;
-      if(heartbeatTick%15===0){
-        bcBroadcast('heartbeat');
-        /* Also push full state so other tabs stay in sync */
-        bcBroadcast('emp_state',{payload:{
-          name:currentUser.name,email:currentUser.email,
-          tracking,totalSeconds,activeSeconds,idleSeconds,sessionCount,
-          activityLog,qHistory,totalQuestions:totalQuestionsToday(),
-          score:computeScore(),attendance:attendanceStatus,
-          savedAt:Date.now(),savedDate:getTodayIST()
-        }});
-      }
-    }
-  },1000);
-}
-
-function showWorkHoursBanner(msg){
-  const b=$('work-hours-banner');if(!b)return;
-  b.textContent=msg;b.style.display='block';
-  clearTimeout(b._t);b._t=setTimeout(()=>{b.style.display='none'},8000);
-}
-
-/* ═══ TRACKING ═══ */
-function toggleTracking(){if(!tracking)startTracking();else stopTracking()}
-
-function startTracking(){
-  if(attendanceStatus==='leave'){showWorkHoursBanner('🏖️ You are marked On Leave today. Tracking is disabled.');return;}
-  if(attendanceStatus==='off'){showWorkHoursBanner('🔴 Today is marked as Off. Tracking is disabled.');return;}
-  if(!isWithinWorkHours()){
-    const ist=getISTNow();const h=ist.getHours();
-    const msg=h<9?'Tracking starts at 9:00 AM IST.':'Tracking is only available 9 AM – 9 PM IST. See you tomorrow!';
-    showWorkHoursBanner('⛔ '+msg);return;
-  }
-  tracking=true;sessionCount++;lastActivity=Date.now();isIdle=false;hiddenSince=null;
-  $('track-btn').className='track-btn stop';setTxt('track-btn-text','Stop tracking');
-  $('timer-display').classList.add('running');
-  setTxt('timer-label','Session active — log your tab domains below');
-  $('pulse-dot').classList.add('live');$('pill-live').classList.remove('hidden');
-  $('tracking-status-tag').className='tag tag-live';$('tracking-status-tag').textContent='● Tracking';
-  const ttc=$('tab-tracker-card');if(ttc)ttc.classList.remove('hidden');
-  timerInterval=setInterval(()=>{
-    if(!isWithinWorkHours()){stopTracking();return;}
-    totalSeconds++;
-    if(isIdle){idleSeconds++;}else{activeSeconds++;}
-    /* Auto-accumulate time on current active domain if one is "pinned" */
-    if(activeDomain&&!isIdle){
-      const entry=activityLog.find(a=>a.domain===activeDomain);
-      if(entry){entry.timeSeconds=(entry.timeSeconds||0)+1;entry.time=secToMin(entry.timeSeconds);}
-      if(totalSeconds%15===0)renderTabBarChart();
-    }
-    updateTimer();
-    if(totalSeconds%5===0)saveEmp();
-  },1000);
-  saveEmp();
-}
-function stopTracking(){
-  tracking=false;clearInterval(timerInterval);timerInterval=null;
-  activeDomain=null;
-  $('track-btn').className='track-btn start';setTxt('track-btn-text','Start tracking');
-  $('timer-display').classList.remove('running');
-  setTxt('timer-label','Session stopped — data saved ✓');
-  $('pulse-dot').classList.remove('live');$('pill-live').classList.add('hidden');
-  $('tracking-status-tag').className='tag tag-idle';$('tracking-status-tag').textContent='● Idle';
-  renderTabBarChart();
-  saveEmp();
-}
-
-/* ═══ TAB TIME TRACKING ═══ */
-let activeDomain=null; // currently "pinned" domain being auto-accumulated
-let awayStart=null;    // when user left tracker tab
-let awayDomain=null;   // domain received from bookmarklet while away
-const secToMin=s=>{
-  const m=Math.round(s/60);
-  return m+'m';
-};
-
-function logDomain(domainOverride,minsOverride,catOverride){
-  const inp=$('domain-input');
-  const rawVal=domainOverride||(inp?inp.value.trim():'');
-  const raw=rawVal.toLowerCase().replace(/^https?:\/\//,'').replace(/^www\./,'').replace(/\/.*/,'').split('?')[0].trim();
-  if(!raw)return;
-  const minsEl=$('domain-mins');
-  const mins=minsOverride||(minsEl&&minsEl.value?parseInt(minsEl.value):null);
-  const catEl=$('cat-select');
-  const cat=catOverride||(catEl?catEl.value:null)||catD(raw);
-  const seconds=mins?mins*60:60; // default 1 min if no input
-
-  const existing=activityLog.find(a=>a.domain===raw);
-  if(existing){
-    existing.timeSeconds=(existing.timeSeconds||0)+seconds;
-    existing.time=secToMin(existing.timeSeconds);
-    existing.cat=cat; // update category in case user changed it
-  }else{
-    activityLog.push({domain:raw,cat,timeSeconds:seconds,time:secToMin(seconds)});
-  }
-  /* Set as active domain for auto-accumulation */
-  activeDomain=raw;
-  if(inp)inp.value='';
-  if(minsEl)minsEl.value='';
-  if(catEl)catEl.value='work';
-  renderActivity();renderTabBarChart();saveEmp();
-}
-
-function logAwayTime(){
-  const inp=$('away-domain-input');
-  const catSel=$('away-cat-select');
-  const raw=(inp?inp.value.trim():'').toLowerCase().replace(/^https?:\/\//,'').replace(/^www\./,'').replace(/\/.*/,'');
-  if(!raw){if(inp)inp.focus();return;}
-  const awayDur=awayStart?Math.round((Date.now()-awayStart)/1000):60;
-  const existing=activityLog.find(a=>a.domain===raw);
-  if(existing){
-    existing.timeSeconds=(existing.timeSeconds||0)+awayDur;
-    existing.time=secToMin(existing.timeSeconds);
-  }else{
-    activityLog.push({domain:raw,cat:catSel?catSel.value:catD(raw),timeSeconds:awayDur,time:secToMin(awayDur)});
-  }
-  activeDomain=raw;
-  dismissAwayToast();
-  renderActivity();renderTabBarChart();saveEmp();
-}
-
-function dismissAwayToast(){
-  const t=$('away-toast');if(t)t.style.display='none';
-  awayStart=null;awayDomain=null;
-}
-
-function showAwayToast(durationSeconds,suggestedDomain){
-  const t=$('away-toast');if(!t)return;
-  const m=Math.round(durationSeconds/60);
-  setTxt('away-duration',m>0?m+'m':'<1m');
-  const inp=$('away-domain-input');
-  if(inp){
-    inp.value=suggestedDomain||awayDomain||'';
-    if(!inp.value)inp.placeholder='e.g. gmail.com, whatsapp.com…';
-  }
-  /* Auto-detect category */
-  const cat=$('away-cat-select');
-  if(cat&&(suggestedDomain||awayDomain)){
-    cat.value=catD(suggestedDomain||awayDomain||'');
-  }
-  t.style.display='block';
-  setTimeout(()=>{if(inp)inp.focus();},80);
-}
-
-/* Render horizontal bar chart of tab time */
-function renderTabBarChart(){
-  const chart=$('tab-bar-chart');if(!chart)return;
-  if(!activityLog.length){
-    chart.innerHTML='<div style="font-size:12px;color:var(--text3);padding:4px 0">No tabs logged yet. Log a domain above to see breakdown.</div>';
-    setTxt('tab-total-badge','0 tabs logged');
-    return;
-  }
-  const total=activityLog.reduce((s,a)=>s+(a.timeSeconds||0),0);
-  const sorted=[...activityLog].sort((a,b)=>(b.timeSeconds||0)-(a.timeSeconds||0));
-  const catColor={work:'var(--green)',neutral:'var(--amber)',distract:'var(--red)'};
-  const catBg={work:'var(--greenbg)',neutral:'var(--amberbg)',distract:'var(--redbg)'};
-  const catBorder={work:'var(--greenborder)',neutral:'var(--amberborder)',distract:'var(--redborder)'};
-
-  chart.innerHTML=sorted.map(a=>{
-    const pct=total>0?Math.round(((a.timeSeconds||0)/total)*100):0;
-    const isActive=a.domain===activeDomain;
-    return`<div style="margin-bottom:9px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-        <div style="display:flex;align-items:center;gap:8px">
-          <div style="width:7px;height:7px;border-radius:50%;background:${catColor[a.cat]||'#888'};flex-shrink:0${isActive?';box-shadow:0 0 0 3px rgba(99,102,241,.3)':''}"></div>
-          <span style="font-size:12px;font-weight:${isActive?'700':'500'};color:var(--text)">${a.domain}</span>
-          ${isActive?'<span style="background:var(--accentbg);color:var(--accent);font-size:10px;padding:1px 6px;border-radius:10px;font-weight:700">● active</span>':''}
-          <span style="font-size:10px;padding:2px 7px;border-radius:8px;background:${catBg[a.cat]||'var(--bg3)'};color:${catColor[a.cat]||'var(--text3)'};border:1px solid ${catBorder[a.cat]||'var(--border)'};">${a.cat==='distract'?'Distracting':a.cat==='work'?'Work':'Neutral'}</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:10px">
-          <span style="font-size:12px;font-weight:700;color:var(--text)">${a.time}</span>
-          <span style="font-size:11px;color:var(--text3);min-width:32px;text-align:right">${pct}%</span>
-          <button onclick="setActiveTab('${a.domain}')" title="Set as current active tab" style="background:${isActive?'var(--accent)':'var(--bg3)'};color:${isActive?'white':'var(--text3)'};border:1px solid ${isActive?'var(--accent)':'var(--border)'};border-radius:6px;padding:2px 8px;font-size:10px;cursor:pointer;font-weight:600">${isActive?'✓ On':'Switch'}</button>
-          <button onclick="removeTab('${a.domain}')" title="Remove" style="background:var(--redbg);color:var(--red);border:1px solid var(--redborder);border-radius:6px;padding:2px 6px;font-size:10px;cursor:pointer">✕</button>
-        </div>
-      </div>
-      <div style="height:8px;background:var(--bg4);border-radius:4px;overflow:hidden">
-        <div style="width:${pct}%;height:100%;background:${catColor[a.cat]||'var(--accent)'};border-radius:4px;transition:width .6s ease"></div>
-      </div>
-    </div>`;
-  }).join('');
-
-  setTxt('tab-total-badge',`${sorted.length} tab${sorted.length>1?'s':''} · ${secToMin(total)} total`);
-}
-
-function setActiveTab(domain){
-  activeDomain=activeDomain===domain?null:domain;
-  renderTabBarChart();
-}
-function removeTab(domain){
-  activityLog=activityLog.filter(a=>a.domain!==domain);
-  if(activeDomain===domain)activeDomain=null;
-  renderActivity();renderTabBarChart();saveEmp();
-}
-
-/* ── Away detection: when user leaves tracker tab, start timing ── */
-function setupAwayDetection(){
-  document.addEventListener('visibilitychange',()=>{
-    if(document.hidden){
-      if(tracking)awayStart=Date.now();
-    }else{
-      if(awayStart&&tracking){
-        const awayFor=Math.round((Date.now()-awayStart)/1000);
-        if(awayFor>10){ // only prompt if away >10s
-          showAwayToast(awayFor,awayDomain);
-        }
-        awayStart=null;
-      }
-    }
-  });
-}
-
-/* ── Bookmarklet receiver: listens for tab reports from bookmarklet ── */
-function setupBookmarkletReceiver(){
-  /* Listen on BroadcastChannel for bookmarklet messages */
-  if(bc){
-    const origHandler=bc.onmessage;
-    bc.onmessage=e=>{
-      if(origHandler)origHandler(e);
-      const msg=e.data;
-      if(msg&&msg.type==='tab_report'&&msg.domain){
-        awayDomain=msg.domain.toLowerCase().replace(/^www\./,'');
-        if(!tracking)return;
-        if(document.hidden){
-          /* Store it, show when user comes back */
-        }else{
-          /* User is on the tracker — auto-fill domain input */
-          const inp=$('domain-input');
-          if(inp){inp.value=awayDomain;inp.focus();}
-          const cat=$('cat-select');if(cat)cat.value=catD(awayDomain);
-          showBookmarkletReceivedBanner(awayDomain);
-        }
-      }
-    };
-  }
-  /* Also listen on localStorage for same-browser (Safari compat) */
-  window.addEventListener('storage',ev=>{
     if(ev.key==='pwtracker_tab_ping'&&ev.newValue){
       try{
         const d=JSON.parse(ev.newValue);
-        if(d.email===currentUser?.email&&d.domain){
+        if(d.email===currentUser?.email&&d.domain&&tracking){
           awayDomain=d.domain.toLowerCase().replace(/^www\./,'');
-          if(tracking){
-            if(!document.hidden){
-              const inp=$('domain-input');if(inp){inp.value=awayDomain;inp.focus();}
-              const cat=$('cat-select');if(cat)cat.value=catD(awayDomain);
-              showBookmarkletReceivedBanner(awayDomain);
-            }
+          if(!document.hidden){
+            const inp=$('domain-input');if(inp){inp.value=awayDomain;inp.focus();}
+            const cat=$('cat-select');if(cat)cat.value=catD(awayDomain);
+            showBanner(`📌 Bookmarklet: <b>${awayDomain}</b> auto-filled`,'accent');
           }
         }
       }catch(_){}
@@ -1531,83 +1056,376 @@ function setupBookmarkletReceiver(){
   });
 }
 
-function showBookmarkletReceivedBanner(domain){
+/* ── BANNER HELPER ── */
+function showBanner(html,type='amber'){
   const b=$('work-hours-banner');if(!b)return;
-  b.innerHTML=`📌 Bookmarklet received: <b>${domain}</b> — auto-filled in domain field below`;
-  b.style.background='var(--accentbg)';b.style.borderColor='var(--accentbg2)';b.style.color='var(--accent)';
-  b.style.display='block';
-  clearTimeout(b._t);b._t=setTimeout(()=>{
-    b.style.display='none';
-    b.style.background='';b.style.borderColor='';b.style.color='';
+  b.innerHTML=html;
+  const styles={
+    amber:'background:var(--amberbg);border-color:var(--amberborder);color:var(--amber)',
+    accent:'background:var(--accentbg);border-color:var(--accentbg2);color:var(--accent)',
+    green:'background:var(--greenbg);border-color:var(--greenborder);color:var(--green)',
+    red:'background:var(--redbg);border-color:var(--redborder);color:var(--red)',
+  };
+  b.style.cssText=`display:block;${styles[type]||styles.amber}`;
+  clearTimeout(b._t);b._t=setTimeout(()=>{ b.style.display='none'; },7000);
+}
+
+/* ── SESSION RESTORE (runs immediately) ── */
+(function restoreSession(){
+  try{
+    const s=sessionStorage.getItem(SS_KEY);
+    if(!s)return;
+    const u=JSON.parse(s);
+    if(u&&u.email&&u.email.endsWith('@pw.live')){
+      if(u.role==='employee'){
+        checkDailyReset(u.email);
+        const raw=localStorage.getItem(LS+u.email);
+        if(raw){
+          const d=JSON.parse(raw);
+          totalSeconds=d.totalSeconds||0; activeSeconds=d.activeSeconds||0;
+          idleSeconds=d.idleSeconds||0; sessionCount=d.sessionCount||0;
+          activityLog=d.activityLog||[]; qHistory=d.qHistory||[];
+          attendanceStatus=d.attendance||'present';
+        }
+      }
+      loginSuccess(u,true);
+    }
+  }catch(_){}
+})();
+
+/* ── AUTH ── */
+function selectRole(r,el){
+  selectedRole=r;
+  document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+}
+function doLogin(){
+  const raw=$('email-input').value.trim();
+  const pass=$('pass-input').value;
+  const email=raw.includes('@')?raw:raw+'@pw.live';
+  const err=$('login-error');
+  if(!raw){err.innerHTML='⚠ Enter your username.';err.classList.remove('hidden');return;}
+  if(!email.endsWith('@pw.live')){err.innerHTML='⚠ Only @pw.live accounts allowed.';err.classList.remove('hidden');return;}
+  if(!pass){err.innerHTML='⚠ Password required.';err.classList.remove('hidden');return;}
+  if(pass!==ORG_PASS){
+    err.innerHTML='⚠ Wrong password. <span style="font-size:11px;color:var(--text3)">Hint: PW@2026</span>';
+    err.classList.remove('hidden');$('pass-input').value='';return;
+  }
+  err.classList.add('hidden');
+  const name=email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+  loginSuccess({name,email,role:selectedRole});
+}
+function oauthLogin(provider){
+  const modal=$('oauth-modal');
+  $('oauth-modal-title').textContent='Sign in with '+(provider==='google'?'Google Workspace':'Microsoft 365');
+  $('oauth-email-input').value='';
+  $('oauth-error').classList.add('hidden');
+  $('oauth-provider-hidden').value=provider;
+  modal.style.display='flex';
+  setTimeout(()=>$('oauth-email-input').focus(),80);
+}
+function closeOAuthModal(){ $('oauth-modal').style.display='none'; }
+function confirmOAuth(){
+  const raw=$('oauth-email-input').value.trim();
+  const email=raw.includes('@')?raw:raw+'@pw.live';
+  const err=$('oauth-error');
+  if(!raw){err.textContent='⚠ Enter your @pw.live email.';err.classList.remove('hidden');return;}
+  if(!email.endsWith('@pw.live')){err.textContent='⚠ Must be a @pw.live account.';err.classList.remove('hidden');return;}
+  err.classList.add('hidden');closeOAuthModal();
+  const name=email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+  loginSuccess({name,email,role:selectedRole});
+}
+function loginSuccess(user,skipSave=false){
+  currentUser=user;
+  if(!skipSave){
+    try{ sessionStorage.setItem(SS_KEY,JSON.stringify(user)); }catch(_){}
+    try{ localStorage.setItem('pwtracker_logged_email',user.email); }catch(_){}
+  }
+  $('login-screen').style.display='none';
+  $('app').style.display='flex';
+  const av=$('sb-avatar');av.textContent=avI(user.name);av.style.background=avC(user.email);
+  setTxt('sb-name',user.name);
+  setTxt('sb-role',user.role==='manager'?'Manager · @pw.live':'Employee · @pw.live');
+  setTxt('trans-email',user.email);
+  const ds=new Date().toLocaleDateString('en-IN',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+  setTxt('today-date',ds);setTxt('topbar-date',ds);
+
+  if(user.role==='employee'){
+    if(isSunday())attendanceStatus='off';
+    if(!skipSave){
+      try{
+        checkDailyReset(user.email);
+        const raw=localStorage.getItem(LS+user.email);
+        if(raw){
+          const d=JSON.parse(raw);
+          totalSeconds=d.totalSeconds||0;activeSeconds=d.activeSeconds||0;
+          idleSeconds=d.idleSeconds||0;sessionCount=d.sessionCount||0;
+          activityLog=d.activityLog||[];qHistory=d.qHistory||[];
+          attendanceStatus=d.attendance||attendanceStatus;
+        }
+      }catch(_){}
+    }
+    updateTimerDisplay();renderActivity();renderQHistory();renderAttendanceCard();renderTabBarChart();
+    $('emp-nav').classList.remove('hidden');$('mgr-nav').classList.add('hidden');
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    $('page-tracker').classList.add('active');
+    renderGreeting('emp-',user.name);
+    startWorkHoursWatchdog();
+    startIdleDetection();
+    setupAwayDetection();
+  }else{
+    $('emp-nav').classList.add('hidden');$('mgr-nav').classList.remove('hidden');
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    $('page-overview').classList.add('active');
+    renderGreeting('mgr-',user.name);
+    initMgr();
+  }
+}
+function logout(){
+  if(tracking)stopTracking();
+  saveEmp();
+  try{ sessionStorage.removeItem(SS_KEY); }catch(_){}
+  currentUser=null;tracking=false;
+  totalSeconds=0;idleSeconds=0;activeSeconds=0;sessionCount=0;
+  activityLog=[];qHistory=[];activeDomain=null;awayStart=null;awayDomain=null;
+  $('app').style.display='none';$('login-screen').style.display='flex';
+  $('email-input').value='';$('pass-input').value='';
+}
+
+/* ── NAVIGATION ── */
+function showPage(page,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  $('page-'+page).classList.add('active');
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
+  el.classList.add('active');
+  if(['overview','employees','reports'].includes(page)){
+    manualRefresh();
+    setTimeout(()=>initCharts(),80);
+  }
+}
+
+/* ── IDLE DETECTION ── */
+function startIdleDetection(){
+  clearInterval(idleDetectInterval);
+  const reset=()=>{ lastActivity=Date.now(); hiddenSince=null; if(isIdle)wakeFromIdle(); };
+  ['mousemove','mousedown','keydown','touchstart','scroll','click','wheel']
+    .forEach(ev=>document.addEventListener(ev,reset,{passive:true}));
+  document.addEventListener('visibilitychange',()=>{
+    if(document.hidden){ if(hiddenSince===null)hiddenSince=Date.now(); }
+    else{ hiddenSince=null; reset(); }
+  });
+  idleDetectInterval=setInterval(()=>{
+    if(!tracking)return;
+    const now=Date.now();
+    const inputIdle=now-lastActivity>IDLE_THRESHOLD;
+    const tabIdle=hiddenSince!==null&&(now-hiddenSince)>TAB_HIDDEN_GRACE;
+    if((inputIdle||tabIdle)&&!isIdle)goIdle();
   },5000);
 }
-
-function showBookmarkletModal(){
-  const modal=$('bookmarklet-modal');if(modal)modal.style.display='flex';
+function goIdle(){
+  isIdle=true;
+  const p=$('idle-indicator');if(p)p.style.display='flex';
+  const t=$('tracking-status-tag');if(t){t.className='tag tag-idle';t.textContent='💤 Idle';}
 }
-function closeBookmarkletModal(){
-  const modal=$('bookmarklet-modal');if(modal)modal.style.display='none';
+function wakeFromIdle(){
+  isIdle=false;
+  const p=$('idle-indicator');if(p)p.style.display='none';
+  const t=$('tracking-status-tag');if(t&&tracking){t.className='tag tag-live';t.textContent='● Tracking';}
 }
 
-/* ═══ QUESTIONS ═══ */
+/* ── WORK HOURS WATCHDOG ── */
+function startWorkHoursWatchdog(){
+  clearInterval(workWatchdog);
+  let hbTick=0;
+  workWatchdog=setInterval(()=>{
+    const ist=getISTNow(),h=ist.getHours(),mi=ist.getMinutes(),s=ist.getSeconds();
+    if(h===21&&mi===0&&s===0&&tracking){ stopTracking(); showBanner('🕘 9 PM IST — tracking stopped. Great work today!','green'); }
+    if(h===0&&mi===0&&s===0&&currentUser){
+      checkDailyReset(currentUser.email);
+      totalSeconds=0;activeSeconds=0;idleSeconds=0;sessionCount=0;
+      activityLog=[];qHistory=[];activeDomain=null;
+      attendanceStatus=isSunday()?'off':'present';
+      updateTimerDisplay();renderActivity();renderQHistory();renderAttendanceCard();renderTabBarChart();
+      showBanner('🌅 New day! Tracker reset. Work hours open at 9 AM IST.','accent');
+    }
+    if(h===20&&mi===55&&s===0&&tracking) showBanner('⏰ 5 mins left! Auto-stops at 9 PM IST.','amber');
+    if(tracking){ hbTick++; if(hbTick%15===0){ try{ if(bc)bc.postMessage({type:'heartbeat',email:currentUser?.email}); }catch(_){} saveEmp(); } }
+  },1000);
+}
+
+/* ── AWAY DETECTION ── */
+function setupAwayDetection(){
+  document.addEventListener('visibilitychange',()=>{
+    if(document.hidden){ if(tracking&&awayStart===null)awayStart=Date.now(); }
+    else{
+      if(awayStart&&tracking){
+        const dur=Math.round((Date.now()-awayStart)/1000);
+        if(dur>10)showAwayToast(dur);
+        awayStart=null;
+      }
+    }
+  },true); // use capture so it runs before idle detection
+}
+function showAwayToast(durationSeconds){
+  const toast=$('away-toast');if(!toast)return;
+  const m=Math.max(1,Math.round(durationSeconds/60));
+  setTxt('away-duration',m+'m');
+  const inp=$('away-domain-input');
+  if(inp){ inp.value=awayDomain||''; if(!inp.value)inp.placeholder='gmail.com, whatsapp.com…'; }
+  const cat=$('away-cat-select');if(cat&&awayDomain)cat.value=catD(awayDomain);
+  toast.style.display='block';
+  setTimeout(()=>{ if(inp)inp.focus(); },80);
+}
+function logAwayTime(){
+  const inp=$('away-domain-input'),catSel=$('away-cat-select');
+  const raw=(inp?inp.value.trim():'').toLowerCase().replace(/^https?:\/\//,'').replace(/^www\./,'').replace(/\/.*/,'');
+  if(!raw){ if(inp)inp.focus(); return; }
+  const awayDur=awayStart?Math.round((Date.now()-awayStart)/1000):60;
+  const existing=activityLog.find(a=>a.domain===raw);
+  if(existing){ existing.timeSeconds=(existing.timeSeconds||0)+awayDur; existing.time=secToMin(existing.timeSeconds); }
+  else activityLog.push({domain:raw,cat:catSel?catSel.value:catD(raw),timeSeconds:awayDur,time:secToMin(awayDur)});
+  activeDomain=raw;
+  dismissAwayToast();
+  renderActivity();renderTabBarChart();saveEmp();
+}
+function dismissAwayToast(){
+  const t=$('away-toast');if(t)t.style.display='none';
+  awayDomain=null;
+}
+
+/* ── TRACKING ── */
+function toggleTracking(){ if(!tracking)startTracking(); else stopTracking(); }
+function startTracking(){
+  if(attendanceStatus==='leave'){ showBanner('🏖️ On Leave — tracking disabled.','red'); return; }
+  if(attendanceStatus==='off'){ showBanner('🔴 Day Off — tracking disabled.','red'); return; }
+  if(!isWithinWorkHours()){
+    const h=getISTNow().getHours();
+    showBanner(h<9?'⛔ Tracking opens at 9:00 AM IST.':'⛔ Tracking only 9 AM–9 PM IST.','amber'); return;
+  }
+  tracking=true; sessionCount++; lastActivity=Date.now(); isIdle=false; hiddenSince=null;
+  $('track-btn').className='track-btn stop'; setTxt('track-btn-text','Stop tracking');
+  $('timer-display').classList.add('running');
+  setTxt('timer-label','Session active — log your tab domains below');
+  $('pulse-dot').classList.add('live'); $('pill-live').classList.remove('hidden');
+  $('tracking-status-tag').className='tag tag-live'; $('tracking-status-tag').textContent='● Tracking';
+  const ttc=$('tab-tracker-card'); if(ttc)ttc.classList.remove('hidden');
+  timerInterval=setInterval(()=>{
+    if(!isWithinWorkHours()){ stopTracking(); return; }
+    totalSeconds++;
+    if(isIdle) idleSeconds++; else activeSeconds++;
+    /* Auto-accumulate seconds on active domain */
+    if(activeDomain&&!isIdle){
+      const e=activityLog.find(a=>a.domain===activeDomain);
+      if(e){ e.timeSeconds=(e.timeSeconds||0)+1; e.time=secToMin(e.timeSeconds); }
+      if(totalSeconds%15===0)renderTabBarChart();
+    }
+    updateTimerDisplay();
+    if(totalSeconds%5===0)saveEmp();
+  },1000);
+  saveEmp();
+}
+function stopTracking(){
+  tracking=false; clearInterval(timerInterval); timerInterval=null; activeDomain=null;
+  $('track-btn').className='track-btn start'; setTxt('track-btn-text','Start tracking');
+  $('timer-display').classList.remove('running');
+  setTxt('timer-label','Session stopped — data saved ✓');
+  $('pulse-dot').classList.remove('live'); $('pill-live').classList.add('hidden');
+  $('tracking-status-tag').className='tag tag-idle'; $('tracking-status-tag').textContent='● Idle';
+  renderTabBarChart(); saveEmp();
+}
+
+/* ── DOMAIN / TAB LOGGING ── */
+function logDomain(domainOverride,minsOverride,catOverride){
+  const inp=$('domain-input');
+  const rawVal=domainOverride||(inp?inp.value.trim():'');
+  const raw=rawVal.toLowerCase()
+    .replace(/^https?:\/\//,'').replace(/^www\./,'')
+    .replace(/\/.*/,'').split('?')[0].trim();
+  if(!raw)return;
+  const minsEl=$('domain-mins');
+  const mins=minsOverride||(minsEl&&minsEl.value?parseInt(minsEl.value):null)||1;
+  const catEl=$('cat-select');
+  const cat=catOverride||(catEl?catEl.value:null)||catD(raw);
+  const seconds=mins*60;
+  const existing=activityLog.find(a=>a.domain===raw);
+  if(existing){ existing.timeSeconds=(existing.timeSeconds||0)+seconds; existing.time=secToMin(existing.timeSeconds); existing.cat=cat; }
+  else activityLog.push({domain:raw,cat,timeSeconds:seconds,time:secToMin(seconds)});
+  activeDomain=raw;
+  if(inp)inp.value='';
+  if(minsEl)minsEl.value='';
+  if(catEl)catEl.value='work';
+  renderActivity();renderTabBarChart();saveEmp();
+}
+function setActiveTab(domain){ activeDomain=(activeDomain===domain)?null:domain; renderTabBarChart(); }
+function removeTab(domain){
+  activityLog=activityLog.filter(a=>a.domain!==domain);
+  if(activeDomain===domain)activeDomain=null;
+  renderActivity();renderTabBarChart();saveEmp();
+}
+
+/* ── RENDER TAB BAR CHART ── */
+function renderTabBarChart(){
+  const chart=$('tab-bar-chart');if(!chart)return;
+  if(!activityLog.length){
+    chart.innerHTML='<div style="font-size:12px;color:var(--text3);padding:4px 0">No tabs logged yet. Log a domain above.</div>';
+    setTxt('tab-total-badge','0 tabs');return;
+  }
+  const total=activityLog.reduce((s,a)=>s+(a.timeSeconds||0),0);
+  const sorted=[...activityLog].sort((a,b)=>(b.timeSeconds||0)-(a.timeSeconds||0));
+  const CC={work:'var(--green)',neutral:'var(--amber)',distract:'var(--red)'};
+  const CB={work:'var(--greenbg)',neutral:'var(--amberbg)',distract:'var(--redbg)'};
+  const CBR={work:'var(--greenborder)',neutral:'var(--amberborder)',distract:'var(--redborder)'};
+  chart.innerHTML=sorted.map(a=>{
+    const pct=total>0?Math.round(((a.timeSeconds||0)/total)*100):0;
+    const isAct=a.domain===activeDomain;
+    const col=CC[a.cat]||'var(--accent)';
+    const safeD=a.domain.replace(/'/g,"\\'");
+    return`<div style="margin-bottom:9px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;gap:8px">
+        <div style="display:flex;align-items:center;gap:7px;min-width:0;flex:1">
+          <div style="width:7px;height:7px;border-radius:50%;background:${col};flex-shrink:0${isAct?';box-shadow:0 0 0 3px rgba(99,102,241,.35)':''}"></div>
+          <span style="font-size:12px;font-weight:${isAct?700:500};color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px">${a.domain}</span>
+          ${isAct?'<span style="background:var(--accentbg);color:var(--accent);font-size:9px;padding:1px 6px;border-radius:8px;font-weight:700;flex-shrink:0">● active</span>':''}
+          <span style="font-size:10px;padding:2px 6px;border-radius:6px;background:${CB[a.cat]||'var(--bg3)'};color:${col};border:1px solid ${CBR[a.cat]||'var(--border)'};flex-shrink:0">${a.cat==='distract'?'Distracting':a.cat==='work'?'Work':'Neutral'}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+          <span style="font-size:12px;font-weight:700;color:var(--text)">${a.time}</span>
+          <span style="font-size:11px;color:var(--text3);min-width:28px;text-align:right">${pct}%</span>
+          <button onclick="setActiveTab('${safeD}')" style="background:${isAct?'var(--accent)':'var(--bg3)'};color:${isAct?'white':'var(--text3)'};border:1px solid ${isAct?'var(--accent)':'var(--border)'};border-radius:6px;padding:2px 8px;font-size:10px;cursor:pointer;font-weight:600">${isAct?'✓ On':'Set'}</button>
+          <button onclick="removeTab('${safeD}')" style="background:var(--redbg);color:var(--red);border:1px solid var(--redborder);border-radius:6px;padding:2px 6px;font-size:10px;cursor:pointer">✕</button>
+        </div>
+      </div>
+      <div style="height:7px;background:var(--bg4);border-radius:4px;overflow:hidden">
+        <div style="width:${pct}%;height:100%;background:${col};border-radius:4px;transition:width .5s ease"></div>
+      </div>
+    </div>`;
+  }).join('');
+  setTxt('tab-total-badge',`${sorted.length} tab${sorted.length>1?'s':''} · ${secToMin(total)} total`);
+}
+
+/* ── QUESTIONS ── */
 function saveQuestions(){
   const cnt=parseInt($('q-count-input').value)||0;
   const note=$('q-note-input').value.trim();
-  if(cnt<=0){alert('Enter a valid number of questions (1 or more).');return}
+  if(cnt<=0){ alert('Enter at least 1 question.'); return; }
   const now=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
   qHistory.push({count:cnt,note:note||'General',time:now,ts:Date.now()});
   $('q-count-input').value='';$('q-note-input').value='';
   renderQHistory();saveEmp();
 }
-
 function renderQHistory(){
-  const hist=$('q-history');
+  const hist=$('q-history');if(!hist)return;
   const total=totalQuestionsToday();
-  setTxt('q-today-total',total);
-  setTxt('trans-questions',total);
-  if(!qHistory.length){hist.innerHTML='<span style="font-size:12px;color:var(--text3)">No entries yet today</span>';return}
+  setTxt('q-today-total',total);setTxt('trans-questions',total);
+  if(!qHistory.length){ hist.innerHTML='<span style="font-size:12px;color:var(--text3)">No entries yet today</span>'; return; }
   hist.innerHTML=qHistory.slice().reverse().map(e=>`
-    <div class="q-chip">
-      <span class="q-chip-num">${e.count}</span>
-      <span>${e.note}</span>
-      <span style="color:var(--text3);font-size:10px;margin-left:2px">${e.time}</span>
-    </div>`).join('')+`<div class="q-total-badge">Total: ${total}</div>`;
+    <div class="q-chip"><span class="q-chip-num">${e.count}</span><span>${e.note}</span>
+    <span style="color:var(--text3);font-size:10px;margin-left:2px">${e.time}</span></div>
+  `).join('')+`<div class="q-total-badge">Total: ${total}</div>`;
 }
 
-/* ── Attendance card renderer ── */
-function renderAttendanceCard(){
-  ['present','halfday','leave','off'].forEach(s=>{
-    const b=$(`att-btn-${s}`);if(!b)return;
-    const active=attendanceStatus===s;
-    b.style.background=active?attendColor(s):'var(--bg3)';
-    b.style.color=active?'#fff':'var(--text2)';
-    b.style.borderColor=active?attendColor(s):'var(--border)';
-    b.style.fontWeight=active?'700':'500';
-  });
-  const sl=$('att-status-label');
-  if(sl){sl.textContent=attendLabel(attendanceStatus);sl.style.color=attendColor(attendanceStatus);}
-  const tl=$('att-target-label');
-  if(tl){
-    const t=getTargetMins();
-    tl.textContent=t>0?(t===225?'Target: 3h 45m (Half Day)':'Target: 7.5h (Full Day)'):'No productivity target today';
-  }
-  const tb=$('track-btn');
-  if(tb){
-    const blocked=attendanceStatus==='leave'||attendanceStatus==='off';
-    tb.style.opacity=blocked?'.4':'1';
-    tb.style.cursor=blocked?'not-allowed':'pointer';
-    tb.title=blocked?attendLabel(attendanceStatus)+' — tracking disabled':'';
-  }
-}
-
-function setAttendance(s){
-  if(isSunday()&&s!=='off'){showWorkHoursBanner('🔴 Today is Sunday — automatically Off.');return;}
-  if(tracking&&(s==='leave'||s==='off'))stopTracking();
-  attendanceStatus=s;
-  renderAttendanceCard();updateTimer();saveEmp();
-}
-
-function updateTimer(){
+/* ── TIMER DISPLAY ── */
+function updateTimerDisplay(){
   const h=Math.floor(totalSeconds/3600),m=Math.floor((totalSeconds%3600)/60),s=totalSeconds%60;
   setTxt('timer-display',`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`);
   const aH=Math.floor(activeSeconds/3600),aM=Math.floor((activeSeconds%3600)/60);
@@ -1617,289 +1435,224 @@ function updateTimer(){
   setTxt('stat-idle',fmtS(idleSeconds));
   setTxt('trans-total',fmtS(totalSeconds));
   setTxt('trans-sessions',sessionCount);
-  /* idle % */
   const idlePct=totalSeconds>0?Math.round((idleSeconds/totalSeconds)*100):0;
   const ipEl=$('stat-idle-sub');if(ipEl)ipEl.textContent=`${idlePct}% of session`;
-  /* score */
   const sc=computeScore();
   const scEl=$('stat-score');
-  if(sc===null){
-    setTxt('stat-score',attendanceStatus==='leave'?'Leave':attendanceStatus==='off'?'Off':'–');
-    if(scEl)scEl.style.color='var(--text3)';
-  }else{
-    setTxt('stat-score',sc+'%');
-    if(scEl)scEl.style.color=sc>=80?'var(--green)':sc>=60?'var(--amber)':'var(--red)';
-  }
-  /* progress bar */
+  if(sc===null){ setTxt('stat-score',attendanceStatus==='leave'?'Leave':attendanceStatus==='off'?'Off':'–'); if(scEl)scEl.style.color='var(--text3)'; }
+  else{ setTxt('stat-score',sc+'%'); if(scEl)scEl.style.color=sc>=80?'var(--green)':sc>=60?'var(--amber)':'var(--red)'; }
   const pct=sc||0;
   const bar=$('target-bar');if(bar)bar.style.width=Math.min(100,pct)+'%';
   const lbl=$('target-pct-label');
   if(lbl){
-    if(attendanceStatus==='leave'||attendanceStatus==='off'){lbl.textContent=attendLabel(attendanceStatus);}
-    else{
-      const tm=Math.round(totalSeconds/60),qb=totalQuestionsToday()*5,tgt=getTargetMins();
-      lbl.textContent=`${tm}m tracked + ${qb}m Q-bonus = ${pct}% of ${tgt}m target`;
-    }
+    if(attendanceStatus==='leave'||attendanceStatus==='off') lbl.textContent=attendLabel(attendanceStatus);
+    else{ const tm=Math.round(totalSeconds/60),qb=totalQuestionsToday()*5,tgt=getTargetMins(); lbl.textContent=`${tm}m tracked + ${qb}m Q-bonus = ${pct}% of ${tgt}m target`; }
   }
 }
 
+/* ── RENDER ACTIVITY LIST ── */
 function renderActivity(){
-  const list=$('activity-list'),catC={work:'#059669',neutral:'#d97706',distract:'#dc2626'};
-  if(!activityLog.length){list.innerHTML='<div class="activity-row"><div style="color:var(--text3);font-size:13px">No activity yet. Start tracking, then log your active domains above.</div></div>';return}
+  const list=$('activity-list');if(!list)return;
+  const CC={work:'#059669',neutral:'#d97706',distract:'#dc2626'};
+  if(!activityLog.length){ list.innerHTML='<div class="activity-row"><div style="color:var(--text3);font-size:13px">No activity yet. Start tracking, then log tab domains above.</div></div>'; return; }
   list.innerHTML=[...activityLog].reverse().map(a=>`
     <div class="activity-row">
-      <div class="act-dot" style="background:${catC[a.cat]||'#888'}"></div>
+      <div class="act-dot" style="background:${CC[a.cat]||'#888'}"></div>
       <div class="act-domain">${a.domain}</div>
       <span class="act-cat cat-${a.cat==='distract'?'distract':a.cat}">${a.cat==='distract'?'Distracting':a.cat[0].toUpperCase()+a.cat.slice(1)}</span>
       <div class="act-time">${a.time}</div>
     </div>`).join('');
 }
 
+/* ── ATTENDANCE CARD ── */
+function renderAttendanceCard(){
+  ['present','halfday','leave','off'].forEach(s=>{
+    const b=$(`att-btn-${s}`);if(!b)return;
+    const active=attendanceStatus===s;
+    b.style.background=active?attendColor(s):'var(--bg3)';
+    b.style.color=active?'#fff':'var(--text2)';
+    b.style.borderColor=active?attendColor(s):'var(--border)';
+    b.style.fontWeight=active?'700':'500';
+  });
+  const sl=$('att-status-label');if(sl){sl.textContent=attendLabel(attendanceStatus);sl.style.color=attendColor(attendanceStatus);}
+  const tl=$('att-target-label');if(tl){ const t=getTargetMins(); tl.textContent=t?`Target: ${t===225?'3h 45m (Half Day)':'7.5h (Full Day)'}`:'No target today'; }
+  const tb=$('track-btn');
+  if(tb){ const bl=attendanceStatus==='leave'||attendanceStatus==='off'; tb.style.opacity=bl?'.4':'1'; tb.style.cursor=bl?'not-allowed':'pointer'; }
+}
+function setAttendance(s){
+  if(isSunday()&&s!=='off'){ showBanner('🔴 Today is Sunday — automatically Off.','red'); return; }
+  if(tracking&&(s==='leave'||s==='off'))stopTracking();
+  attendanceStatus=s; renderAttendanceCard(); updateTimerDisplay(); saveEmp();
+}
+
+/* ── DATA DELETE ── */
 function requestDeletion(){
   if(currentUser)localStorage.removeItem(LS+currentUser.email);
-  totalSeconds=0;idleSeconds=0;activeSeconds=0;sessionCount=0;activityLog=[];qHistory=[];
-  updateTimer();renderActivity();renderQHistory();
-  alert('Your data has been deleted from this device.');
+  totalSeconds=0;idleSeconds=0;activeSeconds=0;sessionCount=0;activityLog=[];qHistory=[];activeDomain=null;
+  updateTimerDisplay();renderActivity();renderQHistory();renderTabBarChart();
+  alert('Your data has been deleted.');
 }
 
-/* ═══ MANAGER ═══ */
-function initMgr(){
-  manualRefresh();
-  /* Defer so canvas elements are visible and have measurable dimensions */
-  setTimeout(()=>initCharts(),80);
-}
-
+/* ── MANAGER ── */
+function initMgr(){ manualRefresh(); setTimeout(()=>initCharts(),100); }
 function manualRefresh(){
-  const emps=loadEmps();
-  const prevEmps=loadPrevEmps();
-  updateBanner(emps);renderTables(emps);updateKPIs(emps);updateAlerts(emps);
-  renderPrevDayReport(prevEmps);
+  const emps=loadEmps(), prev=loadPrevEmps();
+  updateBanner(emps); renderTables(emps); updateKPIs(emps); updateAlerts(emps); renderPrevDayReport(prev);
   setTxt('last-refreshed','↻ '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'}));
 }
-
-function renderPrevDayReport(prevEmps){
-  const panel=$('prev-day-panel');if(!panel)return;
-  if(!prevEmps.length){panel.style.display='none';return;}
-  panel.style.display='block';
-  const date=prevEmps[0].archivedDate||'Previous day';
-  const rows=prevEmps.map(e=>{
-    const sc=e.score||0,scC=sc>=80?'var(--green)':sc>=60?'var(--amber)':'var(--red)';
-    return`<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:var(--radius2);background:var(--bg3);border:1px solid var(--border);margin-bottom:7px">
-      <div class="emp-av" style="background:${avC(e.email)};width:28px;height:28px;font-size:11px">${avI(e.name)}</div>
-      <div style="flex:1"><div style="font-weight:600;font-size:13px">${e.name}</div><div style="font-size:11px;color:var(--text3)">${e.email}</div></div>
-      <div style="text-align:right">
-        <div style="font-weight:700;color:var(--accent);font-size:13px">${fmtS(e.totalSeconds||0)}</div>
-        <div style="font-size:11px;color:${scC};font-weight:700">${sc}%</div>
-      </div>
-      <div style="text-align:right">
-        <div style="font-size:11px;color:var(--purple);font-weight:700">${e.totalQuestions||0} Qs</div>
-        <div style="font-size:10px;color:var(--text3)">${(e.activityLog||[]).length} domains</div>
-      </div>
-    </div>`;
-  }).join('');
-  panel.innerHTML=`
-    <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px">
-      <span style="background:var(--accentbg);color:var(--accent);padding:2px 8px;border-radius:5px;font-size:10px;font-weight:700">PREVIOUS DAY</span>
-      Report for ${date}
-    </div>
-    ${rows}`;
-}
-
 function updateBanner(emps){
   const b=$('data-status-banner');if(!b)return;
   if(!emps.length){
     b.className='data-status empty';
-    b.innerHTML=`<div class="data-status-icon">⚠️</div><div class="data-status-msg"><strong>No employee data found yet</strong><span>Open this file in another tab → sign in as Employee → Start tracking → log domains. Then click Refresh data.</span></div>`;
+    b.innerHTML=`<div class="data-status-icon">⚠️</div><div class="data-status-msg"><strong>No employee data yet</strong><span>Open this file in another tab → sign in as Employee → Start tracking → log tabs. Then click Refresh.</span></div>`;
   }else{
     b.className='data-status has-data';
-    const active=emps.filter(e=>e.tracking).length;
-    b.innerHTML=`<div class="data-status-icon">✅</div><div class="data-status-msg"><strong>${emps.length} employee${emps.length>1?'s':''} found — ${active} currently tracking live</strong><span>Data from localStorage. Click Refresh data anytime for latest.</span></div>`;
+    const act=emps.filter(e=>e.tracking).length;
+    b.innerHTML=`<div class="data-status-icon">✅</div><div class="data-status-msg"><strong>${emps.length} employee${emps.length>1?'s':''} found — ${act} live</strong><span>Auto-refreshes on BroadcastChannel. Click Refresh for full reload.</span></div>`;
   }
 }
-
 function updateKPIs(emps){
   if(!emps.length){
     ['kpi-avghours','kpi-avgscore','kpi-totalq','kpi-online'].forEach(id=>setTxt(id,'–'));
-    setTxt('kpi-online-sub','Click Refresh data');
-    ['kpi-avghours-sub','kpi-avgscore-sub'].forEach(id=>setTxt(id,''));
-    return;
+    setTxt('kpi-online-sub','Click Refresh');['kpi-avghours-sub','kpi-avgscore-sub'].forEach(id=>setTxt(id,''));return;
   }
-  const avgH=(emps.reduce((a,e)=>a+(e.totalSeconds||0),0)/emps.length/3600).toFixed(1);
-  const avgSc=Math.round(emps.reduce((a,e)=>a+(e.score||0),0)/emps.length);
+  const tracked=emps.filter(e=>e.attendance!=='leave'&&e.attendance!=='off');
+  const avgH=tracked.length?(tracked.reduce((a,e)=>a+(e.totalSeconds||0),0)/tracked.length/3600).toFixed(1):'–';
+  const avgSc=tracked.length?Math.round(tracked.reduce((a,e)=>a+(e.score||0),0)/tracked.length):'–';
   const totalQ=emps.reduce((a,e)=>a+(e.totalQuestions||0),0);
-  const active=emps.filter(e=>e.tracking).length;
-  const target=7.5;
-  const pct=Math.round((parseFloat(avgH)/target)*100);
-  setTxt('kpi-avghours',avgH+'h');
-  setTxt('kpi-avgscore',isNaN(avgSc)?'–':avgSc+'%');
+  const act=emps.filter(e=>e.tracking).length;
+  setTxt('kpi-avghours',avgH==='–'?'–':avgH+'h');
+  setTxt('kpi-avgscore',isNaN(avgSc)||avgSc==='–'?'–':avgSc+'%');
   setTxt('kpi-totalq',totalQ);
-  setTxt('kpi-online',active);
+  setTxt('kpi-online',act);
   setTxt('kpi-online-sub',`of ${emps.length} tracked today`);
-  setTxt('kpi-avghours-sub',`${pct}% of 7.5h target`);
-  setTxt('kpi-avgscore-sub','Category-weighted score');
-  setTxt('kpi-totalq-sub','Total questions by team today');
+  setTxt('kpi-avghours-sub',avgH!=='–'?`${Math.round(parseFloat(avgH)/7.5*100)}% of 7.5h target`:'');
+  setTxt('kpi-avgscore-sub','Category-weighted');
+  setTxt('kpi-totalq-sub','Team total today');
 }
-
 function updateAlerts(emps){
-  const panel=$('alerts-panel');if(!panel)return;
-  if(!emps.length){
-    panel.innerHTML='<div style="padding:16px;color:var(--text3);font-size:13px;text-align:center">No employees tracked yet.</div>';return;
-  }
-  const TARGET_HRS=7.5;
+  const p=$('alerts-panel');if(!p)return;
+  if(!emps.length){p.innerHTML='<div style="padding:16px;color:var(--text3);font-size:13px;text-align:center">No employees tracked yet.</div>';return;}
   const alerts=[];
   emps.forEach(e=>{
+    if(e.attendance==='leave'||e.attendance==='off')return;
     const idleM=Math.round((e.idleSeconds||0)/60),totH=(e.totalSeconds||0)/3600;
-    if(idleM>60)alerts.push(`<div class="activity-row" style="border-radius:var(--radius2);background:var(--amberbg);border:1px solid var(--amberborder);margin-bottom:7px"><div style="color:var(--amber);font-size:13px;font-weight:600">⚠ High idle: ${e.name} — ${idleM}m idle</div></div>`);
-    if(totH<TARGET_HRS*0.5&&totH>0)alerts.push(`<div class="activity-row" style="border-radius:var(--radius2);background:var(--redbg);border:1px solid var(--redborder);margin-bottom:7px"><div style="color:var(--red);font-size:13px;font-weight:600">⬇ Low activity: ${e.name} — only ${fmtS(e.totalSeconds||0)} of ${TARGET_HRS}h target</div></div>`);
+    if(idleM>60)alerts.push(`<div class="activity-row" style="border-radius:var(--radius2);background:var(--amberbg);border:1px solid var(--amberborder);margin-bottom:6px"><div style="color:var(--amber);font-size:13px;font-weight:600">⚠ High idle: ${e.name} — ${idleM}m idle</div></div>`);
+    if(totH<3.75&&totH>0)alerts.push(`<div class="activity-row" style="border-radius:var(--radius2);background:var(--redbg);border:1px solid var(--redborder);margin-bottom:6px"><div style="color:var(--red);font-size:13px;font-weight:600">⬇ Low: ${e.name} — ${fmtS(e.totalSeconds||0)} tracked</div></div>`);
   });
-  const ok=emps.filter(e=>(e.totalSeconds||0)/3600>=TARGET_HRS).length;
-  if(ok>0)alerts.push(`<div class="activity-row" style="border-radius:var(--radius2);background:var(--greenbg);border:1px solid var(--greenborder)"><div style="color:var(--green);font-size:13px;font-weight:600">✓ ${ok} employee${ok>1?'s':''} hit 7.5h target today</div></div>`);
-  panel.innerHTML=alerts.length?alerts.join(''):'<div class="activity-row" style="border-radius:var(--radius2);background:var(--greenbg);border:1px solid var(--greenborder)"><div style="color:var(--green);font-size:13px;font-weight:600">✓ All good — no alerts</div></div>';
+  const ok=emps.filter(e=>e.attendance!=='leave'&&e.attendance!=='off'&&(e.totalSeconds||0)/3600>=7.5).length;
+  if(ok)alerts.push(`<div class="activity-row" style="border-radius:var(--radius2);background:var(--greenbg);border:1px solid var(--greenborder)"><div style="color:var(--green);font-size:13px;font-weight:600">✓ ${ok} employee${ok>1?'s':''} hit 7.5h target</div></div>`);
+  p.innerHTML=alerts.length?alerts.join(''):'<div class="activity-row" style="border-radius:var(--radius2);background:var(--greenbg);border:1px solid var(--greenborder)"><div style="color:var(--green);font-size:13px;font-weight:600">✓ All good</div></div>';
 }
-
+function renderPrevDayReport(prev){
+  const p=$('prev-day-panel');if(!p)return;
+  if(!prev.length){p.style.display='none';return;}
+  p.style.display='block';
+  const date=prev[0].archivedDate||'Previous day';
+  p.innerHTML=`<div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px">
+    <span style="background:var(--accentbg);color:var(--accent);padding:2px 8px;border-radius:5px;font-size:10px;font-weight:700">PREV DAY</span>${date}</div>`+
+  prev.map(e=>{const sc=e.score||0,scC=sc>=80?'var(--green)':sc>=60?'var(--amber)':'var(--red)';
+    return`<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:var(--radius2);background:var(--bg3);border:1px solid var(--border);margin-bottom:7px">
+      <div class="emp-av" style="background:${avC(e.email)};width:28px;height:28px;font-size:11px">${avI(e.name)}</div>
+      <div style="flex:1"><div style="font-weight:600;font-size:13px">${e.name}</div><div style="font-size:11px;color:var(--text3)">${e.email}</div></div>
+      <div style="text-align:right"><div style="font-weight:700;color:var(--accent);font-size:13px">${fmtS(e.totalSeconds||0)}</div><div style="font-size:11px;color:${scC};font-weight:700">${sc}%</div></div>
+      <div style="text-align:right"><div style="font-size:11px;color:var(--purple);font-weight:700">${e.totalQuestions||0} Qs</div><div style="font-size:10px;color:var(--text3)">${(e.activityLog||[]).length} tabs</div></div>
+    </div>`;}).join('');
+}
 function renderTables(emps){
-  const emptyOverview=`<tr><td colspan="5" style="color:var(--text3);font-size:13px;padding:28px;text-align:center;line-height:2.2">
-    No employee data yet. Open this file in a new tab → sign in as Employee → Start tracking → click <b>Refresh data</b>.
-  </td></tr>`;
-  const emptyDetail=`<tr><td colspan="7" style="color:var(--text3);font-size:13px;padding:28px;text-align:center;line-height:2.2">
-    No employee data yet. Open this file in a new tab → sign in as Employee → Start tracking → click <b>Refresh data</b>.
-  </td></tr>`;
+  const attLabel=s=>({present:'Present ✅',halfday:'Half Day 🕐',leave:'On Leave 🏖️',off:'Off 🔴'}[s]||s);
+  const attCol=s=>({present:'var(--green)',halfday:'var(--amber)',leave:'var(--red)',off:'var(--text3)'}[s]||'var(--text3)');
+  const emptyOv=`<tr><td colspan="6" style="padding:28px;text-align:center;color:var(--text3);font-size:13px">No employee data. Open another tab → sign in as Employee → Start tracking → Refresh.</td></tr>`;
+  const emptyDt=`<tr><td colspan="8" style="padding:28px;text-align:center;color:var(--text3);font-size:13px">No employee data. Open another tab → sign in as Employee → Start tracking → Refresh.</td></tr>`;
 
-  /* Overview table — compact */
   const r1=e=>{
     const col=avC(e.email),ini=avI(e.name),sc=e.score,q=e.totalQuestions||0;
-    const att=e.attendance||'present';
-    const isAct=e.tracking&&att!=='leave'&&att!=='off';
+    const att=e.attendance||'present',isAct=e.tracking&&att!=='leave'&&att!=='off';
     const scC=sc==null?'var(--text3)':sc>=80?'var(--green)':sc>=60?'var(--amber)':'var(--red)';
-    const scTxt=sc==null?attendLabel(att):sc+'%';
     return`<tr>
-      <td><div class="emp-name"><div class="emp-av" style="background:${col}">${ini}</div><span style="font-weight:600">${e.name}</span></div></td>
-      <td style="color:var(--text2);font-weight:500">${att==='leave'||att==='off'?'–':fmtS(e.totalSeconds||0)}</td>
-      <td><div style="display:flex;align-items:center;gap:8px">
-        <span style="color:${scC};font-weight:700;font-size:13px">${scTxt}</span>
-        ${sc!=null?`<div class="score-bar" style="width:70px"><div class="score-fill" style="width:${Math.min(100,sc)}%;background:${scC}"></div></div>`:''}
-      </div></td>
-      <td><span style="background:var(--purplebg);color:var(--purple);border:1px solid #ddd6fe;border-radius:20px;padding:3px 11px;font-size:12px;font-weight:700">${q} Qs</span></td>
-      <td><span style="background:${att==='present'?'var(--greenbg)':att==='halfday'?'var(--amberbg)':att==='leave'?'var(--redbg)':'var(--bg3)'};
-                       color:${attendColor(att)};border:1px solid ${att==='present'?'var(--greenborder)':att==='halfday'?'var(--amberborder)':att==='leave'?'var(--redborder)':'var(--border)'};
-                       border-radius:20px;padding:3px 11px;font-size:11px;font-weight:700">${attendLabel(att)}</span></td>
+      <td><div class="emp-name"><div class="emp-av" style="background:${col}">${ini}</div><b>${e.name}</b></div></td>
+      <td style="color:var(--text2)">${att==='leave'||att==='off'?'–':fmtS(e.totalSeconds||0)}</td>
+      <td><span style="color:${scC};font-weight:700">${sc==null?attLabel(att):sc+'%'}</span>${sc!=null?`<div class="score-bar" style="width:60px;margin-top:4px"><div class="score-fill" style="width:${Math.min(100,sc)}%;background:${scC}"></div></div>`:''}</td>
+      <td><span style="background:var(--purplebg);color:var(--purple);border:1px solid #ddd6fe;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700">${q} Qs</span></td>
+      <td><span style="background:${att==='present'?'var(--greenbg)':att==='halfday'?'var(--amberbg)':att==='leave'?'var(--redbg)':'var(--bg3)'};color:${attCol(att)};border-radius:20px;padding:3px 9px;font-size:11px;font-weight:700">${attLabel(att)}</span></td>
       <td><span class="badge ${isAct?'cat-work':'cat-neutral'}">${isAct?'● Active':'○ Away'}</span></td>
     </tr>`;
   };
 
-  /* Detail table — with expandable domain rows */
-  const catC={'work':'var(--green)','neutral':'var(--amber)','distract':'var(--red)'};
-  const catBg={'work':'var(--greenbg)','neutral':'var(--amberbg)','distract':'var(--redbg)'};
-  const catBorder={'work':'var(--greenborder)','neutral':'var(--amberborder)','distract':'var(--redborder)'};
+  const CC={work:'var(--green)',neutral:'var(--amber)',distract:'var(--red)'};
+  const CB={work:'var(--greenbg)',neutral:'var(--amberbg)',distract:'var(--redbg)'};
+  const CBR={work:'var(--greenborder)',neutral:'var(--amberborder)',distract:'var(--redborder)'};
 
   const r2=e=>{
     const col=avC(e.email),ini=avI(e.name),sc=e.score,q=e.totalQuestions||0;
-    const att=e.attendance||'present';
-    const isAct=e.tracking&&att!=='leave'&&att!=='off';
+    const att=e.attendance||'present',isAct=e.tracking&&att!=='leave'&&att!=='off';
     const scC=sc==null?'var(--text3)':sc>=80?'var(--green)':sc>=60?'var(--amber)':'var(--red)';
-    const scTxt=sc==null?attendLabel(att):sc+'%';
     const uid=e.email.replace(/[@.]/g,'_');
     const totalMin=Math.round((e.totalSeconds||0)/60);
     const idleMin=Math.round((e.idleSeconds||0)/60);
-    const activeMin=totalMin-idleMin;
     const idlePct=totalMin>0?Math.round((idleMin/totalMin)*100):0;
-    /* Domain breakdown rows */
-    const domainRows=(e.activityLog&&e.activityLog.length)?[...e.activityLog]
-      .sort((a,b)=>(parseInt(b.time)||0)-(parseInt(a.time)||0))
-      .map(a=>`
-        <div style="display:flex;align-items:center;gap:10px;padding:7px 12px;border-radius:8px;background:${catBg[a.cat]||'var(--bg3)'};border:1px solid ${catBorder[a.cat]||'var(--border)'};margin-bottom:5px">
-          <div style="width:7px;height:7px;border-radius:50%;background:${catC[a.cat]||'#888'};flex-shrink:0"></div>
-          <span style="flex:1;font-size:12px;font-weight:600;color:var(--text)">${a.domain}</span>
-          <span style="font-size:11px;color:${catC[a.cat]||'var(--text3)'};font-weight:700;background:white;padding:2px 8px;border-radius:5px;border:1px solid ${catBorder[a.cat]||'var(--border)'}">${a.time}</span>
-          <span style="font-size:10px;color:${catC[a.cat]||'var(--text3)'};">${a.cat==='distract'?'Distracting':a.cat==='work'?'Work':'Neutral'}</span>
-        </div>`).join('')
-      :'<div style="font-size:12px;color:var(--text3);padding:8px">No domains logged yet.</div>';
-
-    const qRows=(e.qHistory&&e.qHistory.length)?e.qHistory.map(q=>`
-        <span style="background:var(--purplebg);border:1px solid #ddd6fe;border-radius:14px;padding:3px 10px;font-size:11px;color:var(--purple);font-weight:700;margin:2px;display:inline-flex;gap:5px;align-items:center">
-          <b>${q.count}</b> ${q.note} <span style="opacity:.55">${q.time}</span>
-        </span>`).join('')
-      :'<span style="font-size:12px;color:var(--text3)">None logged yet.</span>';
-
     const tgtMin=att==='halfday'?225:att==='leave'||att==='off'?0:450;
     const qBonus=(e.totalQuestions||0)*5;
 
+    const domRows=(e.activityLog&&e.activityLog.length)
+      ?[...e.activityLog].sort((a,b)=>(b.timeSeconds||0)-(a.timeSeconds||0))
+        .map(a=>{const ttl=e.activityLog.reduce((s,x)=>s+(x.timeSeconds||0),0);const p=ttl?Math.round(((a.timeSeconds||0)/ttl)*100):0;
+          return`<div style="margin-bottom:6px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+              <div style="width:7px;height:7px;border-radius:50%;background:${CC[a.cat]||'#888'};flex-shrink:0"></div>
+              <span style="font-size:12px;font-weight:600;flex:1">${a.domain}</span>
+              <span style="font-size:11px;font-weight:700;color:${CC[a.cat]||'var(--text3)'}">${a.time}</span>
+              <span style="font-size:10px;color:var(--text3)">${p}%</span>
+            </div>
+            <div style="height:5px;background:var(--bg4);border-radius:3px;overflow:hidden">
+              <div style="width:${p}%;height:100%;background:${CC[a.cat]||'var(--accent)'};border-radius:3px"></div>
+            </div>
+          </div>`;}).join('')
+      :'<div style="font-size:12px;color:var(--text3)">No tabs logged yet.</div>';
+
+    const qRows=(e.qHistory&&e.qHistory.length)
+      ?e.qHistory.map(q=>`<span style="background:var(--purplebg);border:1px solid #ddd6fe;border-radius:12px;padding:3px 9px;font-size:11px;color:var(--purple);font-weight:700;margin:2px;display:inline-flex;gap:4px"><b>${q.count}</b>${q.note}<span style="opacity:.5">${q.time}</span></span>`).join('')
+      :'<span style="font-size:12px;color:var(--text3)">None.</span>';
+
     return`
     <tr style="cursor:pointer" onclick="toggleEmpRow('${uid}')">
-      <td><div class="emp-name"><div class="emp-av" style="background:${col}">${ini}</div>
-        <div>
-          <div style="font-weight:600">${e.name}</div>
-          <div style="font-size:11px;color:var(--text3)">${e.email}</div>
-        </div>
-      </div></td>
-      <td>
-        <div style="font-weight:700;color:var(--accent)">${att==='leave'||att==='off'?'–':fmtS(e.totalSeconds||0)}</div>
-        ${totalMin>0?`<div style="font-size:10px;color:var(--text3)">${activeMin}m active · <span style="color:var(--amber)">${idleMin}m idle (${idlePct}%)</span></div>`:''}
-      </td>
-      <td><div style="display:flex;align-items:center;gap:8px">
-        <span style="color:${scC};font-weight:700">${scTxt}</span>
-        ${sc!=null?`<div class="score-bar" style="width:55px"><div class="score-fill" style="width:${Math.min(100,sc)}%;background:${scC}"></div></div>`:''}
-      </div></td>
-      <td><span style="background:var(--purplebg);color:var(--purple);border:1px solid #ddd6fe;border-radius:20px;padding:3px 11px;font-size:12px;font-weight:700">${q} Qs</span></td>
-      <td>${e.activityLog&&e.activityLog.length?`<span style="font-size:11px;color:var(--accent);font-weight:600">${e.activityLog.length} domain${e.activityLog.length>1?'s':''}</span>`:'<span style="color:var(--text3);font-size:12px">–</span>'}</td>
-      <td><span style="background:${att==='present'?'var(--greenbg)':att==='halfday'?'var(--amberbg)':att==='leave'?'var(--redbg)':'var(--bg3)'};
-                       color:${attendColor(att)};border-radius:20px;padding:3px 9px;font-size:11px;font-weight:700">${attendLabel(att)}</span></td>
+      <td><div class="emp-name"><div class="emp-av" style="background:${col}">${ini}</div><div><div style="font-weight:600">${e.name}</div><div style="font-size:11px;color:var(--text3)">${e.email}</div></div></div></td>
+      <td><div style="font-weight:700;color:var(--accent)">${att==='leave'||att==='off'?'–':fmtS(e.totalSeconds||0)}</div>${totalMin>0?`<div style="font-size:10px;color:var(--text3)">${totalMin-idleMin}m active · <span style="color:var(--amber)">${idleMin}m idle (${idlePct}%)</span></div>`:''}</td>
+      <td><span style="color:${scC};font-weight:700">${sc==null?attLabel(att):sc+'%'}</span>${sc!=null?`<div class="score-bar" style="width:55px;margin-top:4px"><div class="score-fill" style="width:${Math.min(100,sc)}%;background:${scC}"></div></div>`:''}</td>
+      <td><span style="background:var(--purplebg);color:var(--purple);border:1px solid #ddd6fe;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700">${q} Qs</span></td>
+      <td>${e.activityLog&&e.activityLog.length?`<span style="font-size:11px;color:var(--accent);font-weight:600">${e.activityLog.length} tab${e.activityLog.length>1?'s':''}</span>`:'<span style="color:var(--text3);font-size:12px">–</span>'}</td>
+      <td><span style="color:${attCol(att)};font-weight:700;font-size:11px">${attLabel(att)}</span></td>
       <td><span class="badge ${isAct?'cat-work':'cat-neutral'}">${isAct?'● Active':'○ Away'}</span></td>
-      <td style="color:var(--accent2);font-size:11px;white-space:nowrap">▼ details</td>
+      <td style="color:var(--accent2);font-size:11px">▼</td>
     </tr>
     <tr id="emp-expand-${uid}" style="display:none">
       <td colspan="8" style="background:var(--bg3);padding:18px 24px;border-top:2px solid var(--accentbg2)">
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px">
-          <!-- Domain breakdown -->
           <div>
-            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px">
-              <span style="background:var(--accentbg);color:var(--accent);border-radius:5px;padding:2px 8px;font-size:10px">DOMAINS</span>
-              Time spent breakdown
-            </div>
-            ${domainRows}
+            <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">📊 Tab Time Breakdown</div>
+            ${domRows}
           </div>
-          <!-- Time breakdown -->
           <div>
-            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px">
-              <span style="background:var(--amberbg);color:var(--amber);border-radius:5px;padding:2px 8px;font-size:10px">TIME</span>
-              Active vs Idle
-            </div>
-            <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:12px 14px;margin-bottom:8px">
-              <div style="display:flex;justify-content:space-between;margin-bottom:5px;font-size:12px">
-                <span style="color:var(--text2)">Total tracked</span><b style="color:var(--accent)">${fmtS(e.totalSeconds||0)}</b>
-              </div>
-              <div style="display:flex;justify-content:space-between;margin-bottom:5px;font-size:12px">
-                <span style="color:var(--text2)">Active time</span><b style="color:var(--green)">${fmtS((e.activeSeconds||0))}</b>
-              </div>
-              <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:12px">
-                <span style="color:var(--text2)">Idle time</span><b style="color:var(--amber)">${fmtS(e.idleSeconds||0)} (${idlePct}%)</b>
-              </div>
+            <div style="font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">⏱ Active vs Idle</div>
+            <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:12px">
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:var(--text2)">Total</span><b style="color:var(--accent)">${fmtS(e.totalSeconds||0)}</b></div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:var(--text2)">Active</span><b style="color:var(--green)">${fmtS(e.activeSeconds||0)}</b></div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:8px"><span style="color:var(--text2)">Idle</span><b style="color:var(--amber)">${fmtS(e.idleSeconds||0)} (${idlePct}%)</b></div>
               <div style="height:8px;background:var(--bg4);border-radius:4px;overflow:hidden;display:flex">
-                <div style="width:${100-idlePct}%;background:var(--green);border-radius:4px 0 0 4px;transition:width .5s"></div>
-                <div style="width:${idlePct}%;background:var(--amber);border-radius:0 4px 4px 0"></div>
-              </div>
-              <div style="display:flex;gap:12px;margin-top:6px;font-size:10px;color:var(--text3)">
-                <span style="color:var(--green)">■ Active ${100-idlePct}%</span>
-                <span style="color:var(--amber)">■ Idle ${idlePct}%</span>
+                <div style="width:${100-idlePct}%;background:var(--green);border-radius:4px 0 0 4px"></div>
+                <div style="width:${idlePct}%;background:var(--amber)"></div>
               </div>
             </div>
-            <div style="padding:10px 14px;background:${att==='present'?'var(--greenbg)':att==='halfday'?'var(--amberbg)':att==='leave'?'var(--redbg)':'var(--bg3)'};border:1px solid ${att==='present'?'var(--greenborder)':att==='halfday'?'var(--amberborder)':att==='leave'?'var(--redborder)':'var(--border)'};border-radius:var(--radius2);font-size:12px">
-              <b style="color:${attendColor(att)}">${attendLabel(att)}</b>
-              ${tgtMin>0?`<span style="color:var(--text3);margin-left:6px">Target: ${tgtMin}m</span>`:'<span style="color:var(--text3);margin-left:6px">No tracking target</span>'}
+            <div style="margin-top:8px;padding:10px;background:${att==='present'?'var(--greenbg)':att==='halfday'?'var(--amberbg)':'var(--redbg)'};border-radius:var(--radius2);font-size:12px">
+              <b style="color:${attCol(att)}">${attLabel(att)}</b>${tgtMin?`<span style="color:var(--text3);margin-left:6px">Target: ${tgtMin}m</span>`:''}
             </div>
           </div>
-          <!-- Questions & score -->
           <div>
-            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px">
-              <span style="background:var(--purplebg);color:var(--purple);border-radius:5px;padding:2px 8px;font-size:10px">QUESTIONS</span>
-              ${q} curated (+${qBonus}m bonus)
-            </div>
-            <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px">${qRows}</div>
-            <div style="padding:12px 14px;background:linear-gradient(135deg,var(--purplebg),var(--accentbg));border:1px solid var(--accentbg2);border-radius:var(--radius2);font-size:12px;color:var(--text2)">
-              <b style="color:var(--text);display:block;margin-bottom:4px">Productivity formula:</b>
-              <span style="font-family:monospace;font-size:11px;background:white;padding:3px 8px;border-radius:4px;display:block;color:var(--text)">
-                (${totalMin}m + ${qBonus}m) × 100 ÷ ${tgtMin||450}m = <b style="color:var(--accent)">${scTxt}</b>
-              </span>
+            <div style="font-size:11px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">❓ Questions + Score</div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px">${qRows}</div>
+            <div style="padding:12px;background:linear-gradient(135deg,var(--purplebg),var(--accentbg));border:1px solid var(--accentbg2);border-radius:var(--radius2);font-size:12px;color:var(--text2)">
+              <b style="color:var(--text);display:block;margin-bottom:4px">Score formula:</b>
+              <code style="font-size:11px;background:white;padding:3px 8px;border-radius:4px;display:block;color:var(--text)">(${totalMin}m + ${qBonus}m) × 100 ÷ ${tgtMin||450} = <b style="color:var(--accent)">${sc==null?attLabel(att):sc+'%'}</b></code>
             </div>
           </div>
         </div>
@@ -1908,106 +1661,70 @@ function renderTables(emps){
   };
 
   const t1=$('emp-tbody-overview'),t2=$('emp-tbody-detail');
-  if(t1)t1.innerHTML=emps.length?emps.map(r1).join(''):emptyOverview;
-  if(t2)t2.innerHTML=emps.length?emps.map(r2).join(''):emptyDetail;
+  if(t1)t1.innerHTML=emps.length?emps.map(r1).join(''):emptyOv;
+  if(t2)t2.innerHTML=emps.length?emps.map(r2).join(''):emptyDt;
 }
-
 function toggleEmpRow(uid){
-  const row=$('emp-expand-'+uid);
-  if(!row)return;
-  row.style.display=row.style.display==='none'?'table-row':'none';
+  const r=$('emp-expand-'+uid);if(r)r.style.display=r.style.display==='none'?'table-row':'none';
 }
 
 function exportCSV(){
-  const emps=loadEmps();
-  if(!emps.length){alert('No employee data to export yet.');return}
-  const rows=[['Name','Email','Total Time','Active','Idle (min)','Productivity %','Questions Curated','Status','Top Domain']];
+  const emps=loadEmps();if(!emps.length){alert('No data to export yet.');return;}
+  const rows=[['Name','Email','Total Time','Active','Idle','Productivity %','Attendance','Questions','Status','Top Tab']];
   emps.forEach(e=>{
-    const top=e.activityLog&&e.activityLog.length?e.activityLog.reduce((a,b)=>(parseInt(a.time)||0)>=(parseInt(b.time)||0)?a:b).domain:'—';
-    rows.push([e.name,e.email,fmtS(e.totalSeconds||0),fmtS(e.activeSeconds||0),Math.round((e.idleSeconds||0)/60),(e.score||0)+'%',e.totalQuestions||0,e.tracking?'Active':'Away',top]);
+    const top=e.activityLog&&e.activityLog.length?[...e.activityLog].sort((a,b)=>(b.timeSeconds||0)-(a.timeSeconds||0))[0].domain:'–';
+    rows.push([e.name,e.email,fmtS(e.totalSeconds||0),fmtS(e.activeSeconds||0),fmtS(e.idleSeconds||0),(e.score||0)+'%',e.attendance||'present',e.totalQuestions||0,e.tracking?'Active':'Away',top]);
   });
   const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const a=document.createElement('a');
-  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
-  a.download='pw-tracker-'+new Date().toISOString().slice(0,10)+'.csv';
-  a.click();
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='pw-tracker-'+getTodayIST()+'.csv';a.click();
 }
 
+/* ── CHARTS ── */
 function initCharts(){
-  const L=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
-        gc='rgba(79,70,229,.06)',tc='#8b90b8',
-        df={family:"'DM Sans',sans-serif",size:11};
-  const mk=(id,cfg)=>{if(chartInstances[id])chartInstances[id].destroy();const el=$(id);if(!el)return;chartInstances[id]=new Chart(el,cfg)};
-
-  /* 7.5 h/day target shown as annotation baseline in bar chart */
+  const L=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],gc='rgba(79,70,229,.06)',tc='#8b90b8',df={family:"'DM Sans',sans-serif",size:11};
+  const mk=(id,cfg)=>{ if(chartInstances[id])chartInstances[id].destroy(); const el=$(id); if(!el)return; chartInstances[id]=new Chart(el,cfg); };
   mk('chartActivity',{type:'bar',data:{labels:L,datasets:[
     {label:'Active hrs',data:[7.2,7.5,6.8,7.6,7.4,3.2,0.8],backgroundColor:'rgba(99,102,241,.75)',borderRadius:5,borderSkipped:false},
-    {label:'Idle hrs',   data:[0.5,0.4,0.8,0.4,0.5,0.2,0.1],backgroundColor:'rgba(217,119,6,.5)', borderRadius:5,borderSkipped:false}
-  ]},options:{responsive:true,maintainAspectRatio:false,
-    plugins:{
-      legend:{labels:{color:tc,font:df,boxWidth:10,boxHeight:8}},
-      annotation:{annotations:{target:{type:'line',yMin:7.5,yMax:7.5,borderColor:'rgba(5,150,105,.6)',borderWidth:1.5,borderDash:[4,4],label:{content:'Target 7.5h',enabled:true,color:'rgba(5,150,105,.8)',font:{size:10}}}}}
-    },
-    scales:{
-      x:{stacked:true,grid:{color:gc},ticks:{color:tc,font:df}},
-      y:{stacked:true,grid:{color:gc},ticks:{color:tc,font:df,callback:v=>v+'h'},max:9,min:0}
-    }
-  }});
-
-  mk('chartDonut',{type:'doughnut',data:{labels:['Work','Neutral','Distracting'],datasets:[{
-    data:[72,20,8],
-    backgroundColor:['rgba(5,150,105,.85)','rgba(217,119,6,.8)','rgba(220,38,38,.75)'],
-    borderWidth:0,hoverOffset:6
-  }]},options:{responsive:true,maintainAspectRatio:false,cutout:'66%',
-    plugins:{legend:{position:'bottom',labels:{color:tc,font:df,boxWidth:10,padding:12}}}
-  }});
-
+    {label:'Idle hrs',data:[0.5,0.4,0.8,0.4,0.5,0.2,0.1],backgroundColor:'rgba(217,119,6,.5)',borderRadius:5,borderSkipped:false}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc,font:df,boxWidth:10,boxHeight:8}}},scales:{x:{stacked:true,grid:{color:gc},ticks:{color:tc,font:df}},y:{stacked:true,grid:{color:gc},ticks:{color:tc,font:df,callback:v=>v+'h'},max:9}}}});
+  mk('chartDonut',{type:'doughnut',data:{labels:['Work','Neutral','Distracting'],datasets:[{data:[72,20,8],backgroundColor:['rgba(5,150,105,.85)','rgba(217,119,6,.8)','rgba(220,38,38,.75)'],borderWidth:0,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:'66%',plugins:{legend:{position:'bottom',labels:{color:tc,font:df,boxWidth:10,padding:12}}}}});
   mk('chartWeekly',{type:'line',data:{labels:['W1','W2','W3','W4','W5','W6','W7','W8'],datasets:[
-    {label:'Avg productivity %',data:[74,71,76,74,79,77,80,82],
-     borderColor:'#6366f1',backgroundColor:'rgba(99,102,241,.08)',
-     borderWidth:2.5,fill:true,tension:.4,pointRadius:4,pointBackgroundColor:'#6366f1'},
-    {label:'Target',data:[85,85,85,85,85,85,85,85],
-     borderColor:'rgba(5,150,105,.5)',borderWidth:1.5,borderDash:[4,4],
-     pointRadius:0,fill:false}
-  ]},options:{responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{labels:{color:tc,font:df}}},
-    scales:{
-      x:{grid:{color:gc},ticks:{color:tc,font:df}},
-      y:{grid:{color:gc},ticks:{color:tc,font:df,callback:v=>v+'%'},min:60,max:100}
-    }
-  }});
-
+    {label:'Avg %',data:[74,71,76,74,79,77,80,82],borderColor:'#6366f1',backgroundColor:'rgba(99,102,241,.08)',borderWidth:2.5,fill:true,tension:.4,pointRadius:4,pointBackgroundColor:'#6366f1'},
+    {label:'Target',data:[85,85,85,85,85,85,85,85],borderColor:'rgba(5,150,105,.5)',borderWidth:1.5,borderDash:[4,4],pointRadius:0}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc,font:df}}},scales:{x:{grid:{color:gc},ticks:{color:tc,font:df}},y:{grid:{color:gc},ticks:{color:tc,font:df,callback:v=>v+'%'},min:60,max:100}}}});
   mk('chartStacked',{type:'bar',data:{labels:L,datasets:[
-    {label:'Work',       data:[5.2,5.5,5.0,5.8,5.4,2.2,0.5],backgroundColor:'rgba(5,150,105,.75)',  borderRadius:4,borderSkipped:false},
-    {label:'Neutral',   data:[1.6,1.5,1.3,1.3,1.5,0.7,0.2],backgroundColor:'rgba(217,119,6,.65)',  borderRadius:4,borderSkipped:false},
+    {label:'Work',data:[5.2,5.5,5.0,5.8,5.4,2.2,0.5],backgroundColor:'rgba(5,150,105,.75)',borderRadius:4,borderSkipped:false},
+    {label:'Neutral',data:[1.6,1.5,1.3,1.3,1.5,0.7,0.2],backgroundColor:'rgba(217,119,6,.65)',borderRadius:4,borderSkipped:false},
     {label:'Distracting',data:[0.4,0.5,0.5,0.5,0.5,0.3,0.1],backgroundColor:'rgba(220,38,38,.55)',borderRadius:4,borderSkipped:false}
-  ]},options:{responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{labels:{color:tc,font:df,boxWidth:10}}},
-    scales:{
-      x:{stacked:true,grid:{color:gc},ticks:{color:tc,font:df}},
-      y:{stacked:true,grid:{color:gc},ticks:{color:tc,font:df,callback:v=>v+'h'},max:9}
-    }
-  }});
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc,font:df,boxWidth:10}}},scales:{x:{stacked:true,grid:{color:gc},ticks:{color:tc,font:df}},y:{stacked:true,grid:{color:gc},ticks:{color:tc,font:df,callback:v=>v+'h'},max:9}}}});
 }
+
+/* ── BOOKMARKLET ── */
+function showBookmarkletModal(){ const m=$('bookmarklet-modal');if(m)m.style.display='flex'; }
+function closeBookmarkletModal(){ const m=$('bookmarklet-modal');if(m)m.style.display='none'; }
+
+/* ── INIT ── */
+initBroadcastChannel();
 </script>
+
 <!-- ═══ OAUTH MODAL ═══ -->
 <div id="oauth-modal" style="display:none;position:fixed;inset:0;z-index:999;align-items:center;justify-content:center;background:rgba(15,15,30,.45);backdrop-filter:blur(6px)" onclick="if(event.target===this)closeOAuthModal()">
   <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:36px;width:100%;max-width:400px;box-shadow:var(--shadow2);position:relative">
-    <button onclick="closeOAuthModal()" style="position:absolute;top:14px;right:14px;background:var(--bg3);border:1px solid var(--border);border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:16px;line-height:1;cursor:pointer">×</button>
+    <button onclick="closeOAuthModal()" style="position:absolute;top:14px;right:14px;background:var(--bg3);border:1px solid var(--border);border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:16px;cursor:pointer">×</button>
     <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:18px;margin-bottom:4px;color:var(--text)" id="oauth-modal-title">Sign in with Google</div>
-    <div style="font-size:12px;color:var(--text3);margin-bottom:20px">Confirm your @pw.live work email to continue</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:20px">Confirm your @pw.live work email</div>
     <input type="hidden" id="oauth-provider-hidden" value="google"/>
     <div style="margin-bottom:12px">
       <label style="font-size:11px;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;font-weight:700;display:block;margin-bottom:5px">Work email</label>
       <input type="email" id="oauth-email-input" placeholder="yourname@pw.live"
-        style="width:100%;background:var(--bg3);border:1.5px solid var(--border);border-radius:var(--radius2);padding:11px 14px;color:var(--text);font-size:14px;font-family:inherit;outline:none;transition:all .2s"
-        onfocus="this.style.borderColor='var(--accent)';this.style.boxShadow='0 0 0 3px var(--accentbg2)'"
-        onblur="this.style.borderColor='';this.style.boxShadow=''"
+        style="width:100%;background:var(--bg3);border:1.5px solid var(--border);border-radius:var(--radius2);padding:11px 14px;color:var(--text);font-size:14px;font-family:inherit;outline:none"
+        onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor=''"
         onkeydown="if(event.key==='Enter')confirmOAuth()"/>
     </div>
     <div id="oauth-error" class="hidden" style="font-size:12px;color:var(--red);background:var(--redbg);border:1px solid var(--redborder);border-radius:var(--radius2);padding:8px 12px;margin-bottom:12px"></div>
     <button onclick="confirmOAuth()" style="width:100%;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;padding:13px;border-radius:var(--radius2);box-shadow:0 4px 14px rgba(79,70,229,.3);cursor:pointer;border:none">Verify &amp; Sign in →</button>
-    <div style="font-size:11px;color:var(--text3);text-align:center;margin-top:12px">Only @pw.live accounts are permitted access</div>
+    <div style="font-size:11px;color:var(--text3);text-align:center;margin-top:12px">Only @pw.live accounts are permitted</div>
   </div>
 </div>
 
@@ -2015,51 +1732,35 @@ function initCharts(){
 <div id="bookmarklet-modal" style="display:none;position:fixed;inset:0;z-index:1000;align-items:center;justify-content:center;background:rgba(15,15,30,.5);backdrop-filter:blur(8px)" onclick="if(event.target===this)closeBookmarkletModal()">
   <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:36px;width:100%;max-width:520px;box-shadow:var(--shadow2);position:relative">
     <button onclick="closeBookmarkletModal()" style="position:absolute;top:14px;right:14px;background:var(--bg3);border:1px solid var(--border);border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:16px;cursor:pointer">×</button>
-
     <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:20px;margin-bottom:6px;color:var(--text)">📌 Tab Logger Bookmarklet</div>
-    <div style="font-size:13px;color:var(--text2);margin-bottom:20px;line-height:1.6">
-      A <b>bookmarklet</b> is a bookmark that runs code. Drag the button below to your Chrome bookmarks bar. Then, while on any browser tab (Gmail, WhatsApp, etc.), just <b>click it once</b> — it instantly sends that tab's domain to your PW Tracker.
-    </div>
-
-    <div style="background:var(--accentbg);border:1.5px dashed var(--accentbg2);border-radius:var(--radius2);padding:20px;text-align:center;margin-bottom:20px">
+    <div style="font-size:13px;color:var(--text2);margin-bottom:20px;line-height:1.6">Drag the button below to your <b>Chrome bookmarks bar</b>. Then on any tab (Gmail, WhatsApp, GitHub…) click it once — it sends that domain to your tracker instantly.</div>
+    <div style="background:var(--accentbg);border:1.5px dashed var(--accentbg2);border-radius:var(--radius2);padding:20px;text-align:center;margin-bottom:18px">
       <div style="font-size:12px;color:var(--text3);margin-bottom:12px;font-weight:600">⬇ DRAG THIS TO YOUR BOOKMARKS BAR ⬇</div>
-      <a id="bookmarklet-link" href="" style="display:inline-block;background:linear-gradient(135deg,var(--accent),var(--purple));color:white;padding:12px 24px;border-radius:40px;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;text-decoration:none;box-shadow:0 4px 14px rgba(79,70,229,.3);cursor:grab">📌 Log This Tab → PW Tracker</a>
+      <a id="bookmarklet-link" href="#" style="display:inline-block;background:linear-gradient(135deg,var(--accent),var(--purple));color:white;padding:12px 24px;border-radius:40px;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;text-decoration:none;box-shadow:0 4px 14px rgba(79,70,229,.3)">📌 Log This Tab → PW Tracker</a>
     </div>
-
-    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius2);padding:14px 16px;margin-bottom:16px">
-      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px">How it works:</div>
-      <ol style="padding-left:18px;font-size:12px;color:var(--text2);line-height:2">
-        <li>Drag the button above to your Chrome bookmarks bar</li>
-        <li>Open any tab (Gmail, WhatsApp, GitHub, etc.)</li>
-        <li>Click <b>"Log This Tab → PW Tracker"</b> in your bookmarks bar</li>
-        <li>The domain is instantly sent to your tracker tab ✓</li>
-      </ol>
-    </div>
-
-    <div style="background:var(--amberbg);border:1px solid var(--amberborder);border-radius:var(--radius2);padding:12px 14px;font-size:12px;color:var(--amber)">
-      <b>Why a bookmarklet?</b> Browsers block webpages from reading other tabs' URLs for privacy reasons. A bookmarklet runs <em>inside</em> the tab you click it on — so it can read that tab's URL and broadcast it to the tracker. No extension install needed.
-    </div>
+    <ol style="padding-left:18px;font-size:12px;color:var(--text2);line-height:2.2;margin-bottom:16px">
+      <li>Drag the button above to your Chrome bookmarks bar</li>
+      <li>Open any tab (Gmail, WhatsApp, GitHub, etc.)</li>
+      <li>Click <b>"Log This Tab → PW Tracker"</b> in your bar</li>
+      <li>The domain is auto-filled in your tracker tab ✓</li>
+    </ol>
+    <div style="background:var(--amberbg);border:1px solid var(--amberborder);border-radius:var(--radius2);padding:12px 14px;font-size:12px;color:var(--amber)"><b>Why a bookmarklet?</b> Browsers block webpages from reading other tabs (privacy). The bookmarklet runs <em>inside</em> that tab so it can read its URL and broadcast it here.</div>
   </div>
 </div>
 
 <script>
-/* Build the bookmarklet href dynamically with the channel name */
-(function buildBookmarklet(){
-  const code=`(function(){
-    try{
-      var d=window.location.hostname.replace(/^www\./,'');
-      var email=localStorage.getItem('pwtracker_logged_email')||'';
-      var bc=new BroadcastChannel('pwtracker_channel');
-      bc.postMessage({type:'tab_report',domain:d,email:email});
-      bc.close();
-      localStorage.setItem('pwtracker_tab_ping',JSON.stringify({domain:d,email:email,ts:Date.now()}));
-      var b=document.createElement('div');
-      b.style='position:fixed;top:16px;right:16px;z-index:99999;background:#4f46e5;color:white;padding:10px 18px;border-radius:20px;font-family:sans-serif;font-size:13px;font-weight:bold;box-shadow:0 4px 14px rgba(79,70,229,.4)';
-      b.textContent='✓ '+d+' sent to PW Tracker';
-      document.body.appendChild(b);
-      setTimeout(function(){b.remove()},3000);
-    }catch(e){alert('PW Tracker: '+e.message);}
-  })()`;
+/* Build bookmarklet href */
+(function(){
+  const code=`(function(){try{
+    var d=window.location.hostname.replace(/^www\\./,'');
+    var email=localStorage.getItem('pwtracker_logged_email')||'';
+    try{var bc=new BroadcastChannel('pwtracker_channel');bc.postMessage({type:'tab_report',domain:d,email:email});bc.close();}catch(e){}
+    localStorage.setItem('pwtracker_tab_ping',JSON.stringify({domain:d,email:email,ts:Date.now()}));
+    var b=document.createElement('div');
+    b.style='position:fixed;top:16px;right:16px;z-index:99999;background:#4f46e5;color:white;padding:10px 18px;border-radius:20px;font-family:sans-serif;font-size:13px;font-weight:bold;box-shadow:0 4px 14px rgba(79,70,229,.4);pointer-events:none';
+    b.textContent='✓ '+d+' sent to PW Tracker';
+    document.body.appendChild(b);setTimeout(function(){b.remove()},3000);
+  }catch(e){alert('PW Tracker bookmarklet error: '+e.message);}})()`;
   const link=document.getElementById('bookmarklet-link');
   if(link)link.href='javascript:'+encodeURIComponent(code);
 })();
