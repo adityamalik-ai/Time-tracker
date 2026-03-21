@@ -410,6 +410,7 @@ input,select,textarea{font-family:inherit;outline:none}
             <div class="status-pill">Active: <span id="pill-active">0m</span></div>
             <div class="status-pill">Idle: <span id="pill-idle">0m</span></div>
             <div class="status-pill live-pill hidden" id="pill-live">● Live session</div>
+            <div id="idle-indicator" style="display:none;background:#fff3cd;border:1px solid #ffc107;border-radius:20px;padding:5px 14px;font-size:12px;color:#856404;font-weight:600">💤 Idle — move mouse to resume</div>
           </div>
           <!-- 7.5h daily progress -->
           <div style="margin-top:18px;position:relative;max-width:340px;margin-left:auto;margin-right:auto">
@@ -422,21 +423,53 @@ input,select,textarea{font-family:inherit;outline:none}
           </div>
         </div>
 
+        <!-- ATTENDANCE CARD -->
+        <div style="background:var(--bg2);border:1.5px solid var(--border2);border-radius:var(--radius);padding:16px 20px;margin-bottom:16px;box-shadow:var(--shadow)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div style="font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px">
+              <svg width="15" height="15" fill="none" viewBox="0 0 15 15" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="11" height="11" rx="2"/><path d="M5 7.5h5M7.5 5v5"/></svg>
+              Mark Attendance
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span id="att-status-label" style="font-size:12px;font-weight:700">Present ✅</span>
+              <span id="att-target-label" style="font-size:11px;color:var(--text3)">Target: 7.5h</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button id="att-btn-present" onclick="setAttendance('present')"
+              style="flex:1;min-width:100px;padding:9px 10px;border-radius:var(--radius2);border:1.5px solid var(--border);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;transition:all .18s">
+              ✅ Present
+            </button>
+            <button id="att-btn-halfday" onclick="setAttendance('halfday')"
+              style="flex:1;min-width:100px;padding:9px 10px;border-radius:var(--radius2);border:1.5px solid var(--border);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;transition:all .18s">
+              🕐 Half Day
+            </button>
+            <button id="att-btn-leave" onclick="setAttendance('leave')"
+              style="flex:1;min-width:100px;padding:9px 10px;border-radius:var(--radius2);border:1.5px solid var(--border);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;transition:all .18s">
+              🏖️ On Leave
+            </button>
+            <button id="att-btn-off" onclick="setAttendance('off')"
+              style="flex:1;min-width:100px;padding:9px 10px;border-radius:var(--radius2);border:1.5px solid var(--border);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;transition:all .18s">
+              🔴 Off / Holiday
+            </button>
+          </div>
+        </div>
+
         <div class="stats-row">
           <div class="stat-card">
             <div class="stat-label"><svg fill="none" viewBox="0 0 13 13" stroke="currentColor" stroke-width="2"><circle cx="6.5" cy="6.5" r="5"/><path d="M6.5 4v2.5l1.5 1.5"/></svg>Today's total</div>
             <div class="stat-value c-accent" id="stat-total">0h 0m</div>
-            <div class="stat-sub">Target: 7.5h per day</div>
+            <div class="stat-sub" id="stat-total-sub">Target: 7.5h per day</div>
           </div>
           <div class="stat-card">
             <div class="stat-label"><svg fill="none" viewBox="0 0 13 13" stroke="currentColor" stroke-width="2"><path d="M2 10l3-3 2 2 4-5"/></svg>Productivity score</div>
-            <div class="stat-value c-green" id="stat-score">–</div>
-            <div class="stat-sub">Based on site categories</div>
+            <div class="stat-value" id="stat-score" style="color:var(--green)">–</div>
+            <div class="stat-sub">Based on time + questions</div>
           </div>
           <div class="stat-card">
             <div class="stat-label"><svg fill="none" viewBox="0 0 13 13" stroke="currentColor" stroke-width="2"><path d="M6.5 2v5.5M10 10a5 5 0 1 0-7 0"/></svg>Idle time</div>
             <div class="stat-value c-amber" id="stat-idle">0m</div>
-            <div class="stat-sub">No input detected</div>
+            <div class="stat-sub" id="stat-idle-sub">0% of session</div>
           </div>
         </div>
 
@@ -455,17 +488,71 @@ input,select,textarea{font-family:inherit;outline:none}
           <div class="q-history" id="q-history"></div>
         </div>
 
-        <div class="domain-logger hidden" id="domain-logger">
-          <div class="dl-title">
-            <svg fill="none" viewBox="0 0 14 14" stroke="currentColor" stroke-width="2"><circle cx="7" cy="7" r="5.5"/><path d="M4.5 7h5M7 4.5v5"/></svg>
-            Log a domain you're working on
+        <!-- TAB TIME TRACKER — main tab logging section -->
+        <div id="tab-tracker-card" class="hidden" style="background:var(--bg2);border:1.5px solid var(--accentbg2);border-radius:var(--radius);padding:0;margin-bottom:20px;box-shadow:var(--shadow);overflow:hidden">
+          <!-- Active Tab Banner — shows when user returns from another tab -->
+          <div id="away-toast" style="display:none;background:linear-gradient(135deg,#fef3c7,#fde68a);border-bottom:1px solid var(--amberborder);padding:14px 18px">
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              <span style="font-size:20px">👋</span>
+              <div style="flex:1">
+                <div style="font-size:13px;font-weight:700;color:#92400e">Welcome back! You were away for <span id="away-duration" style="color:var(--amber)">0m</span></div>
+                <div style="font-size:12px;color:#a16207;margin-top:2px">What were you working on? Log it below to track that time.</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input id="away-domain-input" type="text" placeholder="gmail.com, whatsapp.com…"
+                  style="background:white;border:1.5px solid var(--amberborder);border-radius:var(--radius2);padding:8px 12px;font-size:13px;color:var(--text);width:200px;font-family:inherit;outline:none"
+                  onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--amberborder)'"
+                  onkeydown="if(event.key==='Enter')logAwayTime()"/>
+                <select id="away-cat-select" style="background:white;border:1.5px solid var(--amberborder);border-radius:var(--radius2);padding:8px 10px;font-size:13px;color:var(--text);font-family:inherit">
+                  <option value="work">Work</option><option value="neutral">Neutral</option><option value="distract">Distracting</option>
+                </select>
+                <button onclick="logAwayTime()" style="background:var(--amber);color:white;padding:8px 14px;border-radius:var(--radius2);font-size:13px;font-weight:700;cursor:pointer;border:none">Log it ✓</button>
+                <button onclick="dismissAwayToast()" style="background:transparent;border:none;color:#92400e;font-size:18px;cursor:pointer;padding:4px">✕</button>
+              </div>
+            </div>
           </div>
-          <div class="dl-row">
-            <input type="text" id="domain-input" placeholder="docs.google.com  ·  github.com  ·  notion.so" onkeydown="if(event.key==='Enter')logDomain()"/>
-            <select id="cat-select"><option value="work">Work</option><option value="neutral">Neutral</option><option value="distract">Distracting</option></select>
-            <button class="log-btn" onclick="logDomain()">Log</button>
+
+          <!-- Manual domain logger -->
+          <div style="padding:16px 18px 14px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <div style="font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px">
+                <svg fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="2" width="15" height="15"><rect x="1" y="3" width="14" height="10" rx="2"/><path d="M5 3V2M11 3V2"/></svg>
+                Tab time tracker
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:11px;color:var(--text3)">Log time on each domain/tab</span>
+                <button onclick="showBookmarkletModal()" style="background:var(--purplebg);border:1px solid #ddd6fe;border-radius:var(--radius2);padding:4px 10px;color:var(--purple);font-size:11px;font-weight:700;cursor:pointer">📌 Get bookmarklet</button>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;margin-bottom:8px">
+              <div style="position:relative;flex:1">
+                <input type="text" id="domain-input" placeholder="e.g. gmail.com  ·  github.com  ·  whatsapp.com" onkeydown="if(event.key==='Enter')logDomain()"
+                  style="width:100%;background:var(--bg3);border:1.5px solid var(--border);border-radius:var(--radius2);padding:10px 13px;color:var(--text);font-size:13px;font-family:inherit;outline:none;transition:all .2s"
+                  onfocus="this.style.borderColor='var(--accent)';this.style.boxShadow='0 0 0 3px var(--accentbg2)'"
+                  onblur="this.style.borderColor='var(--border)';this.style.boxShadow=''"/>
+              </div>
+              <input type="number" id="domain-mins" min="1" max="480" placeholder="mins" title="Time spent in minutes"
+                style="width:80px;background:var(--bg3);border:1.5px solid var(--border);border-radius:var(--radius2);padding:10px 8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;text-align:center"
+                onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>
+              <select id="cat-select" style="background:var(--bg3);border:1.5px solid var(--border);border-radius:var(--radius2);padding:10px 10px;color:var(--text);font-size:13px;font-family:inherit">
+                <option value="work">Work</option><option value="neutral">Neutral</option><option value="distract">Distracting</option>
+              </select>
+              <button onclick="logDomain()" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;padding:10px 18px;border-radius:var(--radius2);font-size:13px;font-weight:700;cursor:pointer;border:none;box-shadow:0 2px 8px rgba(79,70,229,.2);white-space:nowrap">+ Log tab</button>
+            </div>
+            <div style="font-size:11px;color:var(--text3);line-height:1.7">
+              Auto-categorises known domains (Gmail, GitHub, Notion…) as Work.
+              Enter exact minutes spent. <b style="color:var(--accent)">Or use the bookmarklet</b> — pin it to Chrome bookmarks bar, click it on any tab to instantly send that tab's domain here.
+            </div>
           </div>
-          <div class="dl-hint">Known work domains auto-categorise as Work. Press Enter or click Log.</div>
+
+          <!-- Live tab breakdown -->
+          <div style="border-top:1px solid var(--border);padding:14px 18px">
+            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between">
+              <span>Tab time breakdown today</span>
+              <span id="tab-total-badge" style="background:var(--accentbg);color:var(--accent);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700">0 tabs logged</span>
+            </div>
+            <div id="tab-bar-chart" style="min-height:20px"></div>
+          </div>
         </div>
 
         <div class="privacy-card">
@@ -473,9 +560,9 @@ input,select,textarea{font-family:inherit;outline:none}
             <svg width="14" height="14" fill="none" viewBox="0 0 14 14" stroke="currentColor" stroke-width="2"><path d="M7 1L2 3v4c0 3 2.3 5.5 5 6 2.7-.5 5-3 5-6V3L7 1z"/></svg>What we track &amp; what we don't
           </div>
           <div class="privacy-grid">
-            <div class="privacy-item"><div class="prv-icon prv-yes"><svg fill="none" viewBox="0 0 10 10" stroke="currentColor" stroke-width="2.5"><path d="M2 5l2 2 4-4"/></svg></div><span class="prv-text">Domains visited</span></div>
+            <div class="privacy-item"><div class="prv-icon prv-yes"><svg fill="none" viewBox="0 0 10 10" stroke="currentColor" stroke-width="2.5"><path d="M2 5l2 2 4-4"/></svg></div><span class="prv-text">Time spent per domain/tab</span></div>
             <div class="privacy-item"><div class="prv-icon prv-no"><svg fill="none" viewBox="0 0 10 10" stroke="currentColor" stroke-width="2.5"><path d="M2 2l6 6M8 2L2 8"/></svg></div><span class="prv-text">Keystrokes or content typed</span></div>
-            <div class="privacy-item"><div class="prv-icon prv-yes"><svg fill="none" viewBox="0 0 10 10" stroke="currentColor" stroke-width="2.5"><path d="M2 5l2 2 4-4"/></svg></div><span class="prv-text">Time per tab &amp; questions count</span></div>
+            <div class="privacy-item"><div class="prv-icon prv-yes"><svg fill="none" viewBox="0 0 10 10" stroke="currentColor" stroke-width="2.5"><path d="M2 5l2 2 4-4"/></svg></div><span class="prv-text">Questions curated count</span></div>
             <div class="privacy-item"><div class="prv-icon prv-no"><svg fill="none" viewBox="0 0 10 10" stroke="currentColor" stroke-width="2.5"><path d="M2 2l6 6M8 2L2 8"/></svg></div><span class="prv-text">Screen recordings</span></div>
             <div class="privacy-item"><div class="prv-icon prv-yes"><svg fill="none" viewBox="0 0 10 10" stroke="currentColor" stroke-width="2.5"><path d="M2 5l2 2 4-4"/></svg></div><span class="prv-text">Active vs idle status</span></div>
             <div class="privacy-item"><div class="prv-icon prv-no"><svg fill="none" viewBox="0 0 10 10" stroke="currentColor" stroke-width="2.5"><path d="M2 2l6 6M8 2L2 8"/></svg></div><span class="prv-text">Personal / incognito tabs</span></div>
@@ -487,7 +574,7 @@ input,select,textarea{font-family:inherit;outline:none}
           <span style="color:var(--text3);font-size:11px;font-weight:500">Recorded only while tracking is active</span>
         </div>
         <div class="activity-list" id="activity-list">
-          <div class="activity-row"><div style="color:var(--text3);font-size:13px">No activity yet. Start tracking, then log your active domains above.</div></div>
+          <div class="activity-row"><div style="color:var(--text3);font-size:13px">No activity yet. Start tracking, then log tab domains above.</div></div>
         </div>
       </div>
     </div>
@@ -530,7 +617,8 @@ input,select,textarea{font-family:inherit;outline:none}
         <span class="topbar-title">Team overview</span>
         <div class="topbar-actions">
           <span style="font-size:12px;color:var(--text3);font-weight:500" id="today-date"></span>
-          <span style="font-size:11px;color:var(--text3);padding:3px 10px;background:var(--bg3);border-radius:20px;border:1px solid var(--border);font-weight:500" id="last-refreshed">Not refreshed yet</span>
+          <span style="font-size:11px;color:var(--text3);padding:3px 10px;background:var(--bg3);border-radius:20px;border:1px solid var(--border);font-weight:600" id="mgr-ist-clock">–:– IST</span>
+          <span style="font-size:11px;color:var(--text3);padding:3px 10px;background:var(--bg3);border-radius:20px;border:1px solid var(--border);font-weight:500;transition:all .3s" id="last-refreshed">Not refreshed yet</span>
           <button class="refresh-btn" onclick="manualRefresh()">
             <svg fill="none" viewBox="0 0 14 14" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M12 2v4H8M2 12V8h4"/><path d="M2.05 9A5 5 0 1 0 3 4.5"/></svg>
             Refresh data
@@ -600,7 +688,7 @@ input,select,textarea{font-family:inherit;outline:none}
         <div class="sec-title"><span>Today's team snapshot</span></div>
         <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">
           <table class="emp-table">
-            <thead><tr><th>Employee</th><th>Tracked</th><th>Productivity</th><th>Questions</th><th>Status</th></tr></thead>
+            <thead><tr><th>Employee</th><th>Tracked</th><th>Productivity</th><th>Questions</th><th>Attendance</th><th>Status</th></tr></thead>
             <tbody id="emp-tbody-overview"></tbody>
           </table>
         </div>
@@ -757,6 +845,9 @@ function renderGreeting(prefix,name){
 let currentUser=null,selectedRole='employee',tracking=false;
 let timerInterval=null,totalSeconds=0,idleSeconds=0,activeSeconds=0,sessionCount=0;
 let activityLog=[],qHistory=[],chartInstances={};
+let lastActivity=Date.now(),isIdle=false,activeDomain=null;
+let awayStart=null,awayDomain=null;
+let attendanceStatus='present'; // 'present' | 'halfday' | 'leave' | 'off'
 const LS='pwtracker_emp_';
 const AV_COLS=['#6366f1','#059669','#d97706','#dc2626','#7c3aed','#0891b2','#ea580c','#16a34a','#db2777','#0d9488'];
 const WORK=['docs.google.com','drive.google.com','gmail.com','github.com','notion.so','figma.com','jira.atlassian.com','slack.com','meet.google.com','calendar.google.com','trello.com','linear.app','zoom.us','confluence.atlassian.com','asana.com','clickup.com','airtable.com','pw.live'];
@@ -768,6 +859,9 @@ const avC=e=>{let h=0;for(const c of e)h=((h<<5)-h)+c.charCodeAt(0);return AV_CO
 const catD=d=>{const c=d.toLowerCase().replace(/^www\./,'');if(DIST.some(x=>c.includes(x)))return'distract';if(WORK.some(x=>c.includes(x)))return'work';return'neutral'};
 const $=id=>document.getElementById(id);
 const setTxt=(id,v)=>{const el=$(id);if(el)el.textContent=v};
+
+/* Start BroadcastChannel immediately — before login */
+initBroadcastChannel();
 
 /* ── IST helpers ── */
 function getISTNow(){
@@ -790,12 +884,31 @@ function getWorkHoursEndMs(){
 
 function totalQuestionsToday(){return qHistory.reduce((s,e)=>s+(parseInt(e.count)||0),0)}
 
-/* ── EXACT formula: (tracked_mins + questions*5) * 100 / (7.5*60) ── */
+function isSunday(){ return getISTNow().getDay()===0; }
+
+/* Target minutes based on attendance */
+function getTargetMins(){
+  if(attendanceStatus==='leave'||attendanceStatus==='off')return 0;
+  if(attendanceStatus==='halfday')return 3.75*60; // 225 min
+  return 7.5*60; // 450 min full day
+}
+
+/* EXACT formula: (tracked_mins + questions×5) × 100 / target_mins */
 function computeScore(){
-  const TARGET_MINS=7.5*60; // 450
+  if(attendanceStatus==='leave'||attendanceStatus==='off')return null;
+  const target=getTargetMins();
+  if(target===0)return null;
   const trackedMins=totalSeconds/60;
-  const qBonus=totalQuestionsToday()*5; // every Q = +5 min
-  return Math.min(100,Math.round(((trackedMins+qBonus)*100)/TARGET_MINS));
+  const qBonus=totalQuestionsToday()*5;
+  return Math.min(100,Math.round(((trackedMins+qBonus)*100)/target));
+}
+
+/* attendance display helpers */
+function attendLabel(s){
+  return{present:'Present ✅',halfday:'Half Day 🕐',leave:'On Leave 🏖️',off:'Off / Sunday 🔴'}[s]||s;
+}
+function attendColor(s){
+  return{present:'var(--green)',halfday:'var(--amber)',leave:'var(--red)',off:'var(--text3)'}[s]||'var(--text3)';
 }
 
 /* ── Daily reset: if saved data is from a previous IST date, archive it ── */
@@ -820,14 +933,16 @@ function checkDailyReset(email){
 /* ── localStorage bridge ── */
 function saveEmp(){
   if(!currentUser||currentUser.role!=='employee')return;
-  try{
-    localStorage.setItem(LS+currentUser.email,JSON.stringify({
-      name:currentUser.name,email:currentUser.email,
-      tracking,totalSeconds,activeSeconds,idleSeconds,sessionCount,
-      activityLog,qHistory,totalQuestions:totalQuestionsToday(),
-      score:computeScore(),savedAt:Date.now(),savedDate:getTodayIST()
-    }));
-  }catch(e){}
+  const payload={
+    name:currentUser.name,email:currentUser.email,
+    tracking,totalSeconds,activeSeconds,idleSeconds,sessionCount,
+    activityLog,qHistory,totalQuestions:totalQuestionsToday(),
+    score:computeScore(),attendance:attendanceStatus,
+    savedAt:Date.now(),savedDate:getTodayIST()
+  };
+  try{localStorage.setItem(LS+currentUser.email,JSON.stringify(payload));}catch(e){}
+  /* Broadcast to other tabs (manager sees live updates) */
+  try{if(bc)bc.postMessage({type:'emp_state',email:currentUser.email,payload});}catch(_){}
 }
 function loadEmps(){
   const list=[];
@@ -934,6 +1049,8 @@ function loginSuccess(user, skipSave=false){
   currentUser=user;
   // Persist session so refresh doesn't log out
   if(!skipSave)try{sessionStorage.setItem(SS_KEY,JSON.stringify(user))}catch(_){}
+  // Store email for bookmarklet to reference
+  try{localStorage.setItem('pwtracker_logged_email',user.email);}catch(_){}
 
   $('login-screen').style.display='none';
   $('app').style.display='flex';
@@ -947,6 +1064,8 @@ function loginSuccess(user, skipSave=false){
   if(user.role==='employee'){
     // Check if it's a new IST day — archive yesterday if so
     checkDailyReset(user.email);
+    // Auto-detect Sunday → mark as Off
+    if(isSunday()){ attendanceStatus='off'; }
     // Only load from localStorage if not already restored by restoreSession
     if(!skipSave){
       try{
@@ -956,16 +1075,21 @@ function loginSuccess(user, skipSave=false){
           totalSeconds=d.totalSeconds||0;activeSeconds=d.activeSeconds||0;
           idleSeconds=d.idleSeconds||0;sessionCount=d.sessionCount||0;
           activityLog=d.activityLog||[];qHistory=d.qHistory||[];
+          attendanceStatus=d.attendance||attendanceStatus;
         }
       }catch(_){}
     }
     updateTimer();renderActivity();renderQHistory();
+    renderAttendanceCard();renderTabBarChart();
     $('emp-nav').classList.remove('hidden');$('mgr-nav').classList.add('hidden');
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
     $('page-tracker').classList.add('active');
     renderGreeting('emp-',user.name);
-    /* Start work-hours enforcement watchdog */
+    /* Start work-hours enforcement watchdog + idle detection */
     startWorkHoursWatchdog();
+    startIdleDetection();
+    setupAwayDetection();
+    setupBookmarkletReceiver();
   }else{
     $('emp-nav').classList.add('hidden');$('mgr-nav').classList.remove('hidden');
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -999,31 +1123,171 @@ function showPage(page,el){
   }
 }
 
-/* ═══ WORK HOURS WATCHDOG ═══ */
+/* ═══════════════════════════════════════════════
+   GLOBAL CLOCK — runs immediately, regardless of
+   login state, updates ALL ist-clock elements
+   ═══════════════════════════════════════════════ */
+function updateAllClocks(){
+  const ist=getISTNow();
+  const h=ist.getHours(),mi=ist.getMinutes(),s=ist.getSeconds();
+  const pad=n=>String(n).padStart(2,'0');
+  const tStr=`${pad(h)}:${pad(mi)}:${pad(s)} IST`;
+  /* Update every clock element on the page */
+  document.querySelectorAll('[id$="ist-clock"]').forEach(el=>el.textContent=tStr);
+}
+/* Start clock immediately — don't wait for login */
+setInterval(updateAllClocks,1000);
+updateAllClocks(); // populate instantly on load
+
+/* ═══════════════════════════════════════════════
+   CROSS-TAB SYNC via BroadcastChannel
+   All tabs of this app on same origin share data.
+   Employee tabs broadcast their state; manager &
+   other employee tabs receive it.
+   ═══════════════════════════════════════════════ */
+let bc=null;
+function initBroadcastChannel(){
+  try{
+    bc=new BroadcastChannel('pwtracker_channel');
+    bc.onmessage=e=>{
+      const msg=e.data;
+      if(!msg||!msg.type)return;
+      if(msg.type==='emp_state'&&msg.email&&msg.email.endsWith('@pw.live')){
+        try{localStorage.setItem(LS+msg.email,JSON.stringify(msg.payload));}catch(_){}
+        if(currentUser&&currentUser.role==='manager'){
+          manualRefresh();
+        }
+        /* Sync another tab of same employee (only if not actively tracking here) */
+        if(currentUser&&currentUser.role==='employee'&&currentUser.email===msg.email&&!tracking){
+          const d=msg.payload;
+          totalSeconds=d.totalSeconds||totalSeconds;
+          activeSeconds=d.activeSeconds||activeSeconds;
+          idleSeconds=d.idleSeconds||idleSeconds;
+          sessionCount=d.sessionCount||sessionCount;
+          activityLog=d.activityLog||activityLog;
+          qHistory=d.qHistory||qHistory;
+          attendanceStatus=d.attendance||attendanceStatus;
+          updateTimer();renderActivity();renderQHistory();renderAttendanceCard();
+        }
+      }
+      if(msg.type==='heartbeat'&&currentUser&&currentUser.role==='manager'){
+        setTxt('last-refreshed','🟢 Live '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'}));
+      }
+    };
+  }catch(_){bc=null;}
+
+  /* Fallback: listen to localStorage changes for same-browser cross-tab (Safari compat) */
+  window.addEventListener('storage',ev=>{
+    if(!ev.key||!ev.key.startsWith(LS))return;
+    if(currentUser&&currentUser.role==='manager')manualRefresh();
+  });
+}
+
+function bcBroadcast(type,extra={}){
+  if(!bc||!currentUser)return;
+  try{
+    bc.postMessage({type,email:currentUser.email,...extra});
+  }catch(_){}
+}
+
+/* ═══════════════════════════════════════════════
+   IDLE DETECTION
+   Tracks real user input. Tab hidden does NOT
+   immediately = idle; we give a 30s grace period
+   since the user could be reading in another tab.
+   ═══════════════════════════════════════════════ */
+let idleDetectInterval=null;
+let hiddenSince=null;
+const TAB_HIDDEN_GRACE=30*1000; // 30s grace before tab-hidden counts as idle
+
+function startIdleDetection(){
+  clearInterval(idleDetectInterval);
+  const resetActivity=()=>{
+    lastActivity=Date.now();
+    hiddenSince=null;
+    if(isIdle)wakeFromIdle();
+  };
+  ['mousemove','mousedown','keydown','touchstart','scroll','click','wheel']
+    .forEach(ev=>document.addEventListener(ev,resetActivity,{passive:true}));
+
+  document.addEventListener('visibilitychange',()=>{
+    if(document.hidden){
+      hiddenSince=Date.now();
+    }else{
+      hiddenSince=null;
+      resetActivity();
+    }
+  });
+
+  /* Poll every 5s for idle state */
+  idleDetectInterval=setInterval(()=>{
+    if(!tracking)return;
+    const now=Date.now();
+    /* Check keyboard/mouse idle */
+    const inputIdle=now-lastActivity>IDLE_THRESHOLD;
+    /* Check tab-hidden idle (only after grace period) */
+    const tabIdle=hiddenSince!==null&&(now-hiddenSince)>TAB_HIDDEN_GRACE;
+    if((inputIdle||tabIdle)&&!isIdle)goIdle();
+  },5000);
+}
+
+function goIdle(){
+  isIdle=true;
+  const pill=$('idle-indicator');if(pill)pill.style.display='flex';
+  const tag=$('tracking-status-tag');
+  if(tag){tag.className='tag tag-idle';tag.textContent='💤 Idle';}
+}
+function wakeFromIdle(){
+  isIdle=false;
+  const pill=$('idle-indicator');if(pill)pill.style.display='none';
+  const tag=$('tracking-status-tag');
+  if(tag&&tracking){tag.className='tag tag-live';tag.textContent='● Tracking';}
+}
+
+/* ═══════════════════════════════════════════════
+   WORK HOURS WATCHDOG
+   Also broadcasts heartbeat every 15s while active
+   ═══════════════════════════════════════════════ */
 let workWatchdog=null;
 function startWorkHoursWatchdog(){
   clearInterval(workWatchdog);
+  let heartbeatTick=0;
   workWatchdog=setInterval(()=>{
     const ist=getISTNow();
     const h=ist.getHours(),mi=ist.getMinutes(),s=ist.getSeconds();
-    /* Auto-stop at exactly 9 PM */
+
+    /* Auto-stop at 9 PM */
     if(h===21&&mi===0&&s===0&&tracking){
       stopTracking();
-      showWorkHoursBanner('🕘 It\'s 9:00 PM IST — tracking stopped. Great work today! Data saved.');
+      showWorkHoursBanner('🕘 9:00 PM IST — tracking stopped automatically. Great work today!');
     }
-    /* Midnight IST reset */
+    /* Midnight reset */
     if(h===0&&mi===0&&s===0&&currentUser){
       checkDailyReset(currentUser.email);
-      totalSeconds=0;activeSeconds=0;idleSeconds=0;sessionCount=0;activityLog=[];qHistory=[];
-      updateTimer();renderActivity();renderQHistory();
-      showWorkHoursBanner('🌅 New day started! Tracking resets at 9 AM IST. Have a great day!');
+      totalSeconds=0;activeSeconds=0;idleSeconds=0;sessionCount=0;
+      activityLog=[];qHistory=[];
+      attendanceStatus=isSunday()?'off':'present';
+      updateTimer();renderActivity();renderQHistory();renderAttendanceCard();
+      showWorkHoursBanner('🌅 New day! Tracker reset. Tracking opens at 9 AM IST.');
     }
-    /* Update IST clock in topbar */
-    const tStr=`${String(h).padStart(2,'0')}:${String(mi).padStart(2,'0')} IST`;
-    const el=$('ist-clock');if(el)el.textContent=tStr;
-    /* Warn 5 min before 9 PM */
+    /* 5-min warning */
     if(h===20&&mi===55&&s===0&&tracking){
-      showWorkHoursBanner('⏰ 5 minutes to end of work hours (9 PM IST). Tracking will auto-stop at 9 PM.');
+      showWorkHoursBanner('⏰ 5 minutes left! Tracking auto-stops at 9 PM IST.');
+    }
+    /* Broadcast heartbeat every 15s while tracking */
+    if(tracking){
+      heartbeatTick++;
+      if(heartbeatTick%15===0){
+        bcBroadcast('heartbeat');
+        /* Also push full state so other tabs stay in sync */
+        bcBroadcast('emp_state',{payload:{
+          name:currentUser.name,email:currentUser.email,
+          tracking,totalSeconds,activeSeconds,idleSeconds,sessionCount,
+          activityLog,qHistory,totalQuestions:totalQuestionsToday(),
+          score:computeScore(),attendance:attendanceStatus,
+          savedAt:Date.now(),savedDate:getTodayIST()
+        }});
+      }
     }
   },1000);
 }
@@ -1038,50 +1302,251 @@ function showWorkHoursBanner(msg){
 function toggleTracking(){if(!tracking)startTracking();else stopTracking()}
 
 function startTracking(){
+  if(attendanceStatus==='leave'){showWorkHoursBanner('🏖️ You are marked On Leave today. Tracking is disabled.');return;}
+  if(attendanceStatus==='off'){showWorkHoursBanner('🔴 Today is marked as Off. Tracking is disabled.');return;}
   if(!isWithinWorkHours()){
-    const ist=getISTNow();
-    const h=ist.getHours();
+    const ist=getISTNow();const h=ist.getHours();
     const msg=h<9?'Tracking starts at 9:00 AM IST.':'Tracking is only available 9 AM – 9 PM IST. See you tomorrow!';
-    showWorkHoursBanner('⛔ '+msg);
-    return;
+    showWorkHoursBanner('⛔ '+msg);return;
   }
-  tracking=true;sessionCount++;
+  tracking=true;sessionCount++;lastActivity=Date.now();isIdle=false;hiddenSince=null;
   $('track-btn').className='track-btn stop';setTxt('track-btn-text','Stop tracking');
   $('timer-display').classList.add('running');
-  setTxt('timer-label','Session active — log your domains & questions below');
+  setTxt('timer-label','Session active — log your tab domains below');
   $('pulse-dot').classList.add('live');$('pill-live').classList.remove('hidden');
   $('tracking-status-tag').className='tag tag-live';$('tracking-status-tag').textContent='● Tracking';
-  $('domain-logger').classList.remove('hidden');
+  const ttc=$('tab-tracker-card');if(ttc)ttc.classList.remove('hidden');
   timerInterval=setInterval(()=>{
     if(!isWithinWorkHours()){stopTracking();return;}
-    totalSeconds++;activeSeconds++;
+    totalSeconds++;
+    if(isIdle){idleSeconds++;}else{activeSeconds++;}
+    /* Auto-accumulate time on current active domain if one is "pinned" */
+    if(activeDomain&&!isIdle){
+      const entry=activityLog.find(a=>a.domain===activeDomain);
+      if(entry){entry.timeSeconds=(entry.timeSeconds||0)+1;entry.time=secToMin(entry.timeSeconds);}
+      if(totalSeconds%15===0)renderTabBarChart();
+    }
     updateTimer();
-    if(totalSeconds%10===0)saveEmp();
+    if(totalSeconds%5===0)saveEmp();
   },1000);
   saveEmp();
 }
 function stopTracking(){
   tracking=false;clearInterval(timerInterval);timerInterval=null;
+  activeDomain=null;
   $('track-btn').className='track-btn start';setTxt('track-btn-text','Start tracking');
   $('timer-display').classList.remove('running');
   setTxt('timer-label','Session stopped — data saved ✓');
   $('pulse-dot').classList.remove('live');$('pill-live').classList.add('hidden');
   $('tracking-status-tag').className='tag tag-idle';$('tracking-status-tag').textContent='● Idle';
-  $('domain-logger').classList.add('hidden');
+  renderTabBarChart();
   saveEmp();
 }
 
-function logDomain(){
-  if(!tracking){alert('Start tracking first.');return}
+/* ═══ TAB TIME TRACKING ═══ */
+let activeDomain=null; // currently "pinned" domain being auto-accumulated
+let awayStart=null;    // when user left tracker tab
+let awayDomain=null;   // domain received from bookmarklet while away
+const secToMin=s=>{
+  const m=Math.round(s/60);
+  return m+'m';
+};
+
+function logDomain(domainOverride,minsOverride,catOverride){
   const inp=$('domain-input');
-  const raw=inp.value.trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/.*/,'');
+  const rawVal=domainOverride||(inp?inp.value.trim():'');
+  const raw=rawVal.toLowerCase().replace(/^https?:\/\//,'').replace(/^www\./,'').replace(/\/.*/,'').split('?')[0].trim();
   if(!raw)return;
-  const cat=$('cat-select').value||catD(raw);
+  const minsEl=$('domain-mins');
+  const mins=minsOverride||(minsEl&&minsEl.value?parseInt(minsEl.value):null);
+  const catEl=$('cat-select');
+  const cat=catOverride||(catEl?catEl.value:null)||catD(raw);
+  const seconds=mins?mins*60:60; // default 1 min if no input
+
   const existing=activityLog.find(a=>a.domain===raw);
-  if(existing)existing.time=(parseInt(existing.time)||0)+1+'m';
-  else activityLog.push({domain:raw,cat,time:'1m'});
-  inp.value='';$('cat-select').value='work';
-  renderActivity();saveEmp();
+  if(existing){
+    existing.timeSeconds=(existing.timeSeconds||0)+seconds;
+    existing.time=secToMin(existing.timeSeconds);
+    existing.cat=cat; // update category in case user changed it
+  }else{
+    activityLog.push({domain:raw,cat,timeSeconds:seconds,time:secToMin(seconds)});
+  }
+  /* Set as active domain for auto-accumulation */
+  activeDomain=raw;
+  if(inp)inp.value='';
+  if(minsEl)minsEl.value='';
+  if(catEl)catEl.value='work';
+  renderActivity();renderTabBarChart();saveEmp();
+}
+
+function logAwayTime(){
+  const inp=$('away-domain-input');
+  const catSel=$('away-cat-select');
+  const raw=(inp?inp.value.trim():'').toLowerCase().replace(/^https?:\/\//,'').replace(/^www\./,'').replace(/\/.*/,'');
+  if(!raw){if(inp)inp.focus();return;}
+  const awayDur=awayStart?Math.round((Date.now()-awayStart)/1000):60;
+  const existing=activityLog.find(a=>a.domain===raw);
+  if(existing){
+    existing.timeSeconds=(existing.timeSeconds||0)+awayDur;
+    existing.time=secToMin(existing.timeSeconds);
+  }else{
+    activityLog.push({domain:raw,cat:catSel?catSel.value:catD(raw),timeSeconds:awayDur,time:secToMin(awayDur)});
+  }
+  activeDomain=raw;
+  dismissAwayToast();
+  renderActivity();renderTabBarChart();saveEmp();
+}
+
+function dismissAwayToast(){
+  const t=$('away-toast');if(t)t.style.display='none';
+  awayStart=null;awayDomain=null;
+}
+
+function showAwayToast(durationSeconds,suggestedDomain){
+  const t=$('away-toast');if(!t)return;
+  const m=Math.round(durationSeconds/60);
+  setTxt('away-duration',m>0?m+'m':'<1m');
+  const inp=$('away-domain-input');
+  if(inp){
+    inp.value=suggestedDomain||awayDomain||'';
+    if(!inp.value)inp.placeholder='e.g. gmail.com, whatsapp.com…';
+  }
+  /* Auto-detect category */
+  const cat=$('away-cat-select');
+  if(cat&&(suggestedDomain||awayDomain)){
+    cat.value=catD(suggestedDomain||awayDomain||'');
+  }
+  t.style.display='block';
+  setTimeout(()=>{if(inp)inp.focus();},80);
+}
+
+/* Render horizontal bar chart of tab time */
+function renderTabBarChart(){
+  const chart=$('tab-bar-chart');if(!chart)return;
+  if(!activityLog.length){
+    chart.innerHTML='<div style="font-size:12px;color:var(--text3);padding:4px 0">No tabs logged yet. Log a domain above to see breakdown.</div>';
+    setTxt('tab-total-badge','0 tabs logged');
+    return;
+  }
+  const total=activityLog.reduce((s,a)=>s+(a.timeSeconds||0),0);
+  const sorted=[...activityLog].sort((a,b)=>(b.timeSeconds||0)-(a.timeSeconds||0));
+  const catColor={work:'var(--green)',neutral:'var(--amber)',distract:'var(--red)'};
+  const catBg={work:'var(--greenbg)',neutral:'var(--amberbg)',distract:'var(--redbg)'};
+  const catBorder={work:'var(--greenborder)',neutral:'var(--amberborder)',distract:'var(--redborder)'};
+
+  chart.innerHTML=sorted.map(a=>{
+    const pct=total>0?Math.round(((a.timeSeconds||0)/total)*100):0;
+    const isActive=a.domain===activeDomain;
+    return`<div style="margin-bottom:9px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:7px;height:7px;border-radius:50%;background:${catColor[a.cat]||'#888'};flex-shrink:0${isActive?';box-shadow:0 0 0 3px rgba(99,102,241,.3)':''}"></div>
+          <span style="font-size:12px;font-weight:${isActive?'700':'500'};color:var(--text)">${a.domain}</span>
+          ${isActive?'<span style="background:var(--accentbg);color:var(--accent);font-size:10px;padding:1px 6px;border-radius:10px;font-weight:700">● active</span>':''}
+          <span style="font-size:10px;padding:2px 7px;border-radius:8px;background:${catBg[a.cat]||'var(--bg3)'};color:${catColor[a.cat]||'var(--text3)'};border:1px solid ${catBorder[a.cat]||'var(--border)'};">${a.cat==='distract'?'Distracting':a.cat==='work'?'Work':'Neutral'}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:12px;font-weight:700;color:var(--text)">${a.time}</span>
+          <span style="font-size:11px;color:var(--text3);min-width:32px;text-align:right">${pct}%</span>
+          <button onclick="setActiveTab('${a.domain}')" title="Set as current active tab" style="background:${isActive?'var(--accent)':'var(--bg3)'};color:${isActive?'white':'var(--text3)'};border:1px solid ${isActive?'var(--accent)':'var(--border)'};border-radius:6px;padding:2px 8px;font-size:10px;cursor:pointer;font-weight:600">${isActive?'✓ On':'Switch'}</button>
+          <button onclick="removeTab('${a.domain}')" title="Remove" style="background:var(--redbg);color:var(--red);border:1px solid var(--redborder);border-radius:6px;padding:2px 6px;font-size:10px;cursor:pointer">✕</button>
+        </div>
+      </div>
+      <div style="height:8px;background:var(--bg4);border-radius:4px;overflow:hidden">
+        <div style="width:${pct}%;height:100%;background:${catColor[a.cat]||'var(--accent)'};border-radius:4px;transition:width .6s ease"></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  setTxt('tab-total-badge',`${sorted.length} tab${sorted.length>1?'s':''} · ${secToMin(total)} total`);
+}
+
+function setActiveTab(domain){
+  activeDomain=activeDomain===domain?null:domain;
+  renderTabBarChart();
+}
+function removeTab(domain){
+  activityLog=activityLog.filter(a=>a.domain!==domain);
+  if(activeDomain===domain)activeDomain=null;
+  renderActivity();renderTabBarChart();saveEmp();
+}
+
+/* ── Away detection: when user leaves tracker tab, start timing ── */
+function setupAwayDetection(){
+  document.addEventListener('visibilitychange',()=>{
+    if(document.hidden){
+      if(tracking)awayStart=Date.now();
+    }else{
+      if(awayStart&&tracking){
+        const awayFor=Math.round((Date.now()-awayStart)/1000);
+        if(awayFor>10){ // only prompt if away >10s
+          showAwayToast(awayFor,awayDomain);
+        }
+        awayStart=null;
+      }
+    }
+  });
+}
+
+/* ── Bookmarklet receiver: listens for tab reports from bookmarklet ── */
+function setupBookmarkletReceiver(){
+  /* Listen on BroadcastChannel for bookmarklet messages */
+  if(bc){
+    const origHandler=bc.onmessage;
+    bc.onmessage=e=>{
+      if(origHandler)origHandler(e);
+      const msg=e.data;
+      if(msg&&msg.type==='tab_report'&&msg.domain){
+        awayDomain=msg.domain.toLowerCase().replace(/^www\./,'');
+        if(!tracking)return;
+        if(document.hidden){
+          /* Store it, show when user comes back */
+        }else{
+          /* User is on the tracker — auto-fill domain input */
+          const inp=$('domain-input');
+          if(inp){inp.value=awayDomain;inp.focus();}
+          const cat=$('cat-select');if(cat)cat.value=catD(awayDomain);
+          showBookmarkletReceivedBanner(awayDomain);
+        }
+      }
+    };
+  }
+  /* Also listen on localStorage for same-browser (Safari compat) */
+  window.addEventListener('storage',ev=>{
+    if(ev.key==='pwtracker_tab_ping'&&ev.newValue){
+      try{
+        const d=JSON.parse(ev.newValue);
+        if(d.email===currentUser?.email&&d.domain){
+          awayDomain=d.domain.toLowerCase().replace(/^www\./,'');
+          if(tracking){
+            if(!document.hidden){
+              const inp=$('domain-input');if(inp){inp.value=awayDomain;inp.focus();}
+              const cat=$('cat-select');if(cat)cat.value=catD(awayDomain);
+              showBookmarkletReceivedBanner(awayDomain);
+            }
+          }
+        }
+      }catch(_){}
+    }
+  });
+}
+
+function showBookmarkletReceivedBanner(domain){
+  const b=$('work-hours-banner');if(!b)return;
+  b.innerHTML=`📌 Bookmarklet received: <b>${domain}</b> — auto-filled in domain field below`;
+  b.style.background='var(--accentbg)';b.style.borderColor='var(--accentbg2)';b.style.color='var(--accent)';
+  b.style.display='block';
+  clearTimeout(b._t);b._t=setTimeout(()=>{
+    b.style.display='none';
+    b.style.background='';b.style.borderColor='';b.style.color='';
+  },5000);
+}
+
+function showBookmarkletModal(){
+  const modal=$('bookmarklet-modal');if(modal)modal.style.display='flex';
+}
+function closeBookmarkletModal(){
+  const modal=$('bookmarklet-modal');if(modal)modal.style.display='none';
 }
 
 /* ═══ QUESTIONS ═══ */
@@ -1109,25 +1574,73 @@ function renderQHistory(){
     </div>`).join('')+`<div class="q-total-badge">Total: ${total}</div>`;
 }
 
+/* ── Attendance card renderer ── */
+function renderAttendanceCard(){
+  ['present','halfday','leave','off'].forEach(s=>{
+    const b=$(`att-btn-${s}`);if(!b)return;
+    const active=attendanceStatus===s;
+    b.style.background=active?attendColor(s):'var(--bg3)';
+    b.style.color=active?'#fff':'var(--text2)';
+    b.style.borderColor=active?attendColor(s):'var(--border)';
+    b.style.fontWeight=active?'700':'500';
+  });
+  const sl=$('att-status-label');
+  if(sl){sl.textContent=attendLabel(attendanceStatus);sl.style.color=attendColor(attendanceStatus);}
+  const tl=$('att-target-label');
+  if(tl){
+    const t=getTargetMins();
+    tl.textContent=t>0?(t===225?'Target: 3h 45m (Half Day)':'Target: 7.5h (Full Day)'):'No productivity target today';
+  }
+  const tb=$('track-btn');
+  if(tb){
+    const blocked=attendanceStatus==='leave'||attendanceStatus==='off';
+    tb.style.opacity=blocked?'.4':'1';
+    tb.style.cursor=blocked?'not-allowed':'pointer';
+    tb.title=blocked?attendLabel(attendanceStatus)+' — tracking disabled':'';
+  }
+}
+
+function setAttendance(s){
+  if(isSunday()&&s!=='off'){showWorkHoursBanner('🔴 Today is Sunday — automatically Off.');return;}
+  if(tracking&&(s==='leave'||s==='off'))stopTracking();
+  attendanceStatus=s;
+  renderAttendanceCard();updateTimer();saveEmp();
+}
+
 function updateTimer(){
   const h=Math.floor(totalSeconds/3600),m=Math.floor((totalSeconds%3600)/60),s=totalSeconds%60;
   setTxt('timer-display',`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`);
   const aH=Math.floor(activeSeconds/3600),aM=Math.floor((activeSeconds%3600)/60);
   setTxt('pill-active',aH>0?`${aH}h ${aM}m`:`${Math.floor(activeSeconds/60)}m`);
-  setTxt('pill-idle',Math.floor(idleSeconds/60)+'m');
+  setTxt('pill-idle',fmtS(idleSeconds));
   setTxt('stat-total',fmtS(totalSeconds));
-  setTxt('stat-idle',Math.floor(idleSeconds/60)+'m');
+  setTxt('stat-idle',fmtS(idleSeconds));
   setTxt('trans-total',fmtS(totalSeconds));
   setTxt('trans-sessions',sessionCount);
+  /* idle % */
+  const idlePct=totalSeconds>0?Math.round((idleSeconds/totalSeconds)*100):0;
+  const ipEl=$('stat-idle-sub');if(ipEl)ipEl.textContent=`${idlePct}% of session`;
+  /* score */
   const sc=computeScore();
-  setTxt('stat-score',sc+'%');
-  /* progress bar uses same formula */
-  const pct=sc;
+  const scEl=$('stat-score');
+  if(sc===null){
+    setTxt('stat-score',attendanceStatus==='leave'?'Leave':attendanceStatus==='off'?'Off':'–');
+    if(scEl)scEl.style.color='var(--text3)';
+  }else{
+    setTxt('stat-score',sc+'%');
+    if(scEl)scEl.style.color=sc>=80?'var(--green)':sc>=60?'var(--amber)':'var(--red)';
+  }
+  /* progress bar */
+  const pct=sc||0;
   const bar=$('target-bar');if(bar)bar.style.width=Math.min(100,pct)+'%';
   const lbl=$('target-pct-label');
-  const trackedMins=Math.round(totalSeconds/60);
-  const qBonus=totalQuestionsToday()*5;
-  if(lbl)lbl.textContent=`${trackedMins}m tracked + ${qBonus}m (questions bonus) = ${pct}% of 7.5h target`;
+  if(lbl){
+    if(attendanceStatus==='leave'||attendanceStatus==='off'){lbl.textContent=attendLabel(attendanceStatus);}
+    else{
+      const tm=Math.round(totalSeconds/60),qb=totalQuestionsToday()*5,tgt=getTargetMins();
+      lbl.textContent=`${tm}m tracked + ${qb}m Q-bonus = ${pct}% of ${tgt}m target`;
+    }
+  }
 }
 
 function renderActivity(){
@@ -1254,16 +1767,22 @@ function renderTables(emps){
 
   /* Overview table — compact */
   const r1=e=>{
-    const col=avC(e.email),ini=avI(e.name),sc=e.score||0,q=e.totalQuestions||0,isAct=e.tracking;
-    const scC=sc>=80?'var(--green)':sc>=60?'var(--amber)':'var(--red)';
+    const col=avC(e.email),ini=avI(e.name),sc=e.score,q=e.totalQuestions||0;
+    const att=e.attendance||'present';
+    const isAct=e.tracking&&att!=='leave'&&att!=='off';
+    const scC=sc==null?'var(--text3)':sc>=80?'var(--green)':sc>=60?'var(--amber)':'var(--red)';
+    const scTxt=sc==null?attendLabel(att):sc+'%';
     return`<tr>
       <td><div class="emp-name"><div class="emp-av" style="background:${col}">${ini}</div><span style="font-weight:600">${e.name}</span></div></td>
-      <td style="color:var(--text2);font-weight:500">${fmtS(e.totalSeconds||0)}</td>
+      <td style="color:var(--text2);font-weight:500">${att==='leave'||att==='off'?'–':fmtS(e.totalSeconds||0)}</td>
       <td><div style="display:flex;align-items:center;gap:8px">
-        <span style="color:${scC};font-weight:700;font-size:13px">${sc}%</span>
-        <div class="score-bar" style="width:70px"><div class="score-fill" style="width:${Math.min(100,sc)}%;background:${scC}"></div></div>
+        <span style="color:${scC};font-weight:700;font-size:13px">${scTxt}</span>
+        ${sc!=null?`<div class="score-bar" style="width:70px"><div class="score-fill" style="width:${Math.min(100,sc)}%;background:${scC}"></div></div>`:''}
       </div></td>
       <td><span style="background:var(--purplebg);color:var(--purple);border:1px solid #ddd6fe;border-radius:20px;padding:3px 11px;font-size:12px;font-weight:700">${q} Qs</span></td>
+      <td><span style="background:${att==='present'?'var(--greenbg)':att==='halfday'?'var(--amberbg)':att==='leave'?'var(--redbg)':'var(--bg3)'};
+                       color:${attendColor(att)};border:1px solid ${att==='present'?'var(--greenborder)':att==='halfday'?'var(--amberborder)':att==='leave'?'var(--redborder)':'var(--border)'};
+                       border-radius:20px;padding:3px 11px;font-size:11px;font-weight:700">${attendLabel(att)}</span></td>
       <td><span class="badge ${isAct?'cat-work':'cat-neutral'}">${isAct?'● Active':'○ Away'}</span></td>
     </tr>`;
   };
@@ -1274,27 +1793,36 @@ function renderTables(emps){
   const catBorder={'work':'var(--greenborder)','neutral':'var(--amberborder)','distract':'var(--redborder)'};
 
   const r2=e=>{
-    const col=avC(e.email),ini=avI(e.name),sc=e.score||0,q=e.totalQuestions||0,isAct=e.tracking;
-    const scC=sc>=80?'var(--green)':sc>=60?'var(--amber)':'var(--red)';
+    const col=avC(e.email),ini=avI(e.name),sc=e.score,q=e.totalQuestions||0;
+    const att=e.attendance||'present';
+    const isAct=e.tracking&&att!=='leave'&&att!=='off';
+    const scC=sc==null?'var(--text3)':sc>=80?'var(--green)':sc>=60?'var(--amber)':'var(--red)';
+    const scTxt=sc==null?attendLabel(att):sc+'%';
     const uid=e.email.replace(/[@.]/g,'_');
+    const totalMin=Math.round((e.totalSeconds||0)/60);
+    const idleMin=Math.round((e.idleSeconds||0)/60);
+    const activeMin=totalMin-idleMin;
+    const idlePct=totalMin>0?Math.round((idleMin/totalMin)*100):0;
     /* Domain breakdown rows */
     const domainRows=(e.activityLog&&e.activityLog.length)?[...e.activityLog]
       .sort((a,b)=>(parseInt(b.time)||0)-(parseInt(a.time)||0))
       .map(a=>`
-        <div style="display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:7px;background:${catBg[a.cat]||'var(--bg3)'};border:1px solid ${catBorder[a.cat]||'var(--border)'};margin-bottom:5px">
+        <div style="display:flex;align-items:center;gap:10px;padding:7px 12px;border-radius:8px;background:${catBg[a.cat]||'var(--bg3)'};border:1px solid ${catBorder[a.cat]||'var(--border)'};margin-bottom:5px">
           <div style="width:7px;height:7px;border-radius:50%;background:${catC[a.cat]||'#888'};flex-shrink:0"></div>
           <span style="flex:1;font-size:12px;font-weight:600;color:var(--text)">${a.domain}</span>
-          <span style="font-size:11px;color:${catC[a.cat]||'var(--text3)'};font-weight:700;background:white;padding:2px 8px;border-radius:5px">${a.time}</span>
-          <span style="font-size:10px;color:${catC[a.cat]||'var(--text3)'};">${a.cat==='distract'?'Distracting':a.cat[0].toUpperCase()+a.cat.slice(1)}</span>
+          <span style="font-size:11px;color:${catC[a.cat]||'var(--text3)'};font-weight:700;background:white;padding:2px 8px;border-radius:5px;border:1px solid ${catBorder[a.cat]||'var(--border)'}">${a.time}</span>
+          <span style="font-size:10px;color:${catC[a.cat]||'var(--text3)'};">${a.cat==='distract'?'Distracting':a.cat==='work'?'Work':'Neutral'}</span>
         </div>`).join('')
       :'<div style="font-size:12px;color:var(--text3);padding:8px">No domains logged yet.</div>';
 
-    /* Q history in expand */
     const qRows=(e.qHistory&&e.qHistory.length)?e.qHistory.map(q=>`
         <span style="background:var(--purplebg);border:1px solid #ddd6fe;border-radius:14px;padding:3px 10px;font-size:11px;color:var(--purple);font-weight:700;margin:2px;display:inline-flex;gap:5px;align-items:center">
           <b>${q.count}</b> ${q.note} <span style="opacity:.55">${q.time}</span>
         </span>`).join('')
       :'<span style="font-size:12px;color:var(--text3)">None logged yet.</span>';
+
+    const tgtMin=att==='halfday'?225:att==='leave'||att==='off'?0:450;
+    const qBonus=(e.totalQuestions||0)*5;
 
     return`
     <tr style="cursor:pointer" onclick="toggleEmpRow('${uid}')">
@@ -1304,19 +1832,25 @@ function renderTables(emps){
           <div style="font-size:11px;color:var(--text3)">${e.email}</div>
         </div>
       </div></td>
-      <td style="color:var(--accent);font-weight:700">${fmtS(e.totalSeconds||0)}</td>
+      <td>
+        <div style="font-weight:700;color:var(--accent)">${att==='leave'||att==='off'?'–':fmtS(e.totalSeconds||0)}</div>
+        ${totalMin>0?`<div style="font-size:10px;color:var(--text3)">${activeMin}m active · <span style="color:var(--amber)">${idleMin}m idle (${idlePct}%)</span></div>`:''}
+      </td>
       <td><div style="display:flex;align-items:center;gap:8px">
-        <span style="color:${scC};font-weight:700">${sc}%</span>
-        <div class="score-bar" style="width:55px"><div class="score-fill" style="width:${Math.min(100,sc)}%;background:${scC}"></div></div>
+        <span style="color:${scC};font-weight:700">${scTxt}</span>
+        ${sc!=null?`<div class="score-bar" style="width:55px"><div class="score-fill" style="width:${Math.min(100,sc)}%;background:${scC}"></div></div>`:''}
       </div></td>
       <td><span style="background:var(--purplebg);color:var(--purple);border:1px solid #ddd6fe;border-radius:20px;padding:3px 11px;font-size:12px;font-weight:700">${q} Qs</span></td>
       <td>${e.activityLog&&e.activityLog.length?`<span style="font-size:11px;color:var(--accent);font-weight:600">${e.activityLog.length} domain${e.activityLog.length>1?'s':''}</span>`:'<span style="color:var(--text3);font-size:12px">–</span>'}</td>
+      <td><span style="background:${att==='present'?'var(--greenbg)':att==='halfday'?'var(--amberbg)':att==='leave'?'var(--redbg)':'var(--bg3)'};
+                       color:${attendColor(att)};border-radius:20px;padding:3px 9px;font-size:11px;font-weight:700">${attendLabel(att)}</span></td>
       <td><span class="badge ${isAct?'cat-work':'cat-neutral'}">${isAct?'● Active':'○ Away'}</span></td>
-      <td style="color:var(--accent2);font-size:12px">▼ expand</td>
+      <td style="color:var(--accent2);font-size:11px;white-space:nowrap">▼ details</td>
     </tr>
     <tr id="emp-expand-${uid}" style="display:none">
-      <td colspan="7" style="background:var(--bg3);padding:16px 24px;border-top:2px solid var(--accentbg2)">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <td colspan="8" style="background:var(--bg3);padding:18px 24px;border-top:2px solid var(--accentbg2)">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px">
+          <!-- Domain breakdown -->
           <div>
             <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px">
               <span style="background:var(--accentbg);color:var(--accent);border-radius:5px;padding:2px 8px;font-size:10px">DOMAINS</span>
@@ -1324,18 +1858,48 @@ function renderTables(emps){
             </div>
             ${domainRows}
           </div>
+          <!-- Time breakdown -->
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px">
+              <span style="background:var(--amberbg);color:var(--amber);border-radius:5px;padding:2px 8px;font-size:10px">TIME</span>
+              Active vs Idle
+            </div>
+            <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:12px 14px;margin-bottom:8px">
+              <div style="display:flex;justify-content:space-between;margin-bottom:5px;font-size:12px">
+                <span style="color:var(--text2)">Total tracked</span><b style="color:var(--accent)">${fmtS(e.totalSeconds||0)}</b>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:5px;font-size:12px">
+                <span style="color:var(--text2)">Active time</span><b style="color:var(--green)">${fmtS((e.activeSeconds||0))}</b>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:12px">
+                <span style="color:var(--text2)">Idle time</span><b style="color:var(--amber)">${fmtS(e.idleSeconds||0)} (${idlePct}%)</b>
+              </div>
+              <div style="height:8px;background:var(--bg4);border-radius:4px;overflow:hidden;display:flex">
+                <div style="width:${100-idlePct}%;background:var(--green);border-radius:4px 0 0 4px;transition:width .5s"></div>
+                <div style="width:${idlePct}%;background:var(--amber);border-radius:0 4px 4px 0"></div>
+              </div>
+              <div style="display:flex;gap:12px;margin-top:6px;font-size:10px;color:var(--text3)">
+                <span style="color:var(--green)">■ Active ${100-idlePct}%</span>
+                <span style="color:var(--amber)">■ Idle ${idlePct}%</span>
+              </div>
+            </div>
+            <div style="padding:10px 14px;background:${att==='present'?'var(--greenbg)':att==='halfday'?'var(--amberbg)':att==='leave'?'var(--redbg)':'var(--bg3)'};border:1px solid ${att==='present'?'var(--greenborder)':att==='halfday'?'var(--amberborder)':att==='leave'?'var(--redborder)':'var(--border)'};border-radius:var(--radius2);font-size:12px">
+              <b style="color:${attendColor(att)}">${attendLabel(att)}</b>
+              ${tgtMin>0?`<span style="color:var(--text3);margin-left:6px">Target: ${tgtMin}m</span>`:'<span style="color:var(--text3);margin-left:6px">No tracking target</span>'}
+            </div>
+          </div>
+          <!-- Questions & score -->
           <div>
             <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px">
               <span style="background:var(--purplebg);color:var(--purple);border-radius:5px;padding:2px 8px;font-size:10px">QUESTIONS</span>
-              ${q} questions (${q*5}m bonus added to productivity)
+              ${q} curated (+${qBonus}m bonus)
             </div>
-            <div style="display:flex;flex-wrap:wrap;gap:5px">${qRows}</div>
-            <div style="margin-top:12px;padding:10px 14px;background:linear-gradient(135deg,var(--purplebg),var(--accentbg));border:1px solid var(--accentbg2);border-radius:var(--radius2);font-size:12px;color:var(--text2)">
-              <b style="color:var(--text)">Score breakdown:</b>
-              ${Math.round((e.totalSeconds||0)/60)}m tracked
-              + ${q*5}m question bonus
-              = <b style="color:var(--accent)">${sc}%</b>
-              of 450m (7.5h target)
+            <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px">${qRows}</div>
+            <div style="padding:12px 14px;background:linear-gradient(135deg,var(--purplebg),var(--accentbg));border:1px solid var(--accentbg2);border-radius:var(--radius2);font-size:12px;color:var(--text2)">
+              <b style="color:var(--text);display:block;margin-bottom:4px">Productivity formula:</b>
+              <span style="font-family:monospace;font-size:11px;background:white;padding:3px 8px;border-radius:4px;display:block;color:var(--text)">
+                (${totalMin}m + ${qBonus}m) × 100 ÷ ${tgtMin||450}m = <b style="color:var(--accent)">${scTxt}</b>
+              </span>
             </div>
           </div>
         </div>
@@ -1446,6 +2010,60 @@ function initCharts(){
     <div style="font-size:11px;color:var(--text3);text-align:center;margin-top:12px">Only @pw.live accounts are permitted access</div>
   </div>
 </div>
+
+<!-- ═══ BOOKMARKLET MODAL ═══ -->
+<div id="bookmarklet-modal" style="display:none;position:fixed;inset:0;z-index:1000;align-items:center;justify-content:center;background:rgba(15,15,30,.5);backdrop-filter:blur(8px)" onclick="if(event.target===this)closeBookmarkletModal()">
+  <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:36px;width:100%;max-width:520px;box-shadow:var(--shadow2);position:relative">
+    <button onclick="closeBookmarkletModal()" style="position:absolute;top:14px;right:14px;background:var(--bg3);border:1px solid var(--border);border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:16px;cursor:pointer">×</button>
+
+    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:20px;margin-bottom:6px;color:var(--text)">📌 Tab Logger Bookmarklet</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:20px;line-height:1.6">
+      A <b>bookmarklet</b> is a bookmark that runs code. Drag the button below to your Chrome bookmarks bar. Then, while on any browser tab (Gmail, WhatsApp, etc.), just <b>click it once</b> — it instantly sends that tab's domain to your PW Tracker.
+    </div>
+
+    <div style="background:var(--accentbg);border:1.5px dashed var(--accentbg2);border-radius:var(--radius2);padding:20px;text-align:center;margin-bottom:20px">
+      <div style="font-size:12px;color:var(--text3);margin-bottom:12px;font-weight:600">⬇ DRAG THIS TO YOUR BOOKMARKS BAR ⬇</div>
+      <a id="bookmarklet-link" href="" style="display:inline-block;background:linear-gradient(135deg,var(--accent),var(--purple));color:white;padding:12px 24px;border-radius:40px;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;text-decoration:none;box-shadow:0 4px 14px rgba(79,70,229,.3);cursor:grab">📌 Log This Tab → PW Tracker</a>
+    </div>
+
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius2);padding:14px 16px;margin-bottom:16px">
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px">How it works:</div>
+      <ol style="padding-left:18px;font-size:12px;color:var(--text2);line-height:2">
+        <li>Drag the button above to your Chrome bookmarks bar</li>
+        <li>Open any tab (Gmail, WhatsApp, GitHub, etc.)</li>
+        <li>Click <b>"Log This Tab → PW Tracker"</b> in your bookmarks bar</li>
+        <li>The domain is instantly sent to your tracker tab ✓</li>
+      </ol>
+    </div>
+
+    <div style="background:var(--amberbg);border:1px solid var(--amberborder);border-radius:var(--radius2);padding:12px 14px;font-size:12px;color:var(--amber)">
+      <b>Why a bookmarklet?</b> Browsers block webpages from reading other tabs' URLs for privacy reasons. A bookmarklet runs <em>inside</em> the tab you click it on — so it can read that tab's URL and broadcast it to the tracker. No extension install needed.
+    </div>
+  </div>
+</div>
+
+<script>
+/* Build the bookmarklet href dynamically with the channel name */
+(function buildBookmarklet(){
+  const code=`(function(){
+    try{
+      var d=window.location.hostname.replace(/^www\./,'');
+      var email=localStorage.getItem('pwtracker_logged_email')||'';
+      var bc=new BroadcastChannel('pwtracker_channel');
+      bc.postMessage({type:'tab_report',domain:d,email:email});
+      bc.close();
+      localStorage.setItem('pwtracker_tab_ping',JSON.stringify({domain:d,email:email,ts:Date.now()}));
+      var b=document.createElement('div');
+      b.style='position:fixed;top:16px;right:16px;z-index:99999;background:#4f46e5;color:white;padding:10px 18px;border-radius:20px;font-family:sans-serif;font-size:13px;font-weight:bold;box-shadow:0 4px 14px rgba(79,70,229,.4)';
+      b.textContent='✓ '+d+' sent to PW Tracker';
+      document.body.appendChild(b);
+      setTimeout(function(){b.remove()},3000);
+    }catch(e){alert('PW Tracker: '+e.message);}
+  })()`;
+  const link=document.getElementById('bookmarklet-link');
+  if(link)link.href='javascript:'+encodeURIComponent(code);
+})();
+</script>
 
 </body>
 </html>
