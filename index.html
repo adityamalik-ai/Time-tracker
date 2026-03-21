@@ -382,9 +382,12 @@ input,select,textarea{font-family:inherit;outline:none}
         <span class="topbar-title">Time tracker</span>
         <div class="topbar-actions">
           <span class="tag tag-idle" id="tracking-status-tag">● Idle</span>
+          <span style="font-size:11px;color:var(--text3);background:var(--bg3);padding:3px 10px;border-radius:20px;border:1px solid var(--border);font-weight:500" id="ist-clock">–:– IST</span>
           <span style="font-size:11px;color:var(--text3)" id="topbar-date"></span>
         </div>
       </div>
+      <!-- Work hours banner -->
+      <div id="work-hours-banner" style="display:none;margin:0 36px;padding:10px 16px;background:var(--amberbg);border:1px solid var(--amberborder);border-radius:var(--radius2);font-size:13px;font-weight:600;color:var(--amber);margin-top:12px"></div>
 
       <!-- GREETING BANNER -->
       <div class="greeting-banner" id="emp-greeting-banner">
@@ -601,6 +604,9 @@ input,select,textarea{font-family:inherit;outline:none}
             <tbody id="emp-tbody-overview"></tbody>
           </table>
         </div>
+
+        <!-- Previous day report -->
+        <div id="prev-day-panel" style="display:none;margin-top:22px;background:var(--bg2);border:1.5px solid var(--accentbg2);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow)"></div>
       </div>
     </div>
 
@@ -615,7 +621,7 @@ input,select,textarea{font-family:inherit;outline:none}
       <div class="padded">
         <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)">
           <table class="emp-table">
-            <thead><tr><th>Employee</th><th>Email</th><th>Tracked today</th><th>Productivity</th><th>Questions</th><th>Top domain</th><th>Status</th></tr></thead>
+            <thead><tr><th>Employee</th><th>Tracked today</th><th>Productivity</th><th>Questions</th><th>Domains</th><th>Status</th><th></th></tr></thead>
             <tbody id="emp-tbody-detail"></tbody>
           </table>
         </div>
@@ -763,29 +769,52 @@ const catD=d=>{const c=d.toLowerCase().replace(/^www\./,'');if(DIST.some(x=>c.in
 const $=id=>document.getElementById(id);
 const setTxt=(id,v)=>{const el=$(id);if(el)el.textContent=v};
 
+/* ── IST helpers ── */
+function getISTNow(){
+  return new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Kolkata'}));
+}
+function getTodayIST(){
+  const d=getISTNow();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function isWithinWorkHours(){
+  const h=getISTNow().getHours();
+  return h>=9&&h<21; // 9:00 AM – 9:00 PM IST
+}
+function getWorkHoursEndMs(){
+  /* ms until 9 PM IST today */
+  const ist=getISTNow();
+  const minsLeft=(21*60)-(ist.getHours()*60+ist.getMinutes());
+  return minsLeft*60*1000-ist.getSeconds()*1000;
+}
+
 function totalQuestionsToday(){return qHistory.reduce((s,e)=>s+(parseInt(e.count)||0),0)}
 
+/* ── EXACT formula: (tracked_mins + questions*5) * 100 / (7.5*60) ── */
 function computeScore(){
-  const TARGET_S=7.5*3600;
-  // Need at least 5 minutes tracked before showing any score
-  if(totalSeconds<300)return null;
+  const TARGET_MINS=7.5*60; // 450
+  const trackedMins=totalSeconds/60;
+  const qBonus=totalQuestionsToday()*5; // every Q = +5 min
+  return Math.min(100,Math.round(((trackedMins+qBonus)*100)/TARGET_MINS));
+}
 
-  // Time-based component: % of 7.5h target (max 60 points)
-  const timePct=Math.min(1,totalSeconds/TARGET_S);
-  const timeScore=timePct*60;
-
-  // Quality component from logged domains (max 40 points)
-  let qualScore=30; // default neutral if no domains logged
-  if(activityLog.length){
-    let w=0,t=0;
-    activityLog.forEach(a=>{
-      const m=parseInt(a.time)||1;
-      const s=a.cat==='work'?2:a.cat==='neutral'?1:a.cat==='distract'?0:1;
-      w+=s*m;t+=m;
-    });
-    qualScore=t>0?Math.round((w/(t*2))*40):20;
-  }
-  return Math.min(100,Math.round(timeScore+qualScore));
+/* ── Daily reset: if saved data is from a previous IST date, archive it ── */
+function checkDailyReset(email){
+  try{
+    const raw=localStorage.getItem(LS+email);
+    if(!raw)return;
+    const d=JSON.parse(raw);
+    const savedDate=d.savedDate||'';
+    const today=getTodayIST();
+    if(savedDate&&savedDate!==today){
+      /* Archive yesterday's data */
+      localStorage.setItem(LS+'prev_'+email,JSON.stringify({...d,archivedDate:savedDate}));
+      /* Wipe today's slate */
+      localStorage.removeItem(LS+email);
+      totalSeconds=0;activeSeconds=0;idleSeconds=0;sessionCount=0;
+      activityLog=[];qHistory=[];
+    }
+  }catch(_){}
 }
 
 /* ── localStorage bridge ── */
@@ -796,7 +825,7 @@ function saveEmp(){
       name:currentUser.name,email:currentUser.email,
       tracking,totalSeconds,activeSeconds,idleSeconds,sessionCount,
       activityLog,qHistory,totalQuestions:totalQuestionsToday(),
-      score:computeScore(),savedAt:Date.now()
+      score:computeScore(),savedAt:Date.now(),savedDate:getTodayIST()
     }));
   }catch(e){}
 }
@@ -805,7 +834,20 @@ function loadEmps(){
   try{
     for(let i=0;i<localStorage.length;i++){
       const k=localStorage.key(i);
-      if(k&&k.startsWith(LS)){
+      /* today's records only (skip prev_ archives) */
+      if(k&&k.startsWith(LS)&&!k.startsWith(LS+'prev_')){
+        try{const d=JSON.parse(localStorage.getItem(k));if(d&&d.email&&d.email.endsWith('@pw.live'))list.push(d);}catch(e){}
+      }
+    }
+  }catch(e){}
+  return list;
+}
+function loadPrevEmps(){
+  const list=[];
+  try{
+    for(let i=0;i<localStorage.length;i++){
+      const k=localStorage.key(i);
+      if(k&&k.startsWith(LS+'prev_')){
         try{const d=JSON.parse(localStorage.getItem(k));if(d&&d.email&&d.email.endsWith('@pw.live'))list.push(d);}catch(e){}
       }
     }
@@ -903,6 +945,8 @@ function loginSuccess(user, skipSave=false){
   setTxt('today-date',dateStr);setTxt('topbar-date',dateStr);
 
   if(user.role==='employee'){
+    // Check if it's a new IST day — archive yesterday if so
+    checkDailyReset(user.email);
     // Only load from localStorage if not already restored by restoreSession
     if(!skipSave){
       try{
@@ -920,6 +964,8 @@ function loginSuccess(user, skipSave=false){
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
     $('page-tracker').classList.add('active');
     renderGreeting('emp-',user.name);
+    /* Start work-hours enforcement watchdog */
+    startWorkHoursWatchdog();
   }else{
     $('emp-nav').classList.add('hidden');$('mgr-nav').classList.remove('hidden');
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -953,18 +999,65 @@ function showPage(page,el){
   }
 }
 
+/* ═══ WORK HOURS WATCHDOG ═══ */
+let workWatchdog=null;
+function startWorkHoursWatchdog(){
+  clearInterval(workWatchdog);
+  workWatchdog=setInterval(()=>{
+    const ist=getISTNow();
+    const h=ist.getHours(),mi=ist.getMinutes(),s=ist.getSeconds();
+    /* Auto-stop at exactly 9 PM */
+    if(h===21&&mi===0&&s===0&&tracking){
+      stopTracking();
+      showWorkHoursBanner('🕘 It\'s 9:00 PM IST — tracking stopped. Great work today! Data saved.');
+    }
+    /* Midnight IST reset */
+    if(h===0&&mi===0&&s===0&&currentUser){
+      checkDailyReset(currentUser.email);
+      totalSeconds=0;activeSeconds=0;idleSeconds=0;sessionCount=0;activityLog=[];qHistory=[];
+      updateTimer();renderActivity();renderQHistory();
+      showWorkHoursBanner('🌅 New day started! Tracking resets at 9 AM IST. Have a great day!');
+    }
+    /* Update IST clock in topbar */
+    const tStr=`${String(h).padStart(2,'0')}:${String(mi).padStart(2,'0')} IST`;
+    const el=$('ist-clock');if(el)el.textContent=tStr;
+    /* Warn 5 min before 9 PM */
+    if(h===20&&mi===55&&s===0&&tracking){
+      showWorkHoursBanner('⏰ 5 minutes to end of work hours (9 PM IST). Tracking will auto-stop at 9 PM.');
+    }
+  },1000);
+}
+
+function showWorkHoursBanner(msg){
+  const b=$('work-hours-banner');if(!b)return;
+  b.textContent=msg;b.style.display='block';
+  clearTimeout(b._t);b._t=setTimeout(()=>{b.style.display='none'},8000);
+}
+
 /* ═══ TRACKING ═══ */
 function toggleTracking(){if(!tracking)startTracking();else stopTracking()}
 
 function startTracking(){
+  if(!isWithinWorkHours()){
+    const ist=getISTNow();
+    const h=ist.getHours();
+    const msg=h<9?'Tracking starts at 9:00 AM IST.':'Tracking is only available 9 AM – 9 PM IST. See you tomorrow!';
+    showWorkHoursBanner('⛔ '+msg);
+    return;
+  }
   tracking=true;sessionCount++;
   $('track-btn').className='track-btn stop';setTxt('track-btn-text','Stop tracking');
   $('timer-display').classList.add('running');
-  setTxt('timer-label','Session active — log your domains &amp; questions below');
+  setTxt('timer-label','Session active — log your domains & questions below');
   $('pulse-dot').classList.add('live');$('pill-live').classList.remove('hidden');
   $('tracking-status-tag').className='tag tag-live';$('tracking-status-tag').textContent='● Tracking';
   $('domain-logger').classList.remove('hidden');
-  timerInterval=setInterval(()=>{totalSeconds++;activeSeconds++;updateTimer();if(totalSeconds%10===0)saveEmp()},1000);
+  timerInterval=setInterval(()=>{
+    if(!isWithinWorkHours()){stopTracking();return;}
+    totalSeconds++;activeSeconds++;
+    updateTimer();
+    if(totalSeconds%10===0)saveEmp();
+  },1000);
   saveEmp();
 }
 function stopTracking(){
@@ -1026,12 +1119,15 @@ function updateTimer(){
   setTxt('stat-idle',Math.floor(idleSeconds/60)+'m');
   setTxt('trans-total',fmtS(totalSeconds));
   setTxt('trans-sessions',sessionCount);
-  const sc=computeScore();if(sc!==null)setTxt('stat-score',sc+'%');
-  /* 7.5h progress bar */
-  const TARGET_S=7.5*3600;
-  const pct=Math.min(100,Math.round((totalSeconds/TARGET_S)*100));
-  const bar=$('target-bar');if(bar)bar.style.width=pct+'%';
-  const lbl=$('target-pct-label');if(lbl)lbl.textContent=pct+'% of daily target (7.5h)';
+  const sc=computeScore();
+  setTxt('stat-score',sc+'%');
+  /* progress bar uses same formula */
+  const pct=sc;
+  const bar=$('target-bar');if(bar)bar.style.width=Math.min(100,pct)+'%';
+  const lbl=$('target-pct-label');
+  const trackedMins=Math.round(totalSeconds/60);
+  const qBonus=totalQuestionsToday()*5;
+  if(lbl)lbl.textContent=`${trackedMins}m tracked + ${qBonus}m (questions bonus) = ${pct}% of 7.5h target`;
 }
 
 function renderActivity(){
@@ -1062,8 +1158,38 @@ function initMgr(){
 
 function manualRefresh(){
   const emps=loadEmps();
+  const prevEmps=loadPrevEmps();
   updateBanner(emps);renderTables(emps);updateKPIs(emps);updateAlerts(emps);
+  renderPrevDayReport(prevEmps);
   setTxt('last-refreshed','↻ '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'}));
+}
+
+function renderPrevDayReport(prevEmps){
+  const panel=$('prev-day-panel');if(!panel)return;
+  if(!prevEmps.length){panel.style.display='none';return;}
+  panel.style.display='block';
+  const date=prevEmps[0].archivedDate||'Previous day';
+  const rows=prevEmps.map(e=>{
+    const sc=e.score||0,scC=sc>=80?'var(--green)':sc>=60?'var(--amber)':'var(--red)';
+    return`<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:var(--radius2);background:var(--bg3);border:1px solid var(--border);margin-bottom:7px">
+      <div class="emp-av" style="background:${avC(e.email)};width:28px;height:28px;font-size:11px">${avI(e.name)}</div>
+      <div style="flex:1"><div style="font-weight:600;font-size:13px">${e.name}</div><div style="font-size:11px;color:var(--text3)">${e.email}</div></div>
+      <div style="text-align:right">
+        <div style="font-weight:700;color:var(--accent);font-size:13px">${fmtS(e.totalSeconds||0)}</div>
+        <div style="font-size:11px;color:${scC};font-weight:700">${sc}%</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:11px;color:var(--purple);font-weight:700">${e.totalQuestions||0} Qs</div>
+        <div style="font-size:10px;color:var(--text3)">${(e.activityLog||[]).length} domains</div>
+      </div>
+    </div>`;
+  }).join('');
+  panel.innerHTML=`
+    <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px">
+      <span style="background:var(--accentbg);color:var(--accent);padding:2px 8px;border-radius:5px;font-size:10px;font-weight:700">PREVIOUS DAY</span>
+      Report for ${date}
+    </div>
+    ${rows}`;
 }
 
 function updateBanner(emps){
@@ -1119,11 +1245,14 @@ function updateAlerts(emps){
 }
 
 function renderTables(emps){
-  const empty=`<tr><td colspan="7" style="color:var(--text3);font-size:13px;padding:28px;text-align:center;line-height:2.2">
-    No employee data yet.<br>
-    <span style="font-size:12px">1. Open file in new tab &nbsp;→&nbsp; 2. Sign in as <b>Employee</b> &nbsp;→&nbsp; 3. Start tracking &amp; log domains<br>Then click <b>Refresh data</b></span>
+  const emptyOverview=`<tr><td colspan="5" style="color:var(--text3);font-size:13px;padding:28px;text-align:center;line-height:2.2">
+    No employee data yet. Open this file in a new tab → sign in as Employee → Start tracking → click <b>Refresh data</b>.
+  </td></tr>`;
+  const emptyDetail=`<tr><td colspan="7" style="color:var(--text3);font-size:13px;padding:28px;text-align:center;line-height:2.2">
+    No employee data yet. Open this file in a new tab → sign in as Employee → Start tracking → click <b>Refresh data</b>.
   </td></tr>`;
 
+  /* Overview table — compact */
   const r1=e=>{
     const col=avC(e.email),ini=avI(e.name),sc=e.score||0,q=e.totalQuestions||0,isAct=e.tracking;
     const scC=sc>=80?'var(--green)':sc>=60?'var(--amber)':'var(--red)';
@@ -1132,33 +1261,97 @@ function renderTables(emps){
       <td style="color:var(--text2);font-weight:500">${fmtS(e.totalSeconds||0)}</td>
       <td><div style="display:flex;align-items:center;gap:8px">
         <span style="color:${scC};font-weight:700;font-size:13px">${sc}%</span>
-        <div class="score-bar" style="width:70px"><div class="score-fill" style="width:${sc}%;background:${scC}"></div></div>
+        <div class="score-bar" style="width:70px"><div class="score-fill" style="width:${Math.min(100,sc)}%;background:${scC}"></div></div>
       </div></td>
       <td><span style="background:var(--purplebg);color:var(--purple);border:1px solid #ddd6fe;border-radius:20px;padding:3px 11px;font-size:12px;font-weight:700">${q} Qs</span></td>
-      <td><span class="badge ${isAct?'cat-work':'cat-neutral'}">${isAct?'● Active':'○ Away'}</span></td>
-    </tr>`;
-  };
-  const r2=e=>{
-    const col=avC(e.email),ini=avI(e.name),sc=e.score||0,q=e.totalQuestions||0,isAct=e.tracking;
-    const scC=sc>=80?'var(--green)':sc>=60?'var(--amber)':'var(--red)';
-    const top=e.activityLog&&e.activityLog.length?e.activityLog.reduce((a,b)=>(parseInt(a.time)||0)>=(parseInt(b.time)||0)?a:b).domain:'—';
-    return`<tr>
-      <td><div class="emp-name"><div class="emp-av" style="background:${col}">${ini}</div><span style="font-weight:600">${e.name}</span></div></td>
-      <td style="color:var(--text2);font-size:12px">${e.email}</td>
-      <td style="color:var(--accent);font-weight:700">${fmtS(e.totalSeconds||0)}</td>
-      <td><div style="display:flex;align-items:center;gap:8px">
-        <span style="color:${scC};font-weight:700">${sc}%</span>
-        <div class="score-bar" style="width:55px"><div class="score-fill" style="width:${sc}%;background:${scC}"></div></div>
-      </div></td>
-      <td><span style="background:var(--purplebg);color:var(--purple);border:1px solid #ddd6fe;border-radius:20px;padding:3px 11px;font-size:12px;font-weight:700">${q} Qs</span></td>
-      <td style="font-size:12px;color:var(--text2);font-weight:500">${top}</td>
       <td><span class="badge ${isAct?'cat-work':'cat-neutral'}">${isAct?'● Active':'○ Away'}</span></td>
     </tr>`;
   };
 
+  /* Detail table — with expandable domain rows */
+  const catC={'work':'var(--green)','neutral':'var(--amber)','distract':'var(--red)'};
+  const catBg={'work':'var(--greenbg)','neutral':'var(--amberbg)','distract':'var(--redbg)'};
+  const catBorder={'work':'var(--greenborder)','neutral':'var(--amberborder)','distract':'var(--redborder)'};
+
+  const r2=e=>{
+    const col=avC(e.email),ini=avI(e.name),sc=e.score||0,q=e.totalQuestions||0,isAct=e.tracking;
+    const scC=sc>=80?'var(--green)':sc>=60?'var(--amber)':'var(--red)';
+    const uid=e.email.replace(/[@.]/g,'_');
+    /* Domain breakdown rows */
+    const domainRows=(e.activityLog&&e.activityLog.length)?[...e.activityLog]
+      .sort((a,b)=>(parseInt(b.time)||0)-(parseInt(a.time)||0))
+      .map(a=>`
+        <div style="display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:7px;background:${catBg[a.cat]||'var(--bg3)'};border:1px solid ${catBorder[a.cat]||'var(--border)'};margin-bottom:5px">
+          <div style="width:7px;height:7px;border-radius:50%;background:${catC[a.cat]||'#888'};flex-shrink:0"></div>
+          <span style="flex:1;font-size:12px;font-weight:600;color:var(--text)">${a.domain}</span>
+          <span style="font-size:11px;color:${catC[a.cat]||'var(--text3)'};font-weight:700;background:white;padding:2px 8px;border-radius:5px">${a.time}</span>
+          <span style="font-size:10px;color:${catC[a.cat]||'var(--text3)'};">${a.cat==='distract'?'Distracting':a.cat[0].toUpperCase()+a.cat.slice(1)}</span>
+        </div>`).join('')
+      :'<div style="font-size:12px;color:var(--text3);padding:8px">No domains logged yet.</div>';
+
+    /* Q history in expand */
+    const qRows=(e.qHistory&&e.qHistory.length)?e.qHistory.map(q=>`
+        <span style="background:var(--purplebg);border:1px solid #ddd6fe;border-radius:14px;padding:3px 10px;font-size:11px;color:var(--purple);font-weight:700;margin:2px;display:inline-flex;gap:5px;align-items:center">
+          <b>${q.count}</b> ${q.note} <span style="opacity:.55">${q.time}</span>
+        </span>`).join('')
+      :'<span style="font-size:12px;color:var(--text3)">None logged yet.</span>';
+
+    return`
+    <tr style="cursor:pointer" onclick="toggleEmpRow('${uid}')">
+      <td><div class="emp-name"><div class="emp-av" style="background:${col}">${ini}</div>
+        <div>
+          <div style="font-weight:600">${e.name}</div>
+          <div style="font-size:11px;color:var(--text3)">${e.email}</div>
+        </div>
+      </div></td>
+      <td style="color:var(--accent);font-weight:700">${fmtS(e.totalSeconds||0)}</td>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <span style="color:${scC};font-weight:700">${sc}%</span>
+        <div class="score-bar" style="width:55px"><div class="score-fill" style="width:${Math.min(100,sc)}%;background:${scC}"></div></div>
+      </div></td>
+      <td><span style="background:var(--purplebg);color:var(--purple);border:1px solid #ddd6fe;border-radius:20px;padding:3px 11px;font-size:12px;font-weight:700">${q} Qs</span></td>
+      <td>${e.activityLog&&e.activityLog.length?`<span style="font-size:11px;color:var(--accent);font-weight:600">${e.activityLog.length} domain${e.activityLog.length>1?'s':''}</span>`:'<span style="color:var(--text3);font-size:12px">–</span>'}</td>
+      <td><span class="badge ${isAct?'cat-work':'cat-neutral'}">${isAct?'● Active':'○ Away'}</span></td>
+      <td style="color:var(--accent2);font-size:12px">▼ expand</td>
+    </tr>
+    <tr id="emp-expand-${uid}" style="display:none">
+      <td colspan="7" style="background:var(--bg3);padding:16px 24px;border-top:2px solid var(--accentbg2)">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px">
+              <span style="background:var(--accentbg);color:var(--accent);border-radius:5px;padding:2px 8px;font-size:10px">DOMAINS</span>
+              Time spent breakdown
+            </div>
+            ${domainRows}
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px">
+              <span style="background:var(--purplebg);color:var(--purple);border-radius:5px;padding:2px 8px;font-size:10px">QUESTIONS</span>
+              ${q} questions (${q*5}m bonus added to productivity)
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:5px">${qRows}</div>
+            <div style="margin-top:12px;padding:10px 14px;background:linear-gradient(135deg,var(--purplebg),var(--accentbg));border:1px solid var(--accentbg2);border-radius:var(--radius2);font-size:12px;color:var(--text2)">
+              <b style="color:var(--text)">Score breakdown:</b>
+              ${Math.round((e.totalSeconds||0)/60)}m tracked
+              + ${q*5}m question bonus
+              = <b style="color:var(--accent)">${sc}%</b>
+              of 450m (7.5h target)
+            </div>
+          </div>
+        </div>
+      </td>
+    </tr>`;
+  };
+
   const t1=$('emp-tbody-overview'),t2=$('emp-tbody-detail');
-  if(t1)t1.innerHTML=emps.length?emps.map(r1).join(''):empty;
-  if(t2)t2.innerHTML=emps.length?emps.map(r2).join(''):empty;
+  if(t1)t1.innerHTML=emps.length?emps.map(r1).join(''):emptyOverview;
+  if(t2)t2.innerHTML=emps.length?emps.map(r2).join(''):emptyDetail;
+}
+
+function toggleEmpRow(uid){
+  const row=$('emp-expand-'+uid);
+  if(!row)return;
+  row.style.display=row.style.display==='none'?'table-row':'none';
 }
 
 function exportCSV(){
