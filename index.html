@@ -309,6 +309,7 @@ input,select,textarea{font-family:inherit;outline:none}
       <div class="input-wrap">
         <input type="password" id="pass-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
       </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:5px">Demo org password: <code style="background:var(--bg3);padding:1px 6px;border-radius:4px;color:var(--accent);font-weight:600">PW@2026</code></div>
     </div>
     <div id="login-error" class="hidden"></div>
     <button class="btn-primary" onclick="doLogin()">Sign in →</button>
@@ -765,10 +766,26 @@ const setTxt=(id,v)=>{const el=$(id);if(el)el.textContent=v};
 function totalQuestionsToday(){return qHistory.reduce((s,e)=>s+(parseInt(e.count)||0),0)}
 
 function computeScore(){
-  if(!activityLog.length)return totalSeconds>5?Math.min(100,Math.round(55+totalSeconds/100)):null;
-  let w=0,t=0;
-  activityLog.forEach(a=>{const m=parseInt(a.time)||1,s=a.cat==='work'?2:a.cat==='neutral'?1:0;w+=s*m;t+=m});
-  return t>0?Math.min(100,Math.round(w/(t*2)*100)):70;
+  const TARGET_S=7.5*3600;
+  // Need at least 5 minutes tracked before showing any score
+  if(totalSeconds<300)return null;
+
+  // Time-based component: % of 7.5h target (max 60 points)
+  const timePct=Math.min(1,totalSeconds/TARGET_S);
+  const timeScore=timePct*60;
+
+  // Quality component from logged domains (max 40 points)
+  let qualScore=30; // default neutral if no domains logged
+  if(activityLog.length){
+    let w=0,t=0;
+    activityLog.forEach(a=>{
+      const m=parseInt(a.time)||1;
+      const s=a.cat==='work'?2:a.cat==='neutral'?1:a.cat==='distract'?0:1;
+      w+=s*m;t+=m;
+    });
+    qualScore=t>0?Math.round((w/(t*2))*40):20;
+  }
+  return Math.min(100,Math.round(timeScore+qualScore));
 }
 
 /* ── localStorage bridge ── */
@@ -796,23 +813,86 @@ function loadEmps(){
   return list;
 }
 
-/* ═══ AUTH ═══ */
+/* ─── ORG PASSWORD ───
+   All @pw.live accounts share this org password for this demo.
+   In production replace with real OAuth + backend auth.               */
+const ORG_PASS='PW@2026';
+const SS_KEY='pwtracker_session'; // sessionStorage key — survives refresh, NOT new tabs
+
+/* Restore session on page load (fixes auto-logout on refresh) */
+(function restoreSession(){
+  try{
+    const s=sessionStorage.getItem(SS_KEY);
+    if(!s)return;
+    const u=JSON.parse(s);
+    if(u&&u.email&&u.email.endsWith('@pw.live')){
+      // Restore state vars for employee before calling loginSuccess
+      if(u.role==='employee'){
+        try{
+          const emp=localStorage.getItem(LS+u.email);
+          if(emp){
+            const d=JSON.parse(emp);
+            totalSeconds=d.totalSeconds||0;activeSeconds=d.activeSeconds||0;
+            idleSeconds=d.idleSeconds||0;sessionCount=d.sessionCount||0;
+            activityLog=d.activityLog||[];qHistory=d.qHistory||[];
+          }
+        }catch(_){}
+      }
+      loginSuccess(u,true/*skipSave*/);
+    }
+  }catch(_){}
+})();
+
 function selectRole(r,el){selectedRole=r;document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active')}
 
 function doLogin(){
   const raw=$('email-input').value.trim();
+  const pass=$('pass-input').value;
   const email=raw.includes('@')?raw:raw+'@pw.live';
   const err=$('login-error');
+
   if(!raw){err.textContent='⚠ Enter your username.';err.classList.remove('hidden');return}
   if(!email.endsWith('@pw.live')){err.textContent='⚠ Only @pw.live accounts are allowed.';err.classList.remove('hidden');return}
+  if(!pass){err.textContent='⚠ Password is required.';err.classList.remove('hidden');return}
+  if(pass!==ORG_PASS){
+    err.innerHTML='⚠ Incorrect password. <span style="color:var(--text2);font-size:11px">Hint: PW@2026</span>';
+    err.classList.remove('hidden');
+    $('pass-input').value='';
+    return;
+  }
   err.classList.add('hidden');
   const name=email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
   loginSuccess({name,email,role:selectedRole});
 }
-function oauthLogin(p){loginSuccess({name:p==='google'?'Google User':'MS User',email:'demo.user@pw.live',role:selectedRole})}
 
-function loginSuccess(user){
+/* OAuth: show email-confirm modal to verify @pw.live domain */
+function oauthLogin(provider){
+  const modal=$('oauth-modal');
+  $('oauth-modal-title').textContent='Sign in with '+(provider==='google'?'Google Workspace':'Microsoft 365');
+  $('oauth-email-input').value='';
+  $('oauth-error').classList.add('hidden');
+  $('oauth-provider-hidden').value=provider;
+  modal.style.display='flex';
+  setTimeout(()=>$('oauth-email-input').focus(),80);
+}
+function closeOAuthModal(){$('oauth-modal').style.display='none'}
+function confirmOAuth(){
+  const raw=$('oauth-email-input').value.trim();
+  const email=raw.includes('@')?raw:raw+'@pw.live';
+  const err=$('oauth-error');
+  if(!raw){err.textContent='⚠ Enter your @pw.live email.';err.classList.remove('hidden');return}
+  if(!email.endsWith('@pw.live')){err.textContent='⚠ Must be a @pw.live account to access this tracker.';err.classList.remove('hidden');return}
+  err.classList.add('hidden');
+  closeOAuthModal();
+  const name=email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+  loginSuccess({name,email,role:selectedRole});
+}
+
+function loginSuccess(user, skipSave=false){
   currentUser=user;
+  // Persist session so refresh doesn't log out
+  if(!skipSave)try{sessionStorage.setItem(SS_KEY,JSON.stringify(user))}catch(_){}
+
   $('login-screen').style.display='none';
   $('app').style.display='flex';
   const av=$('sb-avatar');av.textContent=avI(user.name);av.style.background=avC(user.email);
@@ -823,16 +903,19 @@ function loginSuccess(user){
   setTxt('today-date',dateStr);setTxt('topbar-date',dateStr);
 
   if(user.role==='employee'){
-    try{
-      const saved=localStorage.getItem(LS+user.email);
-      if(saved){
-        const d=JSON.parse(saved);
-        totalSeconds=d.totalSeconds||0;activeSeconds=d.activeSeconds||0;
-        idleSeconds=d.idleSeconds||0;sessionCount=d.sessionCount||0;
-        activityLog=d.activityLog||[];qHistory=d.qHistory||[];
-        updateTimer();renderActivity();renderQHistory();
-      }
-    }catch(e){}
+    // Only load from localStorage if not already restored by restoreSession
+    if(!skipSave){
+      try{
+        const saved=localStorage.getItem(LS+user.email);
+        if(saved){
+          const d=JSON.parse(saved);
+          totalSeconds=d.totalSeconds||0;activeSeconds=d.activeSeconds||0;
+          idleSeconds=d.idleSeconds||0;sessionCount=d.sessionCount||0;
+          activityLog=d.activityLog||[];qHistory=d.qHistory||[];
+        }
+      }catch(_){}
+    }
+    updateTimer();renderActivity();renderQHistory();
     $('emp-nav').classList.remove('hidden');$('mgr-nav').classList.add('hidden');
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
     $('page-tracker').classList.add('active');
@@ -847,7 +930,9 @@ function loginSuccess(user){
 }
 
 function logout(){
-  if(tracking)stopTracking();saveEmp();
+  if(tracking)stopTracking();
+  saveEmp();
+  try{sessionStorage.removeItem(SS_KEY)}catch(_){}
   currentUser=null;tracking=false;
   totalSeconds=0;idleSeconds=0;activeSeconds=0;sessionCount=0;
   activityLog=[];qHistory=[];
@@ -1148,5 +1233,26 @@ function initCharts(){
   }});
 }
 </script>
+<!-- ═══ OAUTH MODAL ═══ -->
+<div id="oauth-modal" style="display:none;position:fixed;inset:0;z-index:999;align-items:center;justify-content:center;background:rgba(15,15,30,.45);backdrop-filter:blur(6px)" onclick="if(event.target===this)closeOAuthModal()">
+  <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:36px;width:100%;max-width:400px;box-shadow:var(--shadow2);position:relative">
+    <button onclick="closeOAuthModal()" style="position:absolute;top:14px;right:14px;background:var(--bg3);border:1px solid var(--border);border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:16px;line-height:1;cursor:pointer">×</button>
+    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:18px;margin-bottom:4px;color:var(--text)" id="oauth-modal-title">Sign in with Google</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:20px">Confirm your @pw.live work email to continue</div>
+    <input type="hidden" id="oauth-provider-hidden" value="google"/>
+    <div style="margin-bottom:12px">
+      <label style="font-size:11px;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;font-weight:700;display:block;margin-bottom:5px">Work email</label>
+      <input type="email" id="oauth-email-input" placeholder="yourname@pw.live"
+        style="width:100%;background:var(--bg3);border:1.5px solid var(--border);border-radius:var(--radius2);padding:11px 14px;color:var(--text);font-size:14px;font-family:inherit;outline:none;transition:all .2s"
+        onfocus="this.style.borderColor='var(--accent)';this.style.boxShadow='0 0 0 3px var(--accentbg2)'"
+        onblur="this.style.borderColor='';this.style.boxShadow=''"
+        onkeydown="if(event.key==='Enter')confirmOAuth()"/>
+    </div>
+    <div id="oauth-error" class="hidden" style="font-size:12px;color:var(--red);background:var(--redbg);border:1px solid var(--redborder);border-radius:var(--radius2);padding:8px 12px;margin-bottom:12px"></div>
+    <button onclick="confirmOAuth()" style="width:100%;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;padding:13px;border-radius:var(--radius2);box-shadow:0 4px 14px rgba(79,70,229,.3);cursor:pointer;border:none">Verify &amp; Sign in →</button>
+    <div style="font-size:11px;color:var(--text3);text-align:center;margin-top:12px">Only @pw.live accounts are permitted access</div>
+  </div>
+</div>
+
 </body>
 </html>
