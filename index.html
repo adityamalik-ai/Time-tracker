@@ -124,14 +124,14 @@ input,select,textarea{font-family:inherit;outline:none}
 .refresh-btn{background:var(--accentbg);border:1.5px solid var(--accentbg2);border-radius:var(--radius2);padding:7px 15px;color:var(--accent);font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;cursor:pointer;transition:all .15s}
 .refresh-btn:hover{background:var(--accentbg2);box-shadow:0 2px 8px rgba(79,70,229,.15)}
 
-.greeting-banner{margin:20px 36px 0;background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 40%,var(--purple) 100%);border-radius:16px;padding:20px 28px;color:#fff;position:relative;overflow:hidden;box-shadow:0 6px 24px rgba(79,70,229,.22)}
+.greeting-banner{margin:20px 36px 0;background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 40%,var(--purple) 100%);border-radius:16px;padding:22px 28px;color:#fff;position:relative;overflow:hidden;box-shadow:0 6px 24px rgba(79,70,229,.22)}
 .greeting-banner::before{content:'';position:absolute;right:-40px;top:-40px;width:180px;height:180px;background:rgba(255,255,255,.07);border-radius:50%}
 .greeting-banner::after{content:'';position:absolute;right:60px;bottom:-30px;width:110px;height:110px;background:rgba(255,255,255,.05);border-radius:50%}
-.greeting-time{font-size:11px;font-weight:600;opacity:.7;letter-spacing:.6px;text-transform:uppercase;margin-bottom:2px}
-.greeting-name{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;letter-spacing:-.3px;margin-bottom:6px}
-.greeting-quote{font-size:12.5px;opacity:.88;line-height:1.55;max-width:480px;font-style:italic}
+.greeting-time{font-family:'Syne',sans-serif;font-weight:800;font-size:22px;letter-spacing:-.3px;margin-bottom:2px;opacity:1}
+.greeting-name{font-size:13px;font-weight:500;opacity:.75;margin-bottom:8px;letter-spacing:.2px}
+.greeting-quote{font-size:12.5px;opacity:.82;line-height:1.55;max-width:480px;font-style:italic}
 .greeting-quote-attr{font-size:11px;opacity:.6;margin-top:3px}
-.greeting-icon{position:absolute;right:28px;top:50%;transform:translateY(-50%);font-size:42px;opacity:.2}
+.greeting-icon{position:absolute;right:28px;top:50%;transform:translateY(-50%);font-size:42px;opacity:.18}
 
 /* ── PADDED ── */
 .padded{padding:24px 36px 36px}
@@ -264,7 +264,7 @@ input,select,textarea{font-family:inherit;outline:none}
 .data-status-msg span{color:var(--text2);font-size:12px}
 
 /* ── MGR GREETING ── */
-.mgr-greeting-banner{margin:20px 36px 0;background:linear-gradient(135deg,#f97316 0%,#ec4899 50%,#8b5cf6 100%);border-radius:16px;padding:20px 28px;color:#fff;position:relative;overflow:hidden;box-shadow:0 6px 22px rgba(236,72,153,.18)}
+.mgr-greeting-banner{margin:20px 36px 0;background:linear-gradient(135deg,#f97316 0%,#ec4899 50%,#8b5cf6 100%);border-radius:16px;padding:22px 28px;color:#fff;position:relative;overflow:hidden;box-shadow:0 6px 22px rgba(236,72,153,.18)}
 .mgr-greeting-banner::before{content:'';position:absolute;right:-40px;top:-50px;width:180px;height:180px;background:rgba(255,255,255,.08);border-radius:50%}
 
 ::-webkit-scrollbar{width:5px;height:5px}
@@ -496,7 +496,7 @@ input,select,textarea{font-family:inherit;outline:none}
               <span style="font-size:20px">👋</span>
               <div style="flex:1">
                 <div style="font-size:13px;font-weight:700;color:#92400e">Welcome back! You were away for <span id="away-duration" style="color:var(--amber)">0m</span></div>
-                <div style="font-size:12px;color:#a16207;margin-top:2px">What were you working on? Log it below to track that time.</div>
+                <div style="font-size:12px;color:#a16207;margin-top:2px">Which tab were you on? Log it to capture that time. <b>Next time: click the bookmarklet on that tab for auto-tracking!</b></div>
               </div>
               <div style="display:flex;align-items:center;gap:8px">
                 <input id="away-domain-input" type="text" placeholder="gmail.com, whatsapp.com…"
@@ -837,11 +837,13 @@ function getGreeting(){
 function renderGreeting(prefix,name){
   const g=getGreeting(),q=getDailyQuote();
   const s=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};
-  s(prefix+'greeting-time',g.time);
-  s(prefix+'greeting-name',g.text+', '+name+' 👋');
+  /* greeting-time is now the BIG line: "Good afternoon ☀️" */
+  s(prefix+'greeting-time',g.text+' '+g.icon);
+  /* greeting-name is now just the person's first name, smaller */
+  const firstName=name.split(' ')[0];
+  s(prefix+'greeting-name',firstName+' — '+new Date().toLocaleDateString('en-IN',{weekday:'long',month:'long',day:'numeric'}));
   s(prefix+'greeting-quote','"'+q.q+'"');
   s(prefix+'greeting-attr','— '+q.a);
-  s(prefix+'greeting-icon',g.icon);
 }
 
 /* ── CONSTANTS ── */
@@ -869,6 +871,7 @@ let lastActivity=Date.now(), isIdle=false;
 let hiddenSince=null;
 let activeDomain=null;
 let awayStart=null, awayDomain=null;
+let bookmarkletLastAt=0, awayTabDomain=null, awayTabTimer=null;
 let bc=null;
 let workWatchdog=null, idleDetectInterval=null;
 
@@ -1016,16 +1019,7 @@ function initBroadcastChannel(){
 
       /* Bookmarklet sent a tab domain */
       if(msg.type==='tab_report'&&msg.domain){
-        const domain=msg.domain.toLowerCase().replace(/^www\./,'');
-        awayDomain=domain;
-        if(currentUser&&currentUser.role==='employee'&&tracking){
-          if(!document.hidden){
-            const inp=$('domain-input');
-            if(inp){inp.value=domain;inp.focus();}
-            const cat=$('cat-select');if(cat)cat.value=catD(domain);
-            showBanner(`📌 Bookmarklet: <b>${domain}</b> auto-filled — set minutes and click + Log tab`,'accent');
-          }
-        }
+        handleBookmarkletDomain(msg.domain);
       }
 
       if(msg.type==='heartbeat'&&currentUser&&currentUser.role==='manager'){
@@ -1043,13 +1037,8 @@ function initBroadcastChannel(){
     if(ev.key==='pwtracker_tab_ping'&&ev.newValue){
       try{
         const d=JSON.parse(ev.newValue);
-        if(d.email===currentUser?.email&&d.domain&&tracking){
-          awayDomain=d.domain.toLowerCase().replace(/^www\./,'');
-          if(!document.hidden){
-            const inp=$('domain-input');if(inp){inp.value=awayDomain;inp.focus();}
-            const cat=$('cat-select');if(cat)cat.value=catD(awayDomain);
-            showBanner(`📌 Bookmarklet: <b>${awayDomain}</b> auto-filled`,'accent');
-          }
+        if(d.email===currentUser?.email&&d.domain){
+          handleBookmarkletDomain(d.domain);
         }
       }catch(_){}
     }
@@ -1253,19 +1242,75 @@ function startWorkHoursWatchdog(){
   },1000);
 }
 
-/* ── AWAY DETECTION ── */
+/* ── AWAY DETECTION + TAB TIME AUTO-TRACKING ── */
 function setupAwayDetection(){
   document.addEventListener('visibilitychange',()=>{
-    if(document.hidden){ if(tracking&&awayStart===null)awayStart=Date.now(); }
-    else{
+    if(document.hidden){
+      /* User left the tracker tab */
+      if(tracking&&awayStart===null){
+        awayStart=Date.now();
+        awayTabDomain=null; // reset — we don't know where they went yet
+      }
+    }else{
+      /* User came back to the tracker tab */
       if(awayStart&&tracking){
         const dur=Math.round((Date.now()-awayStart)/1000);
-        if(dur>10)showAwayToast(dur);
+        /* Stop any auto-accumulation for the away tab */
+        if(awayTabTimer){ clearInterval(awayTabTimer); awayTabTimer=null; }
+
+        /* If bookmarklet was clicked while away — we know the domain,
+           auto-log the full away duration without showing toast */
+        if(awayTabDomain&&dur>5){
+          const existing=activityLog.find(a=>a.domain===awayTabDomain);
+          if(existing){
+            existing.timeSeconds=(existing.timeSeconds||0)+dur;
+            existing.time=secToMin(existing.timeSeconds);
+          }else{
+            activityLog.push({domain:awayTabDomain,cat:catD(awayTabDomain),timeSeconds:dur,time:secToMin(dur)});
+          }
+          activeDomain=awayTabDomain;
+          renderActivity();renderTabBarChart();saveEmp();
+          showBanner(`✅ Auto-logged <b>${dur<60?dur+'s':Math.round(dur/60)+'m'}</b> on <b>${awayTabDomain}</b>`,'green');
+        }else if(dur>10&&!awayTabDomain){
+          /* Unknown destination — show toast so user can tell us */
+          showAwayToast(dur);
+        }
         awayStart=null;
+        awayTabDomain=null;
       }
     }
-  },true); // use capture so it runs before idle detection
+  },true);
 }
+
+/* Called when bookmarklet broadcasts a domain */
+function handleBookmarkletDomain(domain){
+  const cleanDomain=domain.toLowerCase().replace(/^www\./,'');
+  bookmarkletLastAt=Date.now();
+  awayDomain=cleanDomain;
+
+  if(tracking){
+    if(document.hidden){
+      /* User is on another tab and just clicked bookmarklet —
+         we now know where they are. Start auto-accumulating. */
+      awayTabDomain=cleanDomain;
+      if(awayTabTimer)clearInterval(awayTabTimer);
+      awayTabTimer=setInterval(()=>{
+        if(!tracking||!document.hidden){ clearInterval(awayTabTimer);awayTabTimer=null;return; }
+        const entry=activityLog.find(a=>a.domain===cleanDomain);
+        if(entry){ entry.timeSeconds=(entry.timeSeconds||0)+1;entry.time=secToMin(entry.timeSeconds); }
+        else activityLog.push({domain:cleanDomain,cat:catD(cleanDomain),timeSeconds:1,time:'1m'});
+        if(Date.now()%15000<1100){ renderTabBarChart();saveEmp(); }
+      },1000);
+    }else{
+      /* User is on the tracker tab — auto-fill the domain input */
+      const inp=$('domain-input');
+      if(inp){inp.value=cleanDomain;inp.focus();}
+      const cat=$('cat-select');if(cat)cat.value=catD(cleanDomain);
+      showBanner(`📌 Bookmarklet: <b>${cleanDomain}</b> auto-filled — set minutes and click + Log tab`,'accent');
+    }
+  }
+}
+
 function showAwayToast(durationSeconds){
   const toast=$('away-toast');if(!toast)return;
   const m=Math.max(1,Math.round(durationSeconds/60));
@@ -1280,6 +1325,7 @@ function logAwayTime(){
   const inp=$('away-domain-input'),catSel=$('away-cat-select');
   const raw=(inp?inp.value.trim():'').toLowerCase().replace(/^https?:\/\//,'').replace(/^www\./,'').replace(/\/.*/,'');
   if(!raw){ if(inp)inp.focus(); return; }
+  /* Calculate actual away duration from awayStart if still set */
   const awayDur=awayStart?Math.round((Date.now()-awayStart)/1000):60;
   const existing=activityLog.find(a=>a.domain===raw);
   if(existing){ existing.timeSeconds=(existing.timeSeconds||0)+awayDur; existing.time=secToMin(existing.timeSeconds); }
@@ -1325,7 +1371,9 @@ function startTracking(){
   saveEmp();
 }
 function stopTracking(){
-  tracking=false; clearInterval(timerInterval); timerInterval=null; activeDomain=null;
+  tracking=false; clearInterval(timerInterval); timerInterval=null;
+  if(awayTabTimer){ clearInterval(awayTabTimer); awayTabTimer=null; }
+  activeDomain=null; awayStart=null; awayTabDomain=null;
   $('track-btn').className='track-btn start'; setTxt('track-btn-text','Start tracking');
   $('timer-display').classList.remove('running');
   setTxt('timer-label','Session stopped — data saved ✓');
