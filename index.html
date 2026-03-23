@@ -644,6 +644,30 @@ input,select,textarea{font-family:inherit;outline:none}
           </div>
         </div>
 
+        <!-- Onboarding helper — always visible, collapsible -->
+        <div id="mgr-onboard-help" style="background:var(--accentbg);border:1.5px solid var(--accentbg2);border-radius:var(--radius2);padding:14px 18px;margin-bottom:16px;font-size:12.5px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0" id="mgr-onboard-header" onclick="const b=document.getElementById('mgr-onboard-body');b.style.display=b.style.display==='none'?'block':'none'" style="cursor:pointer">
+            <span style="font-weight:700;color:var(--accent);font-size:13px;cursor:pointer">📋 How to see employees here</span>
+            <button onclick="document.getElementById('mgr-onboard-help').style.display='none'" style="background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:0 4px">×</button>
+          </div>
+          <div id="mgr-onboard-body" style="margin-top:10px;color:var(--text2);line-height:2">
+            <b style="color:var(--text)">Same browser, same device (current setup):</b><br>
+            1. Open this same HTML file in a <b>new Chrome tab</b><br>
+            2. Sign in as <b>Employee</b> (any @pw.live username, password: <code style="background:var(--bg2);padding:1px 6px;border-radius:4px;color:var(--accent)">PW@2026</code>)<br>
+            3. Mark attendance → click <b>Start tracking</b> → log some domains<br>
+            4. Come back here → data appears automatically every 5 seconds<br>
+            <div style="margin-top:8px;padding:8px 12px;background:var(--amberbg);border-radius:8px;border:1px solid var(--amberborder);color:var(--amber);font-size:12px">
+              ⚠ <b>Important:</b> Both tabs must open the <em>exact same file</em> from the <em>same local path</em>. If one tab uses a different path, they won't share storage.
+            </div>
+            <div style="margin-top:8px">
+              <button onclick="seedDemoEmployee()" style="background:var(--accent);color:white;border:none;border-radius:var(--radius2);padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;margin-right:8px">🧪 Add demo employee (test)</button>
+              <button onclick="showStorageDebug()" style="background:var(--bg2);color:var(--text2);border:1px solid var(--border);border-radius:var(--radius2);padding:8px 14px;font-size:12px;cursor:pointer">🔍 Debug storage</button>
+            </div>
+          </div>
+        </div>
+        <!-- Storage debug panel -->
+        <div id="storage-debug-panel" style="display:none;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius2);padding:14px 18px;margin-bottom:16px;font-size:12px;font-family:monospace;color:var(--text2);max-height:200px;overflow-y:auto"></div>
+
         <div class="kpi-grid">
           <div class="kpi-card">
             <div class="kpi-top-bar" style="background:linear-gradient(90deg,var(--green),#10b981)"></div>
@@ -748,11 +772,72 @@ input,select,textarea{font-family:inherit;outline:none}
     <div class="page" id="page-settings">
       <div class="topbar"><span class="topbar-title">Organization settings</span></div>
       <div class="padded">
+
+        <!-- ═══ TEAM ONBOARDING ═══ -->
+        <div style="background:linear-gradient(135deg,var(--accentbg) 0%,var(--purplebg) 100%);border:1.5px solid var(--accentbg2);border-radius:var(--radius);padding:24px;margin-bottom:18px;box-shadow:var(--shadow)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+            <div>
+              <h3 style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--text);margin-bottom:3px">📧 Onboard Your Team</h3>
+              <p style="font-size:12px;color:var(--text2)">Add employee emails — each gets a pre-filled Gmail invite with setup instructions and the tracker link.</p>
+            </div>
+            <div style="text-align:right;font-size:12px;color:var(--text3)">
+              <span id="invite-count-label">0 invited</span>
+            </div>
+          </div>
+
+          <!-- Add employee row -->
+          <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+            <input id="invite-name" type="text" placeholder="Full name (e.g. Arjun Mehta)"
+              style="flex:1;min-width:160px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius2);padding:10px 14px;font-size:13px;color:var(--text);font-family:inherit;outline:none"
+              onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"
+              onkeydown="if(event.key==='Enter')document.getElementById('invite-email').focus()"/>
+            <div style="position:relative;flex:1.5;min-width:200px">
+              <input id="invite-email" type="email" placeholder="username (auto @pw.live)"
+                style="width:100%;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius2);padding:10px 70px 10px 14px;font-size:13px;color:var(--text);font-family:inherit;outline:none"
+                onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"
+                onkeydown="if(event.key==='Enter')addInvitee()"/>
+              <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--accent);font-size:11px;font-weight:700;background:var(--accentbg);padding:2px 7px;border-radius:5px">@pw.live</span>
+            </div>
+            <select id="invite-role" style="background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius2);padding:10px 12px;font-size:13px;color:var(--text);font-family:inherit">
+              <option value="employee">Employee</option>
+              <option value="manager">Manager</option>
+            </select>
+            <button onclick="addInvitee()"
+              style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;border:none;border-radius:var(--radius2);padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(79,70,229,.25);white-space:nowrap">
+              + Add
+            </button>
+          </div>
+
+          <!-- Bulk add -->
+          <details style="margin-bottom:14px">
+            <summary style="font-size:12px;color:var(--accent);font-weight:600;cursor:pointer;user-select:none">+ Bulk add (paste multiple emails)</summary>
+            <div style="margin-top:10px">
+              <textarea id="bulk-emails" placeholder="One email per line, or comma-separated:&#10;arjun.mehta@pw.live&#10;priya.sharma@pw.live, Priya Sharma&#10;rahul.verma@pw.live"
+                style="width:100%;height:90px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius2);padding:10px 14px;font-size:12px;color:var(--text);font-family:monospace;resize:vertical;outline:none"
+                onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+              <button onclick="bulkAddInvitees()" style="margin-top:8px;background:var(--accentbg);color:var(--accent);border:1.5px solid var(--accentbg2);border-radius:var(--radius2);padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer">Import emails</button>
+            </div>
+          </details>
+
+          <!-- Team list -->
+          <div id="invitee-list" style="display:flex;flex-direction:column;gap:8px"></div>
+
+          <!-- Send all -->
+          <div id="send-all-row" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <button onclick="sendAllInvites()" style="background:linear-gradient(135deg,#ea4335,#fbbc04);color:white;border:none;border-radius:var(--radius2);padding:11px 22px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 3px 10px rgba(234,67,53,.3)">
+              <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/></svg>
+              Send Gmail invites to all
+            </button>
+            <span style="font-size:12px;color:var(--text3)">Opens Gmail compose for each unsent invite</span>
+            <button onclick="clearInvitees()" style="margin-left:auto;background:var(--redbg);color:var(--red);border:1px solid var(--redborder);border-radius:var(--radius2);padding:8px 14px;font-size:12px;cursor:pointer;font-weight:600">Clear all</button>
+          </div>
+        </div>
+
         <div class="consent-card">
           <h3 style="font-family:'Syne',sans-serif;font-size:16px;margin-bottom:18px;font-weight:700">Tracking configuration</h3>
           <div class="data-row" style="margin-bottom:6px"><span class="data-row-label">Company domain</span><span class="data-row-val c-accent">@pw.live</span></div>
           <div class="data-row" style="margin-bottom:6px"><span class="data-row-label">Idle threshold</span><span class="data-row-val">5 minutes</span></div>
-          <div class="data-row" style="margin-bottom:6px"><span class="data-row-label">Work hours</span><span class="data-row-val">9:00 AM – 6:00 PM</span></div>
+          <div class="data-row" style="margin-bottom:6px"><span class="data-row-label">Work hours</span><span class="data-row-val">9:00 AM – 9:00 PM</span></div>
           <div class="data-row" style="margin-bottom:6px"><span class="data-row-label">OAuth provider</span><span class="data-row-val">Google Workspace</span></div>
           <div class="data-row"><span class="data-row-label">Data retention</span><span class="data-row-val">90 days</span></div>
         </div>
@@ -1167,6 +1252,7 @@ function loginSuccess(user,skipSave=false){
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
     $('page-overview').classList.add('active');
     renderGreeting('mgr-',user.name);
+    loadInvitees();
     initMgr();
   }
 }
@@ -1191,6 +1277,7 @@ function showPage(page,el){
     manualRefresh();
     setTimeout(()=>initCharts(),80);
   }
+  if(page==='settings') renderInviteeList();
 }
 
 /* ── IDLE DETECTION ── */
@@ -1201,7 +1288,12 @@ function startIdleDetection(){
     .forEach(ev=>document.addEventListener(ev,reset,{passive:true}));
   document.addEventListener('visibilitychange',()=>{
     if(document.hidden){ if(hiddenSince===null)hiddenSince=Date.now(); }
-    else{ hiddenSince=null; reset(); }
+    else{
+      hiddenSince=null; reset();
+      /* When coming back to tracker, check if the last bookmarklet domain
+         matches a logged tab and auto-set it as active */
+      if(awayDomain&&tracking) autoSetActiveTab(awayDomain);
+    }
   });
   idleDetectInterval=setInterval(()=>{
     if(!tracking)return;
@@ -1243,36 +1335,27 @@ function startWorkHoursWatchdog(){
 }
 
 /* ── AWAY DETECTION + TAB TIME AUTO-TRACKING ── */
+/* ── AWAY DETECTION + AUTO ACTIVE TAB ── */
 function setupAwayDetection(){
   document.addEventListener('visibilitychange',()=>{
     if(document.hidden){
-      /* User left the tracker tab */
       if(tracking&&awayStart===null){
         awayStart=Date.now();
-        awayTabDomain=null; // reset — we don't know where they went yet
+        awayTabDomain=null;
       }
     }else{
-      /* User came back to the tracker tab */
+      /* Came back to tracker tab */
       if(awayStart&&tracking){
         const dur=Math.round((Date.now()-awayStart)/1000);
-        /* Stop any auto-accumulation for the away tab */
         if(awayTabTimer){ clearInterval(awayTabTimer); awayTabTimer=null; }
 
-        /* If bookmarklet was clicked while away — we know the domain,
-           auto-log the full away duration without showing toast */
         if(awayTabDomain&&dur>5){
-          const existing=activityLog.find(a=>a.domain===awayTabDomain);
-          if(existing){
-            existing.timeSeconds=(existing.timeSeconds||0)+dur;
-            existing.time=secToMin(existing.timeSeconds);
-          }else{
-            activityLog.push({domain:awayTabDomain,cat:catD(awayTabDomain),timeSeconds:dur,time:secToMin(dur)});
-          }
+          /* Bookmarklet told us exactly where they were — auto-log cleanly */
+          _mergeTabTime(awayTabDomain,dur);
           activeDomain=awayTabDomain;
           renderActivity();renderTabBarChart();saveEmp();
           showBanner(`✅ Auto-logged <b>${dur<60?dur+'s':Math.round(dur/60)+'m'}</b> on <b>${awayTabDomain}</b>`,'green');
         }else if(dur>10&&!awayTabDomain){
-          /* Unknown destination — show toast so user can tell us */
           showAwayToast(dur);
         }
         awayStart=null;
@@ -1282,32 +1365,55 @@ function setupAwayDetection(){
   },true);
 }
 
+/* Merge seconds into activityLog for a domain */
+function _mergeTabTime(domain,seconds){
+  if(!domain||seconds<=0)return;
+  const existing=activityLog.find(a=>a.domain===domain);
+  if(existing){ existing.timeSeconds=(existing.timeSeconds||0)+seconds; existing.time=secToMin(existing.timeSeconds); }
+  else activityLog.push({domain,cat:catD(domain),timeSeconds:seconds,time:secToMin(seconds)});
+}
+
+/* Auto-set active tab when bookmarklet is used OR when returning to a known logged tab */
+function autoSetActiveTab(domain){
+  if(!domain)return;
+  /* Find closest match in activityLog */
+  const match=activityLog.find(a=>a.domain===domain||domain.includes(a.domain)||a.domain.includes(domain));
+  if(match){
+    activeDomain=match.domain;
+    renderTabBarChart();
+  }
+}
+
 /* Called when bookmarklet broadcasts a domain */
 function handleBookmarkletDomain(domain){
   const cleanDomain=domain.toLowerCase().replace(/^www\./,'');
   bookmarkletLastAt=Date.now();
   awayDomain=cleanDomain;
 
-  if(tracking){
-    if(document.hidden){
-      /* User is on another tab and just clicked bookmarklet —
-         we now know where they are. Start auto-accumulating. */
-      awayTabDomain=cleanDomain;
-      if(awayTabTimer)clearInterval(awayTabTimer);
-      awayTabTimer=setInterval(()=>{
-        if(!tracking||!document.hidden){ clearInterval(awayTabTimer);awayTabTimer=null;return; }
-        const entry=activityLog.find(a=>a.domain===cleanDomain);
-        if(entry){ entry.timeSeconds=(entry.timeSeconds||0)+1;entry.time=secToMin(entry.timeSeconds); }
-        else activityLog.push({domain:cleanDomain,cat:catD(cleanDomain),timeSeconds:1,time:'1m'});
-        if(Date.now()%15000<1100){ renderTabBarChart();saveEmp(); }
-      },1000);
-    }else{
-      /* User is on the tracker tab — auto-fill the domain input */
-      const inp=$('domain-input');
-      if(inp){inp.value=cleanDomain;inp.focus();}
-      const cat=$('cat-select');if(cat)cat.value=catD(cleanDomain);
-      showBanner(`📌 Bookmarklet: <b>${cleanDomain}</b> auto-filled — set minutes and click + Log tab`,'accent');
-    }
+  if(!tracking)return;
+
+  if(document.hidden){
+    /* On another tab — know where they are, start accumulating */
+    awayTabDomain=cleanDomain;
+    if(awayTabTimer)clearInterval(awayTabTimer);
+    awayTabTimer=setInterval(()=>{
+      if(!tracking||!document.hidden){ clearInterval(awayTabTimer);awayTabTimer=null;return; }
+      _mergeTabTime(cleanDomain,1);
+      /* Save every 10s */
+      if(Date.now()%10000<1100){ saveEmp(); renderTabBarChart(); }
+    },1000);
+    /* Auto-set as active domain immediately */
+    activeDomain=cleanDomain;
+    /* Log at least 1 second immediately so it appears */
+    _mergeTabTime(cleanDomain,1);
+    saveEmp();
+  }else{
+    /* On tracker tab — auto-fill input AND auto-set as active if already logged */
+    const inp=$('domain-input');
+    if(inp){inp.value=cleanDomain;inp.focus();}
+    const cat=$('cat-select');if(cat)cat.value=catD(cleanDomain);
+    autoSetActiveTab(cleanDomain);
+    showBanner(`📌 Bookmarklet: <b>${cleanDomain}</b> auto-filled & set active`,'accent');
   }
 }
 
@@ -1542,7 +1648,24 @@ function requestDeletion(){
 }
 
 /* ── MANAGER ── */
-function initMgr(){ manualRefresh(); setTimeout(()=>initCharts(),100); }
+function initMgr(){
+  manualRefresh();
+  setTimeout(()=>initCharts(),100);
+  /* Poll every 5s as fallback for file:// (storage events don't fire same-origin file://) */
+  setInterval(()=>{
+    if(currentUser&&currentUser.role==='manager'){
+      const emps=loadEmps();
+      /* Only re-render if data actually changed */
+      const sig=emps.map(e=>e.email+':'+(e.totalSeconds||0)+':'+(e.tracking?1:0)).join('|');
+      if(sig!==initMgr._lastSig){
+        initMgr._lastSig=sig;
+        updateBanner(emps);renderTables(emps);updateKPIs(emps);updateAlerts(emps);
+        setTxt('last-refreshed','🔄 Auto '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'}));
+      }
+    }
+  },5000);
+}
+initMgr._lastSig='';
 function manualRefresh(){
   const emps=loadEmps(), prev=loadPrevEmps();
   updateBanner(emps); renderTables(emps); updateKPIs(emps); updateAlerts(emps); renderPrevDayReport(prev);
@@ -1714,6 +1837,235 @@ function renderTables(emps){
 }
 function toggleEmpRow(uid){
   const r=$('emp-expand-'+uid);if(r)r.style.display=r.style.display==='none'?'table-row':'none';
+}
+
+function seedDemoEmployee(){
+  /* Seeds a demo employee into localStorage so manager can test the dashboard */
+  const demos=[
+    {name:'Arjun Mehta',email:'arjun.mehta@pw.live',totalSeconds:18000,activeSeconds:16200,idleSeconds:1800,
+     score:72,attendance:'present',tracking:true,sessionCount:1,totalQuestions:12,
+     activityLog:[
+       {domain:'classroom.google.com',cat:'work',timeSeconds:9000,time:'150m'},
+       {domain:'notion.so',cat:'work',timeSeconds:4800,time:'80m'},
+       {domain:'github.com',cat:'work',timeSeconds:2400,time:'40m'},
+       {domain:'youtube.com',cat:'neutral',timeSeconds:1200,time:'20m'},
+     ],
+     qHistory:[{count:8,note:'Physics Ch 4',time:'10:30 AM',ts:Date.now()},{count:4,note:'Math',time:'2:15 PM',ts:Date.now()}],
+     savedAt:Date.now(),savedDate:getTodayIST()},
+    {name:'Priya Sharma',email:'priya.sharma@pw.live',totalSeconds:22500,activeSeconds:21000,idleSeconds:1500,
+     score:88,attendance:'present',tracking:false,sessionCount:2,totalQuestions:20,
+     activityLog:[
+       {domain:'docs.google.com',cat:'work',timeSeconds:12000,time:'200m'},
+       {domain:'figma.com',cat:'work',timeSeconds:7200,time:'120m'},
+       {domain:'slack.com',cat:'work',timeSeconds:2400,time:'40m'},
+       {domain:'instagram.com',cat:'distract',timeSeconds:900,time:'15m'},
+     ],
+     qHistory:[{count:20,note:'Biology',time:'11:00 AM',ts:Date.now()}],
+     savedAt:Date.now(),savedDate:getTodayIST()},
+  ];
+  demos.forEach(d=>{ try{localStorage.setItem(LS+d.email,JSON.stringify(d));}catch(_){} });
+  manualRefresh();
+  showBanner('🧪 2 demo employees added — you can now test the dashboard. Remove them with the × in their rows.','accent');
+}
+
+function showStorageDebug(){
+  const p=$('storage-debug-panel');if(!p)return;
+  if(p.style.display==='block'){p.style.display='none';return;}
+  let html='<b>All localStorage keys on this origin:</b><br>';
+  try{
+    if(localStorage.length===0){ html+='<span style="color:var(--red)">localStorage is EMPTY</span><br>'; }
+    for(let i=0;i<localStorage.length;i++){
+      const k=localStorage.key(i);
+      const isPW=k&&k.startsWith(LS);
+      html+=`<span style="color:${isPW?'var(--green)':'var(--text3)'}">${isPW?'✓':'  '} ${k}</span><br>`;
+    }
+    const empKeys=[...Array(localStorage.length)].map((_,i)=>localStorage.key(i)).filter(k=>k&&k.startsWith(LS)&&!k.startsWith(LS+'prev_'));
+    html+=`<br><b>PW Tracker employee keys found: ${empKeys.length}</b><br>`;
+    empKeys.forEach(k=>{
+      try{
+        const d=JSON.parse(localStorage.getItem(k));
+        html+=`→ <b>${d.name}</b> (${d.email}) — ${fmtS(d.totalSeconds||0)} tracked, score: ${d.score||0}%, saved: ${d.savedDate||'?'}<br>`;
+      }catch(_){ html+=`→ ${k}: parse error<br>`; }
+    });
+  }catch(e){ html+='Error: '+e.message; }
+  p.innerHTML=html;
+  p.style.display='block';
+}
+
+/* ══════════════════════════════════════
+   TEAM ONBOARDING & GMAIL INVITE SYSTEM
+   ══════════════════════════════════════ */
+let invitees=[]; // [{name,email,role,sent}]
+
+function loadInvitees(){
+  try{ invitees=JSON.parse(localStorage.getItem('pwtracker_invitees')||'[]'); }catch(_){ invitees=[]; }
+}
+function saveInvitees(){
+  try{ localStorage.setItem('pwtracker_invitees',JSON.stringify(invitees)); }catch(_){}
+}
+
+function addInvitee(){
+  const nameEl=$('invite-name'), emailEl=$('invite-email'), roleEl=$('invite-role');
+  const rawEmail=(emailEl?emailEl.value.trim():'');
+  const email=rawEmail.includes('@')?rawEmail:rawEmail+'@pw.live';
+  const name=(nameEl?nameEl.value.trim():'')||email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+  const role=roleEl?roleEl.value:'employee';
+  if(!rawEmail){ if(emailEl)emailEl.focus(); return; }
+  if(!email.endsWith('@pw.live')){ showBanner('⚠ Only @pw.live emails can be added.','red'); return; }
+  if(invitees.find(i=>i.email===email)){ showBanner('⚠ '+email+' is already in the list.','amber'); return; }
+  invitees.push({name,email,role,sent:false,addedAt:Date.now()});
+  saveInvitees();
+  if(nameEl)nameEl.value='';
+  if(emailEl)emailEl.value='';
+  renderInviteeList();
+  if(emailEl)emailEl.focus();
+}
+
+function bulkAddInvitees(){
+  const ta=$('bulk-emails');
+  if(!ta||!ta.value.trim())return;
+  const lines=ta.value.split(/[\n,]+/).map(l=>l.trim()).filter(Boolean);
+  let added=0,skipped=0;
+  lines.forEach(line=>{
+    // Support "email, Name" or just "email"
+    const parts=line.split(/\s*,\s*/);
+    let rawEmail=parts[0].trim();
+    let name=parts[1]?parts[1].trim():'';
+    const email=rawEmail.includes('@')?rawEmail:rawEmail+'@pw.live';
+    if(!email.endsWith('@pw.live')){ skipped++; return; }
+    if(invitees.find(i=>i.email===email)){ skipped++; return; }
+    if(!name) name=email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+    invitees.push({name,email,role:'employee',sent:false,addedAt:Date.now()});
+    added++;
+  });
+  saveInvitees();
+  ta.value='';
+  renderInviteeList();
+  showBanner(`✅ Added ${added} employee${added>1?'s':''}${skipped?' ('+skipped+' skipped — not @pw.live or already added)':''}.`,'green');
+}
+
+function removeInvitee(email){
+  invitees=invitees.filter(i=>i.email!==email);
+  saveInvitees();
+  renderInviteeList();
+}
+
+function clearInvitees(){
+  if(!confirm('Clear the entire invite list?'))return;
+  invitees=[];
+  saveInvitees();
+  renderInviteeList();
+}
+
+function buildGmailUrl(invitee){
+  const trackerUrl=window.location.href.split('?')[0];
+  const subject=encodeURIComponent('You\'re invited to PW.live Time Tracker 🕐');
+  const body=encodeURIComponent(
+`Hi ${invitee.name.split(' ')[0]},
+
+You've been added to the PW.live Time Tracker by your manager.
+
+🔗 TRACKER LINK:
+${trackerUrl}
+
+📋 HOW TO GET STARTED:
+1. Open the link above in Chrome
+2. Select "${invitee.role==='manager'?'Manager':'Employee'}" role
+3. Enter your username: ${invitee.email.split('@')[0]}
+4. Password: PW@2026
+5. Mark your attendance → click "Start tracking"
+6. Log the tabs/domains you work on during the day
+
+⏰ WORK HOURS: 9:00 AM – 9:00 PM IST
+🎯 DAILY TARGET: 7.5 hours (Full Day) | 3.75 hours (Half Day)
+
+📌 PRO TIP — TAB TRACKER:
+In the app, click "Get bookmarklet" and drag it to your Chrome bookmarks bar.
+Then on ANY tab (Gmail, GitHub, Notion etc.), click it once to instantly
+log time on that tab. No manual entry needed!
+
+🔢 PRODUCTIVITY FORMULA:
+  (Minutes tracked + Questions curated × 5) × 100 ÷ 450 = Your daily score
+
+Questions? Reply to this email.
+
+Best,
+PW.live Team`
+  );
+  return `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(invitee.email)}&su=${subject}&body=${body}`;
+}
+
+function sendInvite(email){
+  const inv=invitees.find(i=>i.email===email);
+  if(!inv)return;
+  const url=buildGmailUrl(inv);
+  window.open(url,'_blank');
+  inv.sent=true;
+  inv.sentAt=Date.now();
+  saveInvitees();
+  renderInviteeList();
+}
+
+function sendAllInvites(){
+  const unsent=invitees.filter(i=>!i.sent);
+  if(!unsent.length){ showBanner('✅ All invites have already been sent!','green'); return; }
+  unsent.forEach((inv,idx)=>{
+    /* Stagger opens so browser doesn't block popups */
+    setTimeout(()=>{
+      const url=buildGmailUrl(inv);
+      window.open(url,'_blank');
+      inv.sent=true;
+      inv.sentAt=Date.now();
+      saveInvitees();
+      if(idx===unsent.length-1){ renderInviteeList(); showBanner(`✅ Opened Gmail for ${unsent.length} invite${unsent.length>1?'s':''}. Allow popups if blocked.`,'green'); }
+    }, idx*800);
+  });
+}
+
+function renderInviteeList(){
+  loadInvitees(); // always read fresh from localStorage
+  const list=$('invitee-list');
+  const countLabel=$('invite-count-label');
+  const sendRow=$('send-all-row');
+  if(!list)return;
+  if(countLabel){
+    const sent=invitees.filter(i=>i.sent).length;
+    countLabel.textContent=`${invitees.length} added · ${sent} invited · ${invitees.length-sent} pending`;
+  }
+  if(sendRow) sendRow.style.display=invitees.length?'flex':'none';
+  if(!invitees.length){
+    list.innerHTML=`<div style="text-align:center;padding:20px;color:var(--text3);font-size:13px">
+      No team members added yet. Enter a name and email above to get started.
+    </div>`;
+    return;
+  }
+  list.innerHTML=invitees.map(inv=>{
+    const roleBg=inv.role==='manager'?'var(--purplebg)':'var(--accentbg)';
+    const roleColor=inv.role==='manager'?'var(--purple)':'var(--accent)';
+    const sentBg=inv.sent?'var(--greenbg)':'var(--amberbg)';
+    const sentColor=inv.sent?'var(--green)':'var(--amber)';
+    const sentText=inv.sent?('✓ Sent '+(inv.sentAt?new Date(inv.sentAt).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}):'')):'Pending';
+    const safeEmail=inv.email.replace(/'/g,"\\'");
+    /* Check if this person has already started tracking */
+    const hasData=!!localStorage.getItem(LS+inv.email);
+    return `<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--bg2);border:1.5px solid ${inv.sent?'var(--greenborder)':'var(--border)'};border-radius:var(--radius2);transition:all .15s">
+      <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,${roleColor},var(--accent2));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:white;flex-shrink:0">${avI(inv.name)}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;font-size:13px;color:var(--text)">${inv.name}
+          ${hasData?'<span style="background:var(--greenbg);color:var(--green);border:1px solid var(--greenborder);border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:6px">✓ Active</span>':''}
+        </div>
+        <div style="font-size:11px;color:var(--text3)">${inv.email}</div>
+      </div>
+      <span style="background:${roleBg};color:${roleColor};border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700;flex-shrink:0">${inv.role}</span>
+      <span style="background:${sentBg};color:${sentColor};border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600;flex-shrink:0;white-space:nowrap">${sentText}</span>
+      <button onclick="sendInvite('${safeEmail}')" title="${inv.sent?'Re-send invite':'Send Gmail invite'}"
+        style="background:${inv.sent?'var(--bg3)':'linear-gradient(135deg,#ea4335,#fbbc04)'};color:${inv.sent?'var(--text3)':'white'};border:${inv.sent?'1px solid var(--border)':'none'};border-radius:var(--radius2);padding:7px 13px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:5px">
+        <svg viewBox="0 0 20 20" width="13" height="13" fill="currentColor"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/></svg>
+        ${inv.sent?'Re-send':'Send invite'}
+      </button>
+      <button onclick="removeInvitee('${safeEmail}')" style="background:var(--redbg);color:var(--red);border:1px solid var(--redborder);border-radius:6px;padding:6px 9px;font-size:11px;cursor:pointer;flex-shrink:0">✕</button>
+    </div>`;
+  }).join('');
 }
 
 function exportCSV(){
