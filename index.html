@@ -644,25 +644,39 @@ input,select,textarea{font-family:inherit;outline:none}
           </div>
         </div>
 
-        <!-- Onboarding helper — always visible, collapsible -->
-        <div id="mgr-onboard-help" style="background:var(--accentbg);border:1.5px solid var(--accentbg2);border-radius:var(--radius2);padding:14px 18px;margin-bottom:16px;font-size:12.5px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0" id="mgr-onboard-header" onclick="const b=document.getElementById('mgr-onboard-body');b.style.display=b.style.display==='none'?'block':'none'" style="cursor:pointer">
-            <span style="font-weight:700;color:var(--accent);font-size:13px;cursor:pointer">📋 How to see employees here</span>
+        <!-- Quick-add employee panel -->
+        <div id="mgr-onboard-help" style="background:var(--accentbg);border:1.5px solid var(--accentbg2);border-radius:var(--radius2);padding:16px 18px;margin-bottom:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <span style="font-weight:700;color:var(--accent);font-size:13px">➕ Add &amp; invite team members</span>
             <button onclick="document.getElementById('mgr-onboard-help').style.display='none'" style="background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:0 4px">×</button>
           </div>
-          <div id="mgr-onboard-body" style="margin-top:10px;color:var(--text2);line-height:2">
-            <b style="color:var(--text)">Same browser, same device (current setup):</b><br>
-            1. Open this same HTML file in a <b>new Chrome tab</b><br>
-            2. Sign in as <b>Employee</b> (any @pw.live username, password: <code style="background:var(--bg2);padding:1px 6px;border-radius:4px;color:var(--accent)">PW@2026</code>)<br>
-            3. Mark attendance → click <b>Start tracking</b> → log some domains<br>
-            4. Come back here → data appears automatically every 5 seconds<br>
-            <div style="margin-top:8px;padding:8px 12px;background:var(--amberbg);border-radius:8px;border:1px solid var(--amberborder);color:var(--amber);font-size:12px">
-              ⚠ <b>Important:</b> Both tabs must open the <em>exact same file</em> from the <em>same local path</em>. If one tab uses a different path, they won't share storage.
+          <!-- Quick-add row -->
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+            <input id="quick-add-name" type="text" placeholder="Full name"
+              style="flex:1;min-width:130px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius2);padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit;outline:none"
+              onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"
+              onkeydown="if(event.key==='Enter')document.getElementById('quick-add-email').focus()"/>
+            <div style="position:relative;flex:1.4;min-width:160px">
+              <input id="quick-add-email" type="text" placeholder="username"
+                style="width:100%;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius2);padding:9px 65px 9px 12px;font-size:13px;color:var(--text);font-family:inherit;outline:none"
+                onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"
+                onkeydown="if(event.key==='Enter')quickAddAndInvite()"/>
+              <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--accent);font-size:11px;font-weight:700;background:var(--accentbg);padding:1px 6px;border-radius:4px">@pw.live</span>
             </div>
-            <div style="margin-top:8px">
-              <button onclick="seedDemoEmployee()" style="background:var(--accent);color:white;border:none;border-radius:var(--radius2);padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;margin-right:8px">🧪 Add demo employee (test)</button>
-              <button onclick="showStorageDebug()" style="background:var(--bg2);color:var(--text2);border:1px solid var(--border);border-radius:var(--radius2);padding:8px 14px;font-size:12px;cursor:pointer">🔍 Debug storage</button>
-            </div>
+            <button onclick="quickAddAndInvite()"
+              style="background:linear-gradient(135deg,#ea4335,#fbbc04);color:white;border:none;border-radius:var(--radius2);padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px;white-space:nowrap;box-shadow:0 2px 8px rgba(234,67,53,.25)">
+              <svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/></svg>
+              Add &amp; Send Gmail invite
+            </button>
+          </div>
+          <div id="quick-add-result" style="display:none;font-size:12px;padding:7px 12px;border-radius:var(--radius2);margin-bottom:6px"></div>
+          <div style="font-size:11px;color:var(--text3);line-height:1.7">
+            Adds the person to the invite list and opens Gmail with a pre-filled onboarding email. Go to <b>Settings → Onboard Your Team</b> to manage the full list and resend invites.
+          </div>
+          <!-- Debug storage -->
+          <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px">
+            <button onclick="showStorageDebug()" style="background:var(--bg2);color:var(--text2);border:1px solid var(--border);border-radius:var(--radius2);padding:6px 12px;font-size:11px;cursor:pointer">🔍 Debug storage</button>
+            <span style="font-size:11px;color:var(--text3);margin-left:8px">Shows all localStorage keys — useful if employees aren't appearing</span>
           </div>
         </div>
         <!-- Storage debug panel -->
@@ -831,6 +845,20 @@ input,select,textarea{font-family:inherit;outline:none}
             <span style="font-size:12px;color:var(--text3)">Opens Gmail compose for each unsent invite</span>
             <button onclick="clearInvitees()" style="margin-left:auto;background:var(--redbg);color:var(--red);border:1px solid var(--redborder);border-radius:var(--radius2);padding:8px 14px;font-size:12px;cursor:pointer;font-weight:600">Clear all</button>
           </div>
+        </div>
+
+        <div class="consent-card">
+          <h3 style="font-family:'Syne',sans-serif;font-size:16px;margin-bottom:6px;font-weight:700">Manager Access Control</h3>
+          <p style="font-size:12px;color:var(--text2);margin-bottom:16px">Only these @pw.live emails can log in as Manager. Changes take effect immediately.</p>
+          <div id="manager-whitelist-list" style="margin-bottom:12px"></div>
+          <div style="display:flex;gap:8px">
+            <input id="new-manager-email" type="text" placeholder="username (auto @pw.live)"
+              style="flex:1;background:var(--bg3);border:1.5px solid var(--border);border-radius:var(--radius2);padding:9px 13px;font-size:13px;color:var(--text);font-family:inherit;outline:none"
+              onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"
+              onkeydown="if(event.key==='Enter')addManagerEmail()"/>
+            <button onclick="addManagerEmail()" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;border:none;border-radius:var(--radius2);padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer">+ Add Manager</button>
+          </div>
+          <div style="margin-top:10px;font-size:11px;color:var(--text3)">⚠ Always keep at least one manager in the list. You cannot remove your own email while logged in.</div>
         </div>
 
         <div class="consent-card">
@@ -1015,6 +1043,9 @@ function checkDailyReset(email){
   }catch(_){}
 }
 
+/* ── QUESTIONS ── */
+function totalQuestionsToday(){ return qHistory.reduce((s,e)=>s+(parseInt(e.count)||0),0); }
+
 /* ── ATTENDANCE ── */
 function getTargetMins(){
   if(attendanceStatus==='leave'||attendanceStatus==='off')return 0;
@@ -1034,14 +1065,79 @@ function attendColor(s){
   return{present:'var(--green)',halfday:'var(--amber)',leave:'var(--red)',off:'var(--text3)'}[s]||'var(--text3)';
 }
 
-/* ── QUESTIONS ── */
-function totalQuestionsToday(){ return qHistory.reduce((s,e)=>s+(parseInt(e.count)||0),0); }
+/* ══════════════════════════════
+   MANAGER WHITELIST
+   Stored in localStorage so it's
+   editable from the Settings page.
+   ══════════════════════════════ */
+const MGR_KEY='pwtracker_managers';
+const DEFAULT_MANAGERS=['aditya.malik@pw.live','manager@pw.live'];
+
+function getManagerList(){
+  try{
+    const raw=localStorage.getItem(MGR_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(_){}
+  /* First time — seed defaults and save */
+  localStorage.setItem(MGR_KEY,JSON.stringify(DEFAULT_MANAGERS));
+  return [...DEFAULT_MANAGERS];
+}
+function saveManagerList(list){
+  try{ localStorage.setItem(MGR_KEY,JSON.stringify(list)); }catch(_){}
+}
+function isManagerAllowed(email){
+  return getManagerList().includes(email.toLowerCase());
+}
+
+function renderManagerWhitelist(){
+  const el=$('manager-whitelist-list');if(!el)return;
+  const list=getManagerList();
+  if(!list.length){
+    el.innerHTML='<div style="font-size:12px;color:var(--red);padding:8px 0">⚠ No managers defined — all @pw.live users can log in as Manager.</div>';
+    return;
+  }
+  el.innerHTML=list.map(email=>{
+    const isSelf=currentUser&&currentUser.email===email;
+    const safeEmail=email.replace(/'/g,"\\'");
+    return`<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius2);margin-bottom:6px">
+      <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:11px;color:white;flex-shrink:0">${avI(email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase()))}</div>
+      <div style="flex:1">
+        <div style="font-weight:600;font-size:13px;color:var(--text)">${email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}</div>
+        <div style="font-size:11px;color:var(--text3)">${email}${isSelf?' <span style="color:var(--accent)">(you)</span>':''}</div>
+      </div>
+      <span style="background:var(--purplebg);color:var(--purple);border-radius:20px;padding:2px 9px;font-size:11px;font-weight:700">Manager</span>
+      <button onclick="removeManagerEmail('${safeEmail}')" ${isSelf?'disabled title="Cannot remove yourself"':''} style="background:${isSelf?'var(--bg4)':'var(--redbg)'};color:${isSelf?'var(--text3)':'var(--red)'};border:1px solid ${isSelf?'var(--border)':'var(--redborder)'};border-radius:6px;padding:5px 9px;font-size:11px;cursor:${isSelf?'not-allowed':'pointer'};font-weight:600">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function addManagerEmail(){
+  const inp=$('new-manager-email');if(!inp)return;
+  const raw=inp.value.trim().toLowerCase();
+  const email=raw.includes('@')?raw:raw+'@pw.live';
+  if(!email.endsWith('@pw.live')){ alert('Only @pw.live emails allowed.'); return; }
+  const list=getManagerList();
+  if(list.includes(email)){ alert(email+' is already a manager.'); return; }
+  list.push(email);
+  saveManagerList(list);
+  inp.value='';
+  renderManagerWhitelist();
+}
+
+function removeManagerEmail(email){
+  if(currentUser&&currentUser.email===email){ alert('You cannot remove your own manager access.'); return; }
+  const list=getManagerList().filter(e=>e!==email);
+  if(!list.length){ if(!confirm('This will remove ALL managers — anyone can then log in as Manager. Continue?'))return; }
+  saveManagerList(list);
+  renderManagerWhitelist();
+}
 
 /* ── LOCALSTORAGE BRIDGE ── */
 function saveEmp(){
   if(!currentUser||currentUser.role!=='employee')return;
   const payload={
     name:currentUser.name, email:currentUser.email,
+    role:'employee',
     tracking, totalSeconds, activeSeconds, idleSeconds, sessionCount,
     activityLog, qHistory, totalQuestions:totalQuestionsToday(),
     score:computeScore(), attendance:attendanceStatus,
@@ -1054,11 +1150,20 @@ function saveEmp(){
 function loadEmps(){
   const list=[];
   try{
-    for(let i=0;i<localStorage.length;i++){
-      const k=localStorage.key(i);
-      if(k&&k.startsWith(LS)&&!k.startsWith(LS+'prev_')){
-        try{ const d=JSON.parse(localStorage.getItem(k)); if(d&&d.email&&d.email.endsWith('@pw.live'))list.push(d); }catch(_){}
-      }
+    /* Collect all keys first (avoids index-shifting bug during iteration) */
+    const keys=[];
+    for(let i=0;i<localStorage.length;i++) keys.push(localStorage.key(i));
+    for(const k of keys){
+      if(!k||!k.startsWith(LS)||k.startsWith(LS+'prev_')||k===LS+'_logged_email'||k===LS+'invitees')continue;
+      try{
+        const d=JSON.parse(localStorage.getItem(k));
+        if(!d||!d.email||!d.email.endsWith('@pw.live'))continue;
+        /* Exclude the currently-logged-in manager's own entry */
+        if(currentUser&&currentUser.role==='manager'&&d.email===currentUser.email)continue;
+        /* Exclude entries that have manager role saved in them */
+        if(d.role==='manager')continue;
+        list.push(d);
+      }catch(_){}
     }
   }catch(_){}
   return list;
@@ -1185,6 +1290,11 @@ function doLogin(){
     err.innerHTML='⚠ Wrong password. <span style="font-size:11px;color:var(--text3)">Hint: PW@2026</span>';
     err.classList.remove('hidden');$('pass-input').value='';return;
   }
+  /* Manager whitelist check */
+  if(selectedRole==='manager'&&!isManagerAllowed(email)){
+    err.innerHTML='⚠ <b>'+email+'</b> is not authorised as a Manager. Contact your admin.';
+    err.classList.remove('hidden');return;
+  }
   err.classList.add('hidden');
   const name=email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
   loginSuccess({name,email,role:selectedRole});
@@ -1205,6 +1315,10 @@ function confirmOAuth(){
   const err=$('oauth-error');
   if(!raw){err.textContent='⚠ Enter your @pw.live email.';err.classList.remove('hidden');return;}
   if(!email.endsWith('@pw.live')){err.textContent='⚠ Must be a @pw.live account.';err.classList.remove('hidden');return;}
+  /* Manager whitelist check */
+  if(selectedRole==='manager'&&!isManagerAllowed(email)){
+    err.innerHTML='⚠ <b>'+email+'</b> is not authorised as Manager.';err.classList.remove('hidden');return;
+  }
   err.classList.add('hidden');closeOAuthModal();
   const name=email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
   loginSuccess({name,email,role:selectedRole});
@@ -1253,6 +1367,17 @@ function loginSuccess(user,skipSave=false){
     $('page-overview').classList.add('active');
     renderGreeting('mgr-',user.name);
     loadInvitees();
+    /* Remove any stale employee-role localStorage entry for this manager email
+       so it doesn't pollute the employee list */
+    try{
+      const stale=localStorage.getItem(LS+user.email);
+      if(stale){
+        const sd=JSON.parse(stale);
+        /* Archive it as prev data then remove from current */
+        if(sd&&sd.savedDate) localStorage.setItem(LS+'prev_'+user.email,JSON.stringify({...sd,archivedDate:sd.savedDate}));
+        localStorage.removeItem(LS+user.email);
+      }
+    }catch(_){}
     initMgr();
   }
 }
@@ -1277,7 +1402,7 @@ function showPage(page,el){
     manualRefresh();
     setTimeout(()=>initCharts(),80);
   }
-  if(page==='settings') renderInviteeList();
+  if(page==='settings'){ renderInviteeList(); renderManagerWhitelist(); }
 }
 
 /* ── IDLE DETECTION ── */
@@ -1649,23 +1774,19 @@ function requestDeletion(){
 
 /* ── MANAGER ── */
 function initMgr(){
-  manualRefresh();
-  setTimeout(()=>initCharts(),100);
-  /* Poll every 5s as fallback for file:// (storage events don't fire same-origin file://) */
-  setInterval(()=>{
-    if(currentUser&&currentUser.role==='manager'){
-      const emps=loadEmps();
-      /* Only re-render if data actually changed */
-      const sig=emps.map(e=>e.email+':'+(e.totalSeconds||0)+':'+(e.tracking?1:0)).join('|');
-      if(sig!==initMgr._lastSig){
-        initMgr._lastSig=sig;
-        updateBanner(emps);renderTables(emps);updateKPIs(emps);updateAlerts(emps);
-        setTxt('last-refreshed','🔄 Auto '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'}));
-      }
-    }
-  },5000);
+  /* Use rAF so the DOM is fully painted before we try to populate tables */
+  requestAnimationFrame(()=>{
+    manualRefresh();
+    /* Init charts slightly later so canvas has measurable dimensions */
+    setTimeout(()=>initCharts(),120);
+  });
+  /* Poll every 4s — always re-render, no sig-gate that could block updates */
+  if(initMgr._timer) clearInterval(initMgr._timer);
+  initMgr._timer=setInterval(()=>{
+    if(currentUser&&currentUser.role==='manager') manualRefresh();
+  },4000);
 }
-initMgr._lastSig='';
+initMgr._timer=null;
 function manualRefresh(){
   const emps=loadEmps(), prev=loadPrevEmps();
   updateBanner(emps); renderTables(emps); updateKPIs(emps); updateAlerts(emps); renderPrevDayReport(prev);
@@ -1675,11 +1796,21 @@ function updateBanner(emps){
   const b=$('data-status-banner');if(!b)return;
   if(!emps.length){
     b.className='data-status empty';
-    b.innerHTML=`<div class="data-status-icon">⚠️</div><div class="data-status-msg"><strong>No employee data yet</strong><span>Open this file in another tab → sign in as Employee → Start tracking → log tabs. Then click Refresh.</span></div>`;
+    b.innerHTML=`<div class="data-status-icon">⚠️</div>
+      <div class="data-status-msg">
+        <strong>No employee data found in this browser</strong>
+        <span>Employees must open this <em>same HTML file</em> in a new tab of <em>this browser</em>, sign in as Employee, and start tracking. Data auto-refreshes every 4 seconds — no manual refresh needed.</span>
+      </div>`;
   }else{
     b.className='data-status has-data';
     const act=emps.filter(e=>e.tracking).length;
-    b.innerHTML=`<div class="data-status-icon">✅</div><div class="data-status-msg"><strong>${emps.length} employee${emps.length>1?'s':''} found — ${act} live</strong><span>Auto-refreshes on BroadcastChannel. Click Refresh for full reload.</span></div>`;
+    const today=getTodayIST();
+    const todayEmps=emps.filter(e=>e.savedDate===today).length;
+    b.innerHTML=`<div class="data-status-icon">✅</div>
+      <div class="data-status-msg">
+        <strong>${emps.length} employee${emps.length>1?'s':''} found — ${act} currently tracking live${todayEmps<emps.length?' ('+todayEmps+' active today)':''}</strong>
+        <span>Auto-refreshing every 4 seconds. Last updated: ${new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</span>
+      </div>`;
   }
 }
 function updateKPIs(emps){
@@ -1839,33 +1970,42 @@ function toggleEmpRow(uid){
   const r=$('emp-expand-'+uid);if(r)r.style.display=r.style.display==='none'?'table-row':'none';
 }
 
-function seedDemoEmployee(){
-  /* Seeds a demo employee into localStorage so manager can test the dashboard */
-  const demos=[
-    {name:'Arjun Mehta',email:'arjun.mehta@pw.live',totalSeconds:18000,activeSeconds:16200,idleSeconds:1800,
-     score:72,attendance:'present',tracking:true,sessionCount:1,totalQuestions:12,
-     activityLog:[
-       {domain:'classroom.google.com',cat:'work',timeSeconds:9000,time:'150m'},
-       {domain:'notion.so',cat:'work',timeSeconds:4800,time:'80m'},
-       {domain:'github.com',cat:'work',timeSeconds:2400,time:'40m'},
-       {domain:'youtube.com',cat:'neutral',timeSeconds:1200,time:'20m'},
-     ],
-     qHistory:[{count:8,note:'Physics Ch 4',time:'10:30 AM',ts:Date.now()},{count:4,note:'Math',time:'2:15 PM',ts:Date.now()}],
-     savedAt:Date.now(),savedDate:getTodayIST()},
-    {name:'Priya Sharma',email:'priya.sharma@pw.live',totalSeconds:22500,activeSeconds:21000,idleSeconds:1500,
-     score:88,attendance:'present',tracking:false,sessionCount:2,totalQuestions:20,
-     activityLog:[
-       {domain:'docs.google.com',cat:'work',timeSeconds:12000,time:'200m'},
-       {domain:'figma.com',cat:'work',timeSeconds:7200,time:'120m'},
-       {domain:'slack.com',cat:'work',timeSeconds:2400,time:'40m'},
-       {domain:'instagram.com',cat:'distract',timeSeconds:900,time:'15m'},
-     ],
-     qHistory:[{count:20,note:'Biology',time:'11:00 AM',ts:Date.now()}],
-     savedAt:Date.now(),savedDate:getTodayIST()},
-  ];
-  demos.forEach(d=>{ try{localStorage.setItem(LS+d.email,JSON.stringify(d));}catch(_){} });
-  manualRefresh();
-  showBanner('🧪 2 demo employees added — you can now test the dashboard. Remove them with the × in their rows.','accent');
+function quickAddAndInvite(){
+  const nameEl=$('quick-add-name'), emailEl=$('quick-add-email');
+  const raw=(emailEl?emailEl.value.trim():'');
+  const email=raw.includes('@')?raw.toLowerCase():raw.toLowerCase()+'@pw.live';
+  const name=(nameEl?nameEl.value.trim():'')||email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+  const result=$('quick-add-result');
+  if(!raw){ if(emailEl)emailEl.focus(); return; }
+  if(!email.endsWith('@pw.live')){
+    if(result){ result.style.display='block'; result.style.background='var(--redbg)'; result.style.color='var(--red)'; result.style.border='1px solid var(--redborder)'; result.textContent='⚠ Only @pw.live emails allowed.'; }
+    return;
+  }
+  /* Add to invitee list */
+  loadInvitees();
+  const alreadyIn=invitees.find(i=>i.email===email);
+  if(!alreadyIn){
+    invitees.push({name,email,role:'employee',sent:false,addedAt:Date.now()});
+    saveInvitees();
+  }
+  /* Open Gmail compose */
+  const inv={name,email,role:'employee'};
+  const gmailUrl=buildGmailUrl(inv);
+  window.open(gmailUrl,'_blank');
+  /* Mark sent */
+  const entry=invitees.find(i=>i.email===email);
+  if(entry){entry.sent=true;entry.sentAt=Date.now();saveInvitees();}
+  /* Show feedback */
+  if(result){
+    result.style.display='block';
+    result.style.background='var(--greenbg)';
+    result.style.color='var(--green)';
+    result.style.border='1px solid var(--greenborder)';
+    result.innerHTML=`✅ Gmail invite opened for <b>${name}</b> (${email}). Also added to Settings → Onboard list.`;
+    setTimeout(()=>{ result.style.display='none'; },6000);
+  }
+  if(nameEl)nameEl.value='';
+  if(emailEl)emailEl.value='';
 }
 
 function showStorageDebug(){
