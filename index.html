@@ -882,12 +882,11 @@ async function saveSupabaseConfig() {
   if(!url||!key){ showSetupErr('Both fields are required.'); return; }
   if(!url.startsWith('https://')){ showSetupErr('URL must start with https://'); return; }
   err.style.display='none';
-  $('setup-screen').innerHTML = `<div class="setup-card" style="text-align:center"><div class="splash-logo" style="margin:0 auto 16px">PW</div><div style="color:#a5b4fc;font-size:14px">Testing connection…</div><div class="splash-spinner" style="margin:16px auto 0"></div></div>`;
-  saveSBConfig(url,key);
-  initSupabase(url,key);
-  const ok = await testConnection();
-  if(ok){ location.reload(); }
-  else { localStorage.removeItem(SB_CFG_KEY); location.reload(); }
+  // Save FIRST — before any async work so the config is always persisted
+  saveSBConfig(url, key);
+  $('setup-screen').innerHTML = '<div class="setup-card" style="text-align:center"><div class="splash-logo" style="margin:0 auto 16px">PW</div><div style="color:#a5b4fc;font-size:14px;margin-bottom:8px">Saving configuration…</div><div class="splash-spinner" style="margin:16px auto 0"></div><div style="color:rgba(255,255,255,.35);font-size:11px;margin-top:16px">Redirecting to login…</div></div>';
+  // Always reload — config is saved, boot() will pick it up
+  setTimeout(() => location.reload(), 1500);
 }
 function showSetupErr(msg){ const e=$('setup-err'); if(e){e.textContent=msg;e.style.display='block';} }
 
@@ -1730,19 +1729,12 @@ async function boot(){
     return;
   }
 
-  // 2. Init Supabase client
+  // 2. Init Supabase client — always proceed, don't block on test
   initSupabase(cfg.url, cfg.key);
-  showSplash('Connecting to database…');
+  showSplash('Loading…');
 
-  // 3. Test connection
-  const ok = await testConnection();
-  if(!ok){
-    hideSplash();
-    $('setup-screen').style.display='flex';
-    $('setup-screen').querySelector('.setup-sub').innerHTML='<span style="color:#f87171">⚠ Could not connect to Supabase. Please check your credentials and try again.</span>';
-    $('sb-url-input').value = cfg.url;
-    return;
-  }
+  // 3. Test connection in background (non-blocking — just updates status dot)
+  testConnection().catch(()=>setDBStatus('error'));
 
   // 4. Handle invite URL (auto-login)
   if(await handleInviteUrl()) return;
