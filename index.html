@@ -768,16 +768,6 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
 <script>
 /* ═══════════════════════════════════════════════════════════════
    PW TIMETRACKER — SUPABASE EDITION
-   ───────────────────────────────────────────────────────────────
-   Architecture:
-   • Employee opens invite link → credentials decoded from URL →
-     stored in their localStorage → they log in
-   • Every 5s while tracking: employee upserts row to
-     supabase `pw_employees` table
-   • Manager dashboard: reads from `pw_employees` every 4s
-     (also subscribes to realtime changes)
-   • Credentials: stored in `pw_credentials` table so
-     employees can log in manually on any device
    ═══════════════════════════════════════════════════════════════ */
 
 /* ══ HARD-CODED CONSTANTS ══ */
@@ -786,11 +776,11 @@ const MGR_PASS_KEY = 'pwt_mgr_pass';
 function getMgrPass(){ return localStorage.getItem(MGR_PASS_KEY)||'PW@2026'; }
 function setMgrPass(p){ localStorage.setItem(MGR_PASS_KEY,p); }
 const SS_KEY        = 'pwt_session';
-const SB_CFG_KEY    = 'pwt_supabase';   // {url, key}
-const LOCAL_CRED    = 'pwt_creds';      // {email→pass} local cache
+const SB_CFG_KEY    = 'pwt_supabase';
+const LOCAL_CRED    = 'pwt_creds';
 
 /* ══ SUPABASE STATE ══ */
-let sbClient = null;   // Supabase JS client
+let sbClient = null;
 let realtimeSub = null;
 
 /* ══ APP STATE ══ */
@@ -800,7 +790,7 @@ let activityLog = [], qHistory = [], chartInstances = {}, attendanceStatus = 'pr
 let lastActivity = Date.now(), isIdle = false, hiddenSince = null;
 let activeDomain = null, awayStart = null, awayTabDomain = null, awayTabTimer = null;
 let workWatchdog = null, idleDetectInterval = null;
-let employees = [];   // [{email, name, pass}] loaded from Supabase
+let employees = [];
 
 /* ══ UTILS ══ */
 const fmtS = s => { const h=Math.floor(s/3600),m=Math.floor((s%3600)/60); return h>0?`${h}h ${m}m`:`${m}m`; };
@@ -868,28 +858,43 @@ function resetSupabaseConfig() {
 }
 
 function initSupabase(url, key) {
-  // No custom headers — they cause DataCloneError when Supabase tries to clone them
   sbClient = window.supabase.createClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
   });
   setDBStatus('connecting');
 }
 
+/* ══ FIX 1: testConnection uses sbClient (no raw fetch = no CORS issues)
+   + falls back to a HEAD ping
+   + called immediately and retried every 15s                         ══ */
 async function testConnection() {
   if(!sbClient) return false;
   try {
-    const cfg = getSBConfig();
-    if(!cfg) return false;
-    const res = await fetch(cfg.url + '/rest/v1/pw_credentials?select=email&limit=1', {
-      headers: { 'apikey': cfg.key, 'Authorization': 'Bearer ' + cfg.key }
-    });
-    if(res.ok || res.status === 406 || res.status === 200) {
-      setDBStatus('connected'); return true;
-    }
-    throw new Error('HTTP ' + res.status);
+    // Use the official JS client — it handles auth headers & CORS correctly
+    const { error } = await sbClient.from('pw_credentials').select('email').limit(1);
+    // PGRST116 = "no rows" (empty table) — server IS reachable and responding
+    if(error && error.code !== 'PGRST116') throw error;
+    setDBStatus('connected');
+    return true;
   } catch(e) {
-    console.warn('Connection test:', e.message || e);
-    setDBStatus('error'); return false;
+    // Fallback: plain HEAD ping — ANY HTTP response means the server is up
+    try {
+      const cfg = getSBConfig();
+      if(cfg) {
+        const res = await fetch(cfg.url + '/rest/v1/', {
+          method: 'HEAD',
+          headers: { 'apikey': cfg.key }
+        });
+        // Any status code below 600 = got a real HTTP response = connected
+        if(res.status < 600) {
+          setDBStatus('connected');
+          return true;
+        }
+      }
+    } catch(_) { /* network totally unreachable */ }
+    console.warn('DB connection failed:', e.message || e);
+    setDBStatus('error');
+    return false;
   }
 }
 
@@ -909,20 +914,16 @@ async function saveSupabaseConfig() {
   if(!url||!key){ showSetupErr('Both fields are required.'); return; }
   if(!url.startsWith('https://')){ showSetupErr('URL must start with https://'); return; }
   err.style.display='none';
-  // Save FIRST — before any async work so the config is always persisted
   saveSBConfig(url, key);
   $('setup-screen').innerHTML = '<div class="setup-card" style="text-align:center"><div class="splash-logo" style="margin:0 auto 16px">PW</div><div style="color:#a5b4fc;font-size:14px;margin-bottom:8px">Saving configuration…</div><div class="splash-spinner" style="margin:16px auto 0"></div><div style="color:rgba(255,255,255,.35);font-size:11px;margin-top:16px">Redirecting to login…</div></div>';
-  // Always reload — config is saved, boot() will pick it up
   setTimeout(() => location.reload(), 1500);
 }
 function showSetupErr(msg){ const e=$('setup-err'); if(e){e.textContent=msg;e.style.display='block';} }
 
 /* ═══════════════════════════════════════════════════════
    SUPABASE DATA LAYER
-   Replaces all localStorage read/write for tracking data
    ═══════════════════════════════════════════════════════ */
 
-// Save employee state to Supabase
 async function saveToSupabase() {
   if(!currentUser||currentUser.role!=='employee'||!sbClient) return;
   const payload = {
@@ -945,11 +946,12 @@ async function saveToSupabase() {
   };
   try {
     const {error} = await sbClient.from('pw_employees').upsert(payload, {onConflict:'email'});
-    if(error) console.error('Save error:', error);
-  } catch(e){ console.error('Save exception:', e); }
+    /* ══ FIX 3: update status dot on every save ══ */
+    if(error) { console.error('Save error:', error); setDBStatus('error'); }
+    else { setDBStatus('connected'); }
+  } catch(e){ console.error('Save exception:', e); setDBStatus('error'); }
 }
 
-// Load own state on login (if today's data exists)
 async function loadFromSupabase(email) {
   if(!sbClient) return null;
   try {
@@ -961,27 +963,26 @@ async function loadFromSupabase(email) {
   } catch(_){ return null; }
 }
 
-// Manager: load all employees from Supabase
+/* ══ FIX 2: loadAllEmployees updates the status dot on success / failure ══ */
 async function loadAllEmployees() {
   if(!sbClient) return [];
   try {
     const {data,error} = await sbClient.from('pw_employees').select('*').order('updated_at',{ascending:false});
     if(error) throw error;
+    setDBStatus('connected'); /* ← dot turns green after every successful poll */
     const today = todayIST();
     return (data||[])
       .map(r=>r.data||{})
       .filter(d=>d.email && d.email!==MANAGER_EMAIL && d.role!=='manager')
       .filter(d=>d.savedDate===today || (d.savedAt&&Date.now()-d.savedAt<43200000));
-  } catch(e){ console.error('loadAll error:',e); return []; }
+  } catch(e){ console.error('loadAll error:',e); setDBStatus('error'); return []; }
 }
 
-// Save employee credentials to Supabase (so they can log in from any device)
 async function saveCredential(email, pass, name) {
   if(!sbClient) return;
   try {
     await sbClient.from('pw_credentials').upsert({email:email.toLowerCase(), pass, name}, {onConflict:'email'});
   } catch(e){ console.error('cred save error:',e); }
-  // Also cache locally
   try {
     const store = JSON.parse(localStorage.getItem(LOCAL_CRED)||'{}');
     store[email.toLowerCase()] = {pass, name};
@@ -989,20 +990,16 @@ async function saveCredential(email, pass, name) {
   } catch(_){}
 }
 
-// Get credential: check local cache first, then Supabase
 async function getCredential(email) {
   const norm = email.toLowerCase();
-  // Local cache first
   try {
     const store = JSON.parse(localStorage.getItem(LOCAL_CRED)||'{}');
     if(store[norm]) return store[norm];
   } catch(_){}
-  // Fallback to Supabase
   if(!sbClient) return null;
   try {
     const {data,error} = await sbClient.from('pw_credentials').select('pass,name').eq('email',norm).single();
     if(error||!data) return null;
-    // Cache it locally for next time
     const store = JSON.parse(localStorage.getItem(LOCAL_CRED)||'{}');
     store[norm] = {pass:data.pass, name:data.name};
     localStorage.setItem(LOCAL_CRED, JSON.stringify(store));
@@ -1010,7 +1007,6 @@ async function getCredential(email) {
   } catch(_){ return null; }
 }
 
-// Load all credential records (for manager's employee list)
 async function loadCredentials() {
   if(!sbClient) return [];
   try {
@@ -1020,16 +1016,12 @@ async function loadCredentials() {
   } catch(_){ return []; }
 }
 
-// Subscribe to realtime changes for manager
 function subscribeRealtime() {
-  // Disabled — realtime causes DataCloneError; 4s polling handles updates
+  // Disabled — realtime causes DataCloneError; polling handles updates
 }
 
 /* ═══════════════════════════════════════════════════════
    URL-BASED INVITE AUTO-LOGIN
-   Link: tracker?e=B64EMAIL&p=B64PASS&n=B64NAME
-   When employee clicks → credentials saved to their device
-   + Supabase → auto signed in
    ═══════════════════════════════════════════════════════ */
 function buildInviteUrl(email, pass, name) {
   const base = window.location.href.split('?')[0];
@@ -1045,7 +1037,6 @@ async function handleInviteUrl() {
     const pass  = atob(decodeURIComponent(p64));
     const name  = n64 ? atob(decodeURIComponent(n64)) : email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
     if(!email.endsWith('@pw.live')||email===MANAGER_EMAIL) return false;
-    // Save creds locally + to Supabase
     await saveCredential(email, pass, name);
     window.history.replaceState({},document.title,window.location.pathname);
     showSplash(`Welcome, ${name.split(' ')[0]}! Signing you in…`);
@@ -1082,7 +1073,6 @@ async function doLogin() {
   if(!email.endsWith('@pw.live')){ showErr('⚠ Only @pw.live accounts allowed.'); return; }
   if(!pass){ showErr('⚠ Enter your password.'); return; }
 
-  // Manager
   if(selectedRole==='manager'){
     if(email!==MANAGER_EMAIL){ showErr(`⚠ Manager access is restricted to ${MANAGER_EMAIL}.`); return; }
     if(pass!==getMgrPass()){ showErr('⚠ Incorrect manager password.'); $('pass-input').value=''; return; }
@@ -1091,7 +1081,6 @@ async function doLogin() {
     return;
   }
 
-  // Employee — look up credentials
   err.innerHTML='<span style="color:var(--amber)">Checking credentials…</span>';
   err.classList.remove('hidden');
   const cred = await getCredential(email);
@@ -1113,7 +1102,6 @@ function showErr(msg){ const e=$('login-err'); e.innerHTML=msg; e.classList.remo
 function showSplash(msg){ const s=$('splash'); s.style.display='flex'; setTxt('splash-msg',msg||'Loading…'); }
 function hideSplash(){ $('splash').style.display='none'; }
 
-// Session restore on page load
 async function restoreSession() {
   try {
     const raw = sessionStorage.getItem(SS_KEY);
@@ -1122,7 +1110,6 @@ async function restoreSession() {
     if(!u||!u.email||!u.email.endsWith('@pw.live')) return false;
     setTxt('splash-msg',`Welcome back, ${u.name.split(' ')[0]}!`);
     if(u.role==='employee'){
-      // Load today's data from Supabase
       const d = await loadFromSupabase(u.email);
       if(d){
         totalSeconds=d.totalSeconds||0; activeSeconds=d.activeSeconds||0;
@@ -1171,6 +1158,8 @@ async function doLoginSuccess(user, skipSave=false) {
     await loadDashboard();
     setTimeout(()=>initCharts(),150);
   }
+  // Run a connection test right after login to immediately show correct dot status
+  testConnection();
 }
 
 function logout() {
@@ -1446,7 +1435,7 @@ function startMgrPolling(){
 
 async function loadDashboard(){
   if(!sbClient||currentUser?.role!=='manager') return;
-  const emps = await loadAllEmployees();
+  const emps = await loadAllEmployees(); // ← setDBStatus called inside loadAllEmployees
   setTxt('last-refreshed','↻ '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'}));
   updateNotice(emps);
   updateKPIs(emps);
@@ -1600,11 +1589,9 @@ async function addEmployee(){
   if(!rawEmail){if(emailEl)emailEl.focus();return;}
   if(!email.endsWith('@pw.live')){alert('Only @pw.live emails.');return;}
   if(email===MANAGER_EMAIL){alert('Cannot add manager as employee.');return;}
-  // Generate password
   const w1=['Swift','Bright','Bold','Sharp','Quick','Clear','Smart','Keen','Brave','Cool'];
   const w2=['Falcon','Tiger','Eagle','Hawk','Lion','Wolf','Fox','Bear','Shark','Storm'];
   const pass=w1[Math.floor(Math.random()*w1.length)]+w2[Math.floor(Math.random()*w2.length)]+(100+Math.floor(Math.random()*900));
-  // Save to Supabase
   await saveCredential(email, pass, name);
   if(nameEl)nameEl.value=''; if(emailEl)emailEl.value='';
   renderEmpList();
@@ -1645,7 +1632,6 @@ async function removeEmployee(email){
   if(!confirm(`Remove ${email}?`))return;
   await sbClient.from('pw_credentials').delete().eq('email',email);
   await sbClient.from('pw_employees').delete().eq('email',email);
-  // Remove local cache
   try{const s=JSON.parse(localStorage.getItem(LOCAL_CRED)||'{}');delete s[email];localStorage.setItem(LOCAL_CRED,JSON.stringify(s));}catch(_){}
   renderEmpList();
 }
@@ -1757,28 +1743,24 @@ function closeBkmkModal(){const m=$('bkmk-modal');if(m)m.style.display='none';}
    BOOT SEQUENCE
    ═══════════════════════════════════════════════════════ */
 async function boot(){
-  // 1. Check if Supabase is configured
   const cfg = getSBConfig();
   if(!cfg){
     $('setup-screen').style.display='flex';
     return;
   }
 
-  // 2. Init Supabase client — always proceed, don't block on test
   initSupabase(cfg.url, cfg.key);
   showSplash('Loading…');
 
-  // 3. Silent background ping — only updates the status dot, never blocks
-  setTimeout(() => testConnection().catch(() => setDBStatus('error')), 1000);
+  /* ══ FIX 4: test immediately + retry every 15s (no more one-shot that dies) ══ */
+  testConnection();
+  setInterval(() => { if(sbClient) testConnection(); }, 15000);
 
-  // 4. Handle invite URL (auto-login)
   if(await handleInviteUrl()) return;
 
-  // 5. Restore session
   setTxt('splash-msg','Restoring session…');
   if(await restoreSession()){ hideSplash(); return; }
 
-  // 6. Show login
   hideSplash();
   $('login-screen').style.display='flex';
 }
@@ -1790,7 +1772,6 @@ async function boot(){
   if(link) link.href='javascript:'+encodeURIComponent(code);
 })();
 
-// Also listen for bookmarklet tab messages
 try{
   const bkCh=new BroadcastChannel('pwt_channel');
   bkCh.onmessage=e=>{
@@ -1801,7 +1782,6 @@ try{
   };
 }catch(_){}
 
-// Set mgr email label via JS (avoids Cloudflare email obfuscation)
 document.addEventListener('DOMContentLoaded',()=>{
   const el=$('mgr-email-warn'); if(el)el.textContent=MANAGER_EMAIL;
 });
