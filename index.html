@@ -337,7 +337,7 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
         <input type="password" id="pass-input" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
       </div>
       <div class="pass-hint" id="hint-emp">Password was sent in your onboarding email.</div>
-      <div class="pass-hint hidden" id="hint-mgr">Manager password: <code style="background:var(--bg3);padding:1px 6px;border-radius:4px;color:var(--accent);font-family:monospace">PW@2026</code></div>
+      <div class="pass-hint hidden" id="hint-mgr">Enter your manager password. Change it anytime in Settings.</div>
     </div>
 
     <div id="login-err" class="login-err hidden"></div>
@@ -704,14 +704,32 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
           </div>
         </div>
 
-        <!-- Manager lock info -->
+        <!-- Manager lock info + password change -->
         <div class="consent-card">
-          <h3 style="font-family:'Syne',sans-serif;font-size:15px;margin-bottom:8px;font-weight:700">🔒 Manager Access</h3>
-          <p style="font-size:12px;color:var(--text2);margin-bottom:12px">Locked to one account only.</p>
-          <div style="display:flex;align-items:center;gap:11px;padding:11px 14px;background:linear-gradient(135deg,var(--purplebg),var(--accentbg));border:1.5px solid var(--accentbg2);border-radius:var(--radius2)">
+          <h3 style="font-family:'Syne',sans-serif;font-size:15px;margin-bottom:8px;font-weight:700">🔒 Manager Access &amp; Password</h3>
+          <p style="font-size:12px;color:var(--text2);margin-bottom:12px">Portal is locked to your email only. Change your password below anytime.</p>
+          <div style="display:flex;align-items:center;gap:11px;padding:11px 14px;background:linear-gradient(135deg,var(--purplebg),var(--accentbg));border:1.5px solid var(--accentbg2);border-radius:var(--radius2);margin-bottom:14px">
             <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;color:white">AM</div>
             <div><div style="font-weight:600;font-size:13px">Aditya Malik</div><div id="mgr-email-lbl" style="font-size:11px;color:var(--text3)"></div></div>
             <span style="margin-left:auto;background:var(--purplebg);color:var(--purple);border:1px solid #ddd6fe;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700">Owner</span>
+          </div>
+          <!-- Change password -->
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius2);padding:14px 16px">
+            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:10px">🔑 Change Manager Password</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+              <input id="mgr-pass-current" type="password" placeholder="Current password"
+                style="flex:1;min-width:140px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius2);padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit"
+                onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>
+              <input id="mgr-pass-new" type="password" placeholder="New password (min 8 chars)"
+                style="flex:1;min-width:140px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius2);padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit"
+                onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>
+              <input id="mgr-pass-confirm" type="password" placeholder="Confirm new password"
+                style="flex:1;min-width:140px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius2);padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit"
+                onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>
+              <button onclick="changeMgrPassword()" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;border:none;border-radius:var(--radius2);padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">Update</button>
+            </div>
+            <div id="mgr-pass-msg" style="display:none;font-size:12px;padding:7px 10px;border-radius:7px"></div>
+            <div style="font-size:11px;color:var(--text3);margin-top:4px">Password is stored securely in your browser's localStorage. Only you can change it.</div>
           </div>
         </div>
 
@@ -764,7 +782,9 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
 
 /* ══ HARD-CODED CONSTANTS ══ */
 const MANAGER_EMAIL = 'aditya.malik@pw.live';
-const MANAGER_PASS  = 'PW@2026';
+const MGR_PASS_KEY = 'pwt_mgr_pass';
+function getMgrPass(){ return localStorage.getItem(MGR_PASS_KEY)||'PW@2026'; }
+function setMgrPass(p){ localStorage.setItem(MGR_PASS_KEY,p); }
 const SS_KEY        = 'pwt_session';
 const SB_CFG_KEY    = 'pwt_supabase';   // {url, key}
 const LOCAL_CRED    = 'pwt_creds';      // {email→pass} local cache
@@ -848,21 +868,28 @@ function resetSupabaseConfig() {
 }
 
 function initSupabase(url, key) {
-  sbClient = window.supabase.createClient(url, key);
+  // No custom headers — they cause DataCloneError when Supabase tries to clone them
+  sbClient = window.supabase.createClient(url, key, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+  });
   setDBStatus('connecting');
 }
 
 async function testConnection() {
   if(!sbClient) return false;
   try {
-    const {error} = await sbClient.from('pw_credentials').select('email').limit(1);
-    if(error) throw error;
-    setDBStatus('connected');
-    return true;
+    const cfg = getSBConfig();
+    if(!cfg) return false;
+    const res = await fetch(cfg.url + '/rest/v1/pw_credentials?select=email&limit=1', {
+      headers: { 'apikey': cfg.key, 'Authorization': 'Bearer ' + cfg.key }
+    });
+    if(res.ok || res.status === 406 || res.status === 200) {
+      setDBStatus('connected'); return true;
+    }
+    throw new Error('HTTP ' + res.status);
   } catch(e) {
-    console.error('Supabase test failed:', e);
-    setDBStatus('error');
-    return false;
+    console.warn('Connection test:', e.message || e);
+    setDBStatus('error'); return false;
   }
 }
 
@@ -995,13 +1022,7 @@ async function loadCredentials() {
 
 // Subscribe to realtime changes for manager
 function subscribeRealtime() {
-  if(!sbClient||realtimeSub) return;
-  try {
-    realtimeSub = sbClient
-      .channel('pw-employees-changes')
-      .on('postgres_changes',{event:'*',schema:'public',table:'pw_employees'}, ()=>loadDashboard())
-      .subscribe();
-  } catch(_){}
+  // Disabled — realtime causes DataCloneError; 4s polling handles updates
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -1064,7 +1085,7 @@ async function doLogin() {
   // Manager
   if(selectedRole==='manager'){
     if(email!==MANAGER_EMAIL){ showErr(`⚠ Manager access is restricted to ${MANAGER_EMAIL}.`); return; }
-    if(pass!==MANAGER_PASS){ showErr('⚠ Incorrect manager password.'); $('pass-input').value=''; return; }
+    if(pass!==getMgrPass()){ showErr('⚠ Incorrect manager password.'); $('pass-input').value=''; return; }
     err.classList.add('hidden');
     await doLoginSuccess({name:'Aditya Malik', email, role:'manager'});
     return;
@@ -1714,6 +1735,20 @@ function initCharts(){
   mk('chartStacked',{type:'bar',data:{labels:L,datasets:[{label:'Work',data:[5.2,5.5,5.0,5.8,5.4,2.2,0.5],backgroundColor:'rgba(5,150,105,.75)',borderRadius:3,borderSkipped:false},{label:'Neutral',data:[1.6,1.5,1.3,1.3,1.5,0.7,0.2],backgroundColor:'rgba(217,119,6,.65)',borderRadius:3,borderSkipped:false},{label:'Distracting',data:[0.4,0.5,0.5,0.5,0.5,0.3,0.1],backgroundColor:'rgba(220,38,38,.55)',borderRadius:3,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc,font:df,boxWidth:9}}},scales:{x:{stacked:true,grid:{color:gc},ticks:{color:tc,font:df}},y:{stacked:true,grid:{color:gc},ticks:{color:tc,font:df,callback:v=>v+'h'},max:9}}}});
 }
 
+/* ══ CHANGE MANAGER PASSWORD ══ */
+function changeMgrPassword(){
+  const cur=$('mgr-pass-current'),nw=$('mgr-pass-new'),cf=$('mgr-pass-confirm'),msg=$('mgr-pass-msg');
+  const showMsg=(txt,ok)=>{msg.style.display='block';msg.textContent=txt;msg.style.background=ok?'var(--greenbg)':'var(--redbg)';msg.style.color=ok?'var(--green)':'var(--red)';msg.style.border='1px solid '+(ok?'var(--greenborder)':'var(--redborder)');};
+  if(!cur||!nw||!cf)return;
+  if(cur.value!==getMgrPass()){showMsg('⚠ Current password is incorrect.',false);cur.value='';return;}
+  if(nw.value.length<8){showMsg('⚠ New password must be at least 8 characters.',false);return;}
+  if(nw.value!==cf.value){showMsg('⚠ Passwords do not match.',false);cf.value='';return;}
+  setMgrPass(nw.value);
+  cur.value='';nw.value='';cf.value='';
+  showMsg('✅ Password updated successfully! Use it on your next login.',true);
+  setTimeout(()=>{if(msg)msg.style.display='none';},5000);
+}
+
 /* ══ BOOKMARKLET ══ */
 function showBkmkModal(){const m=$('bkmk-modal');if(m)m.style.display='flex';}
 function closeBkmkModal(){const m=$('bkmk-modal');if(m)m.style.display='none';}
@@ -1733,8 +1768,8 @@ async function boot(){
   initSupabase(cfg.url, cfg.key);
   showSplash('Loading…');
 
-  // 3. Test connection in background (non-blocking — just updates status dot)
-  testConnection().catch(()=>setDBStatus('error'));
+  // 3. Silent background ping — only updates the status dot, never blocks
+  setTimeout(() => testConnection().catch(() => setDBStatus('error')), 1000);
 
   // 4. Handle invite URL (auto-login)
   if(await handleInviteUrl()) return;
