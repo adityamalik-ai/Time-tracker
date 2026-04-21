@@ -7,11 +7,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<!-- Supabase JS client -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
-/* ── DESIGN TOKENS ── */
 :root{
   --bg:#f0f4ff;--bg2:#fff;--bg3:#f5f7ff;--bg4:#eaedff;
   --border:#dde2f5;--border2:#c8cff0;
@@ -32,7 +30,6 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM San
 button{font-family:inherit;cursor:pointer;border:none;outline:none}
 input,select,textarea{font-family:inherit;outline:none}
 
-/* ── SUPABASE SETUP SCREEN ── */
 #setup-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(135deg,#0f0c29,#302b63,#24243e)}
 .setup-card{background:#1a1d3a;border:1px solid rgba(99,102,241,.3);border-radius:22px;padding:44px;width:100%;max-width:540px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
 .setup-logo{display:flex;align-items:center;gap:10px;margin-bottom:28px}
@@ -52,14 +49,12 @@ input,select,textarea{font-family:inherit;outline:none}
 .setup-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(79,70,229,.5)}
 .setup-err{font-size:12px;color:#f87171;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:9px 12px;margin-bottom:14px}
 
-/* ── SPLASH ── */
 #splash{position:fixed;inset:0;background:linear-gradient(135deg,#eef0ff,#f0f9ff,#fdf4ff);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:16px}
 .splash-logo{width:56px;height:56px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:16px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:22px;color:#fff;box-shadow:0 6px 20px rgba(79,70,229,.3);animation:pop .4s ease}
 @keyframes pop{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
 .splash-spinner{width:28px;height:28px;border:3px solid var(--accentbg2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* ── LOGIN ── */
 #login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(135deg,#eef0ff 0%,#f0f9ff 50%,#fdf4ff 100%)}
 .bg-blobs{position:fixed;inset:0;pointer-events:none;overflow:hidden}
 .bg-blobs span{position:absolute;border-radius:50%;opacity:.35}
@@ -89,7 +84,6 @@ input,select,textarea{font-family:inherit;outline:none}
 .btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(79,70,229,.4)}
 .pass-hint{font-size:11px;color:var(--text3);margin-top:5px;line-height:1.6}
 
-/* ── APP SHELL ── */
 #app{display:none;min-height:100vh;flex-direction:row}
 .sidebar{position:fixed;top:0;left:0;bottom:0;width:228px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;box-shadow:2px 0 12px rgba(79,70,229,.05)}
 .sb-top{padding:20px;border-bottom:1px solid var(--border)}
@@ -111,7 +105,6 @@ input,select,textarea{font-family:inherit;outline:none}
 .sb-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:11px;color:#fff;flex-shrink:0}
 .sb-user-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sb-user-role{font-size:11px;color:var(--text3)}
-/* Supabase status dot */
 .sb-db{display:flex;align-items:center;gap:6px;padding:6px 10px;font-size:11px;color:var(--text3)}
 .db-dot{width:7px;height:7px;border-radius:50%;background:var(--text3);flex-shrink:0;transition:background .3s}
 .db-dot.connected{background:var(--green)}
@@ -131,7 +124,6 @@ input,select,textarea{font-family:inherit;outline:none}
 .refresh-btn{background:var(--accentbg);border:1.5px solid var(--accentbg2);border-radius:var(--radius2);padding:7px 14px;color:var(--accent);font-size:12px;font-weight:600;display:flex;align-items:center;gap:5px;cursor:pointer;transition:all .15s}
 .refresh-btn:hover{background:var(--accentbg2)}
 
-/* ── BANNERS ── */
 .greeting-banner{margin:18px 32px 0;border-radius:16px;padding:22px 26px;color:#fff;position:relative;overflow:hidden}
 .greeting-banner.emp{background:linear-gradient(135deg,var(--accent),var(--accent2),var(--purple));box-shadow:0 6px 24px rgba(79,70,229,.22)}
 .greeting-banner.mgr{background:linear-gradient(135deg,#f97316,#ec4899,#8b5cf6);box-shadow:0 6px 22px rgba(236,72,153,.18)}
@@ -143,7 +135,6 @@ input,select,textarea{font-family:inherit;outline:none}
 
 .padded{padding:22px 32px 40px}
 
-/* ── TRACKER HERO ── */
 .tracker-hero{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:40px;text-align:center;margin-bottom:20px;position:relative;overflow:hidden;box-shadow:var(--shadow)}
 .tracker-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% -20%,rgba(99,102,241,.06),transparent 65%)}
 .timer{font-family:'Syne',sans-serif;font-weight:800;font-size:64px;letter-spacing:-4px;color:var(--text);margin-bottom:6px;transition:all .3s}
@@ -164,7 +155,6 @@ input,select,textarea{font-family:inherit;outline:none}
 .prog-track{height:5px;background:rgba(255,255,255,.15);border-radius:4px;overflow:hidden}
 .prog-fill{height:100%;background:linear-gradient(90deg,#a5f3fc,#6ee7b7);border-radius:4px;transition:width .5s}
 
-/* ── STATS ── */
 .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
 .stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow)}
 .stat-label{font-size:10.5px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px}
@@ -172,7 +162,6 @@ input,select,textarea{font-family:inherit;outline:none}
 .stat-sub{font-size:11px;color:var(--text3);margin-top:3px}
 .c-green{color:var(--green)}.c-amber{color:var(--amber)}.c-accent{color:var(--accent)}.c-purple{color:var(--purple)}.c-teal{color:var(--teal)}
 
-/* ── QUESTIONS ── */
 .q-card{background:linear-gradient(135deg,var(--purplebg),var(--accentbg));border:1.5px solid var(--accentbg2);border-radius:var(--radius);padding:18px 20px;margin-bottom:18px}
 .q-header{display:flex;align-items:center;gap:8px;margin-bottom:12px}
 .q-header svg{color:var(--purple);width:16px;height:16px}
@@ -189,12 +178,10 @@ input,select,textarea{font-family:inherit;outline:none}
 .q-chip-num{color:var(--purple);font-size:13px;font-family:'Syne',sans-serif;font-weight:700}
 .q-total{background:linear-gradient(135deg,var(--purple),var(--accent));color:#fff;border-radius:20px;padding:4px 13px;font-size:12px;font-weight:700;font-family:'Syne',sans-serif}
 
-/* ── TAB TRACKER ── */
 .tab-card{background:var(--bg2);border:1.5px solid var(--accentbg2);border-radius:var(--radius);margin-bottom:18px;overflow:hidden}
 .tab-card-body{padding:14px 16px}
 .tab-card-foot{border-top:1px solid var(--border);padding:12px 16px}
 
-/* ── KPI GRID ── */
 .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:20px}
 .kpi-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);transition:all .18s}
 .kpi-card:hover{transform:translateY(-2px);box-shadow:var(--shadow2)}
@@ -206,13 +193,11 @@ input,select,textarea{font-family:inherit;outline:none}
 .kpi-name{font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.4px}
 .kpi-delta{font-size:11px;color:var(--text3);margin-top:4px}
 
-/* ── CHARTS ── */
 .charts-row{display:grid;grid-template-columns:1.6fr 1fr;gap:14px;margin-bottom:20px}
 .chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);min-width:0;overflow:hidden}
 .chart-title{font-size:13px;font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
 .chart-title span{color:var(--text3);font-weight:400;font-size:11px}
 
-/* ── EMPLOYEE TABLE ── */
 .emp-table{width:100%;border-collapse:collapse}
 .emp-table th{text-align:left;font-size:11px;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;padding:0 14px 10px;border-bottom:1px solid var(--border);font-weight:700}
 .emp-table td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px}
@@ -224,7 +209,6 @@ input,select,textarea{font-family:inherit;outline:none}
 .score-fill{height:100%;border-radius:3px;transition:width .5s}
 .badge{font-size:11px;padding:2px 8px;border-radius:10px;display:inline-flex;align-items:center;font-weight:600}
 
-/* ── MISC ── */
 .data-row{display:flex;justify-content:space-between;align-items:center;padding:9px 13px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius2);margin-bottom:5px;font-size:13px}
 .data-row-label{color:var(--text2);font-weight:500}
 .data-row-val{color:var(--text);font-weight:600}
@@ -246,15 +230,11 @@ input,select,textarea{font-family:inherit;outline:none}
 </head>
 <body>
 
-<!-- ═══ SUPABASE SETUP (first-run) ═══ -->
 <div id="setup-screen" style="display:none">
   <div class="setup-card">
-    <div class="setup-logo">
-      <div class="setup-logo-icon">PW</div>
-    </div>
+    <div class="setup-logo"><div class="setup-logo-icon">PW</div></div>
     <div class="setup-title">Connect your Supabase database</div>
-    <div class="setup-sub">This is a one-time setup. Your Supabase project is the shared backend — employees write their tracking data there, you read it in real-time from your dashboard. No more same-browser limitation.</div>
-
+    <div class="setup-sub">This is a one-time setup. Your Supabase project is the shared backend — employees write their tracking data there, you read it in real-time from your dashboard.</div>
     <div class="setup-steps">
       <ol>
         <li>Go to <a href="https://supabase.com" target="_blank">supabase.com</a> → New project → copy <b>Project URL</b> &amp; <b>anon public key</b></li>
@@ -280,7 +260,6 @@ create policy "anon all employees" on pw_employees for all using (true) with che
 create policy "anon all credentials" on pw_credentials for all using (true) with check (true);
       </div>
     </div>
-
     <div class="setup-field">
       <label>Supabase Project URL</label>
       <input id="sb-url-input" type="text" placeholder="https://xxxxxxxxxxxx.supabase.co"/>
@@ -291,11 +270,10 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
     </div>
     <div id="setup-err" style="display:none" class="setup-err"></div>
     <button class="setup-btn" onclick="saveSupabaseConfig()">Save &amp; Connect →</button>
-    <div style="margin-top:12px;font-size:11px;color:rgba(255,255,255,.3);text-align:center">Credentials stored in your browser's localStorage. Employees never see this screen.</div>
+    <div style="margin-top:12px;font-size:11px;color:rgba(255,255,255,.3);text-align:center">Credentials stored in your browser's localStorage.</div>
   </div>
 </div>
 
-<!-- ═══ SPLASH ═══ -->
 <div id="splash" style="display:none">
   <div class="splash-logo">PW</div>
   <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:17px;color:var(--text)">PW.live Tracker</div>
@@ -303,7 +281,6 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
   <div class="splash-spinner"></div>
 </div>
 
-<!-- ═══ LOGIN ═══ -->
 <div id="login-screen" style="display:none">
   <div class="bg-blobs"><span></span><span></span><span></span></div>
   <div class="login-card">
@@ -313,18 +290,14 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
     </div>
     <div class="login-title">Welcome back 👋</div>
     <p class="login-sub">Sign in with your <strong>@pw.live</strong> work account.</p>
-
     <div class="role-toggle">
       <button class="role-btn active" id="rb-emp" onclick="selectRole('employee')">👤 Employee</button>
       <button class="role-btn" id="rb-mgr" onclick="selectRole('manager')">📊 Manager</button>
     </div>
-
-    <!-- Manager-only warning -->
     <div id="mgr-warn" style="display:none;background:linear-gradient(135deg,#fef3c7,#fde68a);border:1.5px solid var(--amberborder);border-radius:var(--radius2);padding:12px 14px;margin-bottom:14px;font-size:12px;color:#78350f;line-height:1.7">
       <strong style="display:block;margin-bottom:2px;font-weight:700">🔒 Manager portal is restricted</strong>
       Only <code style="background:rgba(0,0,0,.1);padding:1px 5px;border-radius:3px" id="mgr-email-warn"></code> can sign in as Manager.
     </div>
-
     <div class="field">
       <label>Work username</label>
       <div class="inp-wrap">
@@ -340,13 +313,11 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
       <div class="pass-hint" id="hint-emp">Password was sent in your onboarding email.</div>
       <div class="pass-hint hidden" id="hint-mgr">Enter your manager password. Change it anytime in Settings.</div>
     </div>
-
     <div id="login-err" class="login-err hidden"></div>
     <button class="btn-primary" onclick="doLogin()">Sign in →</button>
   </div>
 </div>
 
-<!-- ═══ APP ═══ -->
 <div id="app">
   <nav class="sidebar">
     <div class="sb-top">
@@ -356,7 +327,6 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
       </div>
     </div>
     <div class="sb-nav">
-      <!-- Employee nav -->
       <div id="nav-emp">
         <div class="sb-label">Tracking</div>
         <div class="sb-item active" onclick="showPage('tracker',this)">
@@ -366,7 +336,6 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
           <svg fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M8 7.5v5M8 5.5v.5"/></svg>My data
         </div>
       </div>
-      <!-- Manager nav -->
       <div id="nav-mgr" class="hidden">
         <div class="sb-label">Dashboard</div>
         <div class="sb-item active" onclick="showPage('overview',this)">
@@ -386,7 +355,6 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
       </div>
     </div>
     <div class="sb-footer">
-      <!-- DB connection indicator -->
       <div class="sb-db">
         <div class="db-dot connecting" id="db-dot"></div>
         <span id="db-label">Connecting…</span>
@@ -403,7 +371,6 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
   </nav>
 
   <div class="main">
-    <!-- ── EMPLOYEE: TRACKER ── -->
     <div class="page active" id="page-tracker">
       <div class="topbar">
         <span class="topbar-title">Time tracker</span>
@@ -421,7 +388,6 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
         <div class="g-attr" id="emp-g-attr"></div>
       </div>
       <div class="padded" style="padding-top:20px">
-        <!-- Hero timer -->
         <div class="tracker-hero">
           <div class="timer" id="timer">00:00:00</div>
           <div class="timer-sub" id="timer-sub">Start tracking to begin your session</div>
@@ -440,7 +406,6 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
           </div>
         </div>
 
-        <!-- Attendance -->
         <div style="background:var(--bg2);border:1.5px solid var(--border2);border-radius:var(--radius);padding:14px 18px;margin-bottom:16px;box-shadow:var(--shadow)">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
             <div style="font-size:13px;font-weight:700;color:var(--text)">📅 Mark Attendance</div>
@@ -454,7 +419,6 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
           </div>
         </div>
 
-        <!-- Stats -->
         <div class="stats-row">
           <div class="stat-card">
             <div class="stat-label">Today's total</div>
@@ -473,7 +437,6 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
           </div>
         </div>
 
-        <!-- Questions -->
         <div class="q-card">
           <div class="q-header">
             <svg fill="none" viewBox="0 0 18 18" stroke="currentColor" stroke-width="2"><circle cx="9" cy="9" r="7"/><path d="M9 6.5c0-1.1.9-2 2-2s2 .9 2 2-1.5 2-2 2v1.5M9 13v.5"/></svg>
@@ -488,7 +451,6 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
           <div class="q-chips" id="q-chips"></div>
         </div>
 
-        <!-- Tab tracker (shown after tracking starts) -->
         <div id="tab-card" class="tab-card hidden">
           <div class="tab-card-body">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px">
@@ -517,7 +479,6 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
           </div>
         </div>
 
-        <!-- Activity log -->
         <div style="font-size:13px;color:var(--text2);font-weight:700;margin-bottom:10px">Activity log (today)</div>
         <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)" id="activity-list">
           <div style="padding:14px 16px;font-size:13px;color:var(--text3)">No activity yet.</div>
@@ -525,7 +486,6 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
       </div>
     </div>
 
-    <!-- ── EMPLOYEE: MY DATA ── -->
     <div class="page" id="page-mydata">
       <div class="topbar"><span class="topbar-title">My data &amp; privacy</span></div>
       <div class="padded">
@@ -552,7 +512,6 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
       </div>
     </div>
 
-    <!-- ── MANAGER: OVERVIEW ── -->
     <div class="page" id="page-overview">
       <div class="topbar">
         <span class="topbar-title">Team overview</span>
@@ -626,7 +585,6 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
       </div>
     </div>
 
-    <!-- ── MANAGER: EMPLOYEES ── -->
     <div class="page" id="page-employees">
       <div class="topbar">
         <span class="topbar-title">Employee details</span>
@@ -644,7 +602,6 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
       </div>
     </div>
 
-    <!-- ── MANAGER: REPORTS ── -->
     <div class="page" id="page-reports">
       <div class="topbar"><span class="topbar-title">Reports</span></div>
       <div class="padded">
@@ -671,11 +628,9 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
       </div>
     </div>
 
-    <!-- ── MANAGER: SETTINGS ── -->
     <div class="page" id="page-settings">
       <div class="topbar"><span class="topbar-title">Settings</span></div>
       <div class="padded">
-        <!-- EmailJS Setup Card -->
         <div id="ejs-setup-card" style="background:linear-gradient(135deg,#fef3c7,#fde68a);border:1.5px solid var(--amberborder);border-radius:var(--radius);padding:18px 20px;margin-bottom:14px">
           <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px">
             <span style="font-size:18px">📨</span>
@@ -685,12 +640,10 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
             </div>
             <button onclick="toggleEjsSetup()" id="ejs-toggle-btn" style="background:#92400e;color:white;border:none;border-radius:var(--radius2);padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">Configure ▼</button>
           </div>
-          <!-- configured badge -->
           <div id="ejs-configured-row" style="display:none;align-items:center;gap:8px;margin-top:6px">
             <span style="background:var(--greenbg);color:var(--green);border:1px solid var(--greenborder);border-radius:20px;padding:2px 11px;font-size:11px;font-weight:700">✓ EmailJS ready — emails will be sent automatically</span>
             <button onclick="clearEjsConfig()" style="font-size:11px;color:#92400e;background:transparent;border:none;cursor:pointer;text-decoration:underline">Reset</button>
           </div>
-          <!-- setup body (collapsed by default) -->
           <div id="ejs-setup-body" style="display:none;margin-top:12px">
             <div style="background:rgba(255,255,255,.65);border-radius:var(--radius2);padding:12px 14px;margin-bottom:12px;font-size:12px;color:#78350f;line-height:2">
               <b style="display:block;margin-bottom:3px">Setup in 2 minutes:</b>
@@ -701,44 +654,31 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
                 <li><b>Account → General</b> → copy <b>Public Key</b></li>
               </ol>
               <div style="margin-top:8px;background:rgba(0,0,0,.08);border-radius:8px;padding:10px;font-family:monospace;font-size:11px;line-height:2;color:#1a1d3a;overflow-x:auto">
-                <span style="color:#7c3aed;font-weight:700">Template variables to use in your EmailJS template:</span><br>
+                <span style="color:#7c3aed;font-weight:700">Template variables:</span><br>
                 To: <b>{{to_email}}</b> &nbsp;|&nbsp; Name: <b>{{to_name}}</b><br>
                 Magic link: <b>{{invite_url}}</b> &nbsp;|&nbsp; Password: <b>{{password}}</b><br>
                 App URL: <b>{{app_url}}</b> &nbsp;|&nbsp; From: <b>{{from_name}}</b>
               </div>
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:9px">
-              <input id="ejs-service" placeholder="Service ID  (e.g. service_abc123)"
-                style="flex:1;min-width:160px;background:var(--bg2);border:1.5px solid var(--amberborder);border-radius:var(--radius2);padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit"
-                onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--amberborder)'"/>
-              <input id="ejs-template" placeholder="Template ID  (e.g. template_xyz789)"
-                style="flex:1;min-width:160px;background:var(--bg2);border:1.5px solid var(--amberborder);border-radius:var(--radius2);padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit"
-                onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--amberborder)'"/>
-              <input id="ejs-pubkey" placeholder="Public Key  (e.g. AbcDEF_ghiJKL)"
-                style="flex:1;min-width:160px;background:var(--bg2);border:1.5px solid var(--amberborder);border-radius:var(--radius2);padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit"
-                onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--amberborder)'"/>
+              <input id="ejs-service" placeholder="Service ID  (e.g. service_abc123)" style="flex:1;min-width:160px;background:var(--bg2);border:1.5px solid var(--amberborder);border-radius:var(--radius2);padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--amberborder)'"/>
+              <input id="ejs-template" placeholder="Template ID  (e.g. template_xyz789)" style="flex:1;min-width:160px;background:var(--bg2);border:1.5px solid var(--amberborder);border-radius:var(--radius2);padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--amberborder)'"/>
+              <input id="ejs-pubkey" placeholder="Public Key  (e.g. AbcDEF_ghiJKL)" style="flex:1;min-width:160px;background:var(--bg2);border:1.5px solid var(--amberborder);border-radius:var(--radius2);padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--amberborder)'"/>
               <button onclick="saveEjsConfig()" style="background:linear-gradient(135deg,#d97706,#f59e0b);color:white;border:none;border-radius:var(--radius2);padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">Save &amp; Test →</button>
             </div>
             <div id="ejs-status-msg" style="display:none;font-size:12px;padding:8px 11px;border-radius:8px"></div>
           </div>
         </div>
 
-        <!-- Onboard -->
         <div style="background:linear-gradient(135deg,var(--accentbg),var(--purplebg));border:1.5px solid var(--accentbg2);border-radius:var(--radius);padding:22px;margin-bottom:16px;box-shadow:var(--shadow)">
           <div style="margin-bottom:14px">
             <h3 style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;margin-bottom:4px">👥 Onboard Employees</h3>
-            <p style="font-size:12px;color:var(--text2);line-height:1.65">Add employee → credentials saved to Supabase → click <b>Send Invite</b> → email lands in their inbox with a magic link that auto-signs them in on any device.</p>
+            <p style="font-size:12px;color:var(--text2);line-height:1.65">Add employee → credentials saved to Supabase → click <b>Send Invite</b> → email lands in their inbox with a magic link.</p>
           </div>
           <div style="display:flex;gap:9px;flex-wrap:wrap;margin-bottom:12px">
-            <input id="inv-name" placeholder="Full name"
-              style="flex:1;min-width:140px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius2);padding:10px 13px;font-size:13px;color:var(--text);font-family:inherit"
-              onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"
-              onkeydown="if(event.key==='Enter')document.getElementById('inv-email').focus()"/>
+            <input id="inv-name" placeholder="Full name" style="flex:1;min-width:140px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius2);padding:10px 13px;font-size:13px;color:var(--text);font-family:inherit" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" onkeydown="if(event.key==='Enter')document.getElementById('inv-email').focus()"/>
             <div style="position:relative;flex:1.4;min-width:160px">
-              <input id="inv-email" placeholder="username"
-                style="width:100%;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius2);padding:10px 65px 10px 13px;font-size:13px;color:var(--text);font-family:inherit"
-                onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"
-                onkeydown="if(event.key==='Enter')addEmployee()"/>
+              <input id="inv-email" placeholder="username" style="width:100%;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius2);padding:10px 65px 10px 13px;font-size:13px;color:var(--text);font-family:inherit" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" onkeydown="if(event.key==='Enter')addEmployee()"/>
               <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--accent);font-size:11px;font-weight:700;background:var(--accentbg);padding:1px 6px;border-radius:4px">@pw.live</span>
             </div>
             <button onclick="addEmployee()" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;border:none;border-radius:var(--radius2);padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">+ Add</button>
@@ -754,7 +694,6 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
           </div>
         </div>
 
-        <!-- Manager lock info + password change -->
         <div class="consent-card">
           <h3 style="font-family:'Syne',sans-serif;font-size:15px;margin-bottom:8px;font-weight:700">🔒 Manager Access &amp; Password</h3>
           <p style="font-size:12px;color:var(--text2);margin-bottom:12px">Portal is locked to your email only. Change your password below anytime.</p>
@@ -763,27 +702,19 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
             <div><div style="font-weight:600;font-size:13px">Aditya Malik</div><div id="mgr-email-lbl" style="font-size:11px;color:var(--text3)"></div></div>
             <span style="margin-left:auto;background:var(--purplebg);color:var(--purple);border:1px solid #ddd6fe;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700">Owner</span>
           </div>
-          <!-- Change password -->
           <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius2);padding:14px 16px">
             <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:10px">🔑 Change Manager Password</div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
-              <input id="mgr-pass-current" type="password" placeholder="Current password"
-                style="flex:1;min-width:140px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius2);padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit"
-                onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>
-              <input id="mgr-pass-new" type="password" placeholder="New password (min 8 chars)"
-                style="flex:1;min-width:140px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius2);padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit"
-                onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>
-              <input id="mgr-pass-confirm" type="password" placeholder="Confirm new password"
-                style="flex:1;min-width:140px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius2);padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit"
-                onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>
+              <input id="mgr-pass-current" type="password" placeholder="Current password" style="flex:1;min-width:140px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius2);padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>
+              <input id="mgr-pass-new" type="password" placeholder="New password (min 8 chars)" style="flex:1;min-width:140px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius2);padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>
+              <input id="mgr-pass-confirm" type="password" placeholder="Confirm new password" style="flex:1;min-width:140px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius2);padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>
               <button onclick="changeMgrPassword()" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;border:none;border-radius:var(--radius2);padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">Update</button>
             </div>
             <div id="mgr-pass-msg" style="display:none;font-size:12px;padding:7px 10px;border-radius:7px"></div>
-            <div style="font-size:11px;color:var(--text3);margin-top:4px">Password is stored securely in your browser's localStorage. Only you can change it.</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:4px">Password stored in localStorage.</div>
           </div>
         </div>
 
-        <!-- DB config -->
         <div class="consent-card">
           <h3 style="font-family:'Syne',sans-serif;font-size:15px;margin-bottom:10px;font-weight:700">☁️ Supabase Connection</h3>
           <div class="data-row"><span class="data-row-label">Project URL</span><span class="data-row-val" id="db-url-display" style="font-size:11px;color:var(--text3);word-break:break-all">–</span></div>
@@ -792,11 +723,9 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
         </div>
       </div>
     </div>
+  </div>
+</div>
 
-  </div><!-- /main -->
-</div><!-- /app -->
-
-<!-- BOOKMARKLET MODAL -->
 <div id="bkmk-modal" style="display:none;position:fixed;inset:0;z-index:1000;align-items:center;justify-content:center;background:rgba(15,15,30,.5);backdrop-filter:blur(8px)" onclick="if(event.target===this)closeBkmkModal()">
   <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:18px;padding:32px;width:100%;max-width:500px;box-shadow:var(--shadow2);position:relative">
     <button onclick="closeBkmkModal()" style="position:absolute;top:12px;right:12px;background:var(--bg3);border:1px solid var(--border);border-radius:50%;width:26px;height:26px;color:var(--text3);font-size:15px;cursor:pointer">×</button>
@@ -817,23 +746,19 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
 
 <script>
 /* ═══════════════════════════════════════════════════════════════
-   PW TIMETRACKER — SUPABASE EDITION
+   PW TIMETRACKER — SUPABASE EDITION  (patched: connection-dot + email-send fix)
    ═══════════════════════════════════════════════════════════════ */
 
-/* ══ HARD-CODED CONSTANTS ══ */
 const MANAGER_EMAIL = 'aditya.malik@pw.live';
-const MGR_PASS_KEY = 'pwt_mgr_pass';
+const MGR_PASS_KEY  = 'pwt_mgr_pass';
 function getMgrPass(){ return localStorage.getItem(MGR_PASS_KEY)||'PW@2026'; }
 function setMgrPass(p){ localStorage.setItem(MGR_PASS_KEY,p); }
-const SS_KEY        = 'pwt_session';
-const SB_CFG_KEY    = 'pwt_supabase';
-const LOCAL_CRED    = 'pwt_creds';
+const SS_KEY       = 'pwt_session';
+const SB_CFG_KEY   = 'pwt_supabase';
+const LOCAL_CRED   = 'pwt_creds';          // object  { email: {pass,name} }
+const LOCAL_CRED_LIST = 'pwt_creds_list';  // ← NEW: array [{email,pass,name}] for reliable iteration
 
-/* ══ SUPABASE STATE ══ */
-let sbClient = null;
-let realtimeSub = null;
-
-/* ══ APP STATE ══ */
+let sbClient = null, realtimeSub = null;
 let currentUser = null, selectedRole = 'employee', tracking = false;
 let timerInterval = null, totalSeconds = 0, idleSeconds = 0, activeSeconds = 0, sessionCount = 0;
 let activityLog = [], qHistory = [], chartInstances = {}, attendanceStatus = 'present';
@@ -842,24 +767,23 @@ let activeDomain = null, awayStart = null, awayTabDomain = null, awayTabTimer = 
 let workWatchdog = null, idleDetectInterval = null;
 let employees = [];
 
-/* ══ UTILS ══ */
-const fmtS = s => { const h=Math.floor(s/3600),m=Math.floor((s%3600)/60); return h>0?`${h}h ${m}m`:`${m}m`; };
-const avI  = n => n.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
-const AV   = ['#6366f1','#059669','#d97706','#dc2626','#7c3aed','#0891b2','#ea580c','#16a34a','#db2777','#0d9488'];
-const avC  = e => { let h=0; for(const c of e) h=((h<<5)-h)+c.charCodeAt(0); return AV[Math.abs(h)%AV.length]; };
-const WORK_D = ['gmail.com','docs.google.com','drive.google.com','github.com','notion.so','figma.com','slack.com','meet.google.com','calendar.google.com','zoom.us','pw.live','trello.com','linear.app','jira.atlassian.com','asana.com','clickup.com'];
-const DIST_D = ['instagram.com','twitter.com','x.com','facebook.com','tiktok.com','reddit.com','snapchat.com','youtube.com'];
-const catD   = d => { const c=d.toLowerCase().replace(/^www\./,''); if(DIST_D.some(x=>c.includes(x)))return'distract'; if(WORK_D.some(x=>c.includes(x)))return'work'; return'neutral'; };
+const fmtS  = s => { const h=Math.floor(s/3600),m=Math.floor((s%3600)/60); return h>0?`${h}h ${m}m`:`${m}m`; };
+const avI   = n => n.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
+const AV    = ['#6366f1','#059669','#d97706','#dc2626','#7c3aed','#0891b2','#ea580c','#16a34a','#db2777','#0d9488'];
+const avC   = e => { let h=0; for(const c of e) h=((h<<5)-h)+c.charCodeAt(0); return AV[Math.abs(h)%AV.length]; };
+const WORK_D  = ['gmail.com','docs.google.com','drive.google.com','github.com','notion.so','figma.com','slack.com','meet.google.com','calendar.google.com','zoom.us','pw.live','trello.com','linear.app','jira.atlassian.com','asana.com','clickup.com'];
+const DIST_D  = ['instagram.com','twitter.com','x.com','facebook.com','tiktok.com','reddit.com','snapchat.com','youtube.com'];
+const catD    = d => { const c=d.toLowerCase().replace(/^www\./,''); if(DIST_D.some(x=>c.includes(x)))return'distract'; if(WORK_D.some(x=>c.includes(x)))return'work'; return'neutral'; };
 const secToMin = s => Math.round(s/60)+'m';
-const $ = id => document.getElementById(id);
+const $    = id => document.getElementById(id);
 const setTxt = (id,v) => { const e=$(id); if(e) e.textContent=v; };
 
 /* ══ IST ══ */
-function getIST() { return new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Kolkata'})); }
-function todayIST() { const d=getIST(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
-function workHours() { const h=getIST().getHours(); return h>=9&&h<21; }
-function isSunday() { return getIST().getDay()===0; }
-function clock() {
+function getIST(){ return new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Kolkata'})); }
+function todayIST(){ const d=getIST(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function workHours(){ const h=getIST().getHours(); return h>=9&&h<21; }
+function isSunday(){ return getIST().getDay()===0; }
+function clock(){
   const d=getIST(),h=d.getHours(),m=d.getMinutes(),s=d.getSeconds();
   const p=n=>String(n).padStart(2,'0');
   const t=`${p(h)}:${p(m)}:${p(s)} IST`;
@@ -867,7 +791,6 @@ function clock() {
 }
 setInterval(clock,1000); clock();
 
-/* ══ QUOTES / GREETING ══ */
 const QUOTES=[
   {q:"The secret of getting ahead is getting started.",a:"Mark Twain"},
   {q:"Quality is not an act, it is a habit.",a:"Aristotle"},
@@ -882,9 +805,9 @@ const QUOTES=[
   {q:"One day or day one — you decide.",a:"Anonymous"},
   {q:"Strive for progress, not perfection.",a:"Anonymous"},
 ];
-function dailyQuote() { const d=new Date(),s=new Date(d.getFullYear(),0,0); return QUOTES[Math.floor((d-s)/864e5)%QUOTES.length]; }
-function greeting() { const h=getIST().getHours(); return h<12?{t:'Good morning',i:'☀️'}:h<17?{t:'Good afternoon',i:'🌤️'}:h<21?{t:'Good evening',i:'🌆'}:{t:'Good night',i:'🌙'}; }
-function renderGreeting(px,name) {
+function dailyQuote(){ const d=new Date(),s=new Date(d.getFullYear(),0,0); return QUOTES[Math.floor((d-s)/864e5)%QUOTES.length]; }
+function greeting(){ const h=getIST().getHours(); return h<12?{t:'Good morning',i:'☀️'}:h<17?{t:'Good afternoon',i:'🌤️'}:h<21?{t:'Good evening',i:'🌆'}:{t:'Good night',i:'🌙'}; }
+function renderGreeting(px,name){
   const g=greeting(),q=dailyQuote();
   setTxt(px+'g-time',g.t+' '+g.i);
   setTxt(px+'g-name',name.split(' ')[0]+' — '+new Date().toLocaleDateString('en-IN',{weekday:'long',month:'long',day:'numeric'}));
@@ -892,326 +815,339 @@ function renderGreeting(px,name) {
   setTxt(px+'g-attr','— '+q.a);
 }
 
-/* ═══════════════════════════════════════════════════════
-   SUPABASE SETUP & CONNECTION
-   ═══════════════════════════════════════════════════════ */
-function getSBConfig() {
-  try { return JSON.parse(localStorage.getItem(SB_CFG_KEY)||'null'); } catch(_){ return null; }
+/* ══════════════════════════════════════════════════════
+   PATCH 1 — initSupabase
+   Completely disables realtime/broadcast to prevent
+   DataCloneError on GitHub Pages (Headers can't be
+   structured-cloned across workers/BroadcastChannel).
+   ══════════════════════════════════════════════════════ */
+function initSupabase(url, key) {
+  try {
+    sbClient = window.supabase.createClient(url, key, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+        // Stub storage so Supabase never reads/writes localStorage internally
+        storage: {
+          getItem:    () => null,
+          setItem:    () => {},
+          removeItem: () => {},
+        },
+      },
+      // Effectively disable realtime — it causes DataCloneError via BroadcastChannel
+      realtime: {
+        params: { eventsPerSecond: -1 },
+        // Override transport so no WebSocket is opened
+        log_level: 'info',
+      },
+      global: {
+        // Use plain fetch — no custom Headers objects that can't be cloned
+        fetch: (...args) => fetch(...args),
+      },
+    });
+  } catch(e) {
+    console.warn('Supabase init warning:', e);
+    // Even if init throws, we still have the REST fallback below
+    sbClient = null;
+  }
+  setDBStatus('connecting');
 }
-function saveSBConfig(url, key) {
-  localStorage.setItem(SB_CFG_KEY, JSON.stringify({url,key}));
-}
-function resetSupabaseConfig() {
-  if(!confirm('Reset Supabase config? You will need to re-enter credentials.')) return;
+
+function getSBConfig(){ try{ return JSON.parse(localStorage.getItem(SB_CFG_KEY)||'null'); }catch(_){ return null; } }
+function saveSBConfig(url,key){ localStorage.setItem(SB_CFG_KEY,JSON.stringify({url,key})); }
+function resetSupabaseConfig(){
+  if(!confirm('Reset Supabase config?')) return;
   localStorage.removeItem(SB_CFG_KEY);
   location.reload();
 }
 
-function initSupabase(url, key) {
-  // Disable realtime & broadcast — they try to postMessage a Headers object
-  // which throws DataCloneError: "Headers object could not be cloned"
-  sbClient = window.supabase.createClient(url, key, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-      detectSessionInUrl: false,
-      // Disable storage-based broadcast that causes DataCloneError
-      storage: { getItem: ()=>null, setItem: ()=>{}, removeItem: ()=>{} },
-    },
-    realtime: { params: { eventsPerSecond: -1 } }, // effectively disable realtime
-    global: { fetch: (...args) => fetch(...args) }, // use plain fetch, no custom Headers objects
-  });
-  setDBStatus('connecting');
-}
-
-/* ══ testConnection: NO standalone network ping.
-   External pings cause CORS preflight failures on GitHub Pages and
-   DataCloneError from Supabase's internal broadcast — both show false
-   "Connection error" even when everything works fine.
-   Status is now derived purely from real data operations:
-     login success      → setDBStatus('connected')  [in doLoginSuccess]
-     save/load success  → setDBStatus('connected')  [in saveToSupabase / loadAllEmployees]
-     save/load failure  → setDBStatus('error')
-   This function simply reflects what we already know.              ══ */
-function testConnection() {
-  if(!sbClient) { setDBStatus('connecting'); return false; }
-  if(currentUser) { setDBStatus('connected'); return true; }
-  setDBStatus('connecting');
-  return false;
-}
-
-function setDBStatus(status) {
-  const dot=$('db-dot'), lbl=$('db-label'), statusLbl=$('db-status-label');
+function setDBStatus(status){
+  const dot=$('db-dot'),lbl=$('db-label'),sl=$('db-status-label');
   const map={connecting:{cls:'connecting',txt:'Connecting…'},connected:{cls:'connected',txt:'Connected ✓'},error:{cls:'error',txt:'Connection error'}};
   const s=map[status]||map.connecting;
   if(dot){ dot.className='db-dot '+s.cls; }
   if(lbl) lbl.textContent=s.txt;
-  if(statusLbl){ statusLbl.textContent=s.txt; statusLbl.style.color=status==='connected'?'var(--green)':status==='error'?'var(--red)':'var(--amber)'; }
+  if(sl){ sl.textContent=s.txt; sl.style.color=status==='connected'?'var(--green)':status==='error'?'var(--red)':'var(--amber)'; }
 }
 
-async function saveSupabaseConfig() {
-  const url = $('sb-url-input').value.trim();
-  const key = $('sb-key-input').value.trim();
-  const err = $('setup-err');
+async function saveSupabaseConfig(){
+  const url=$('sb-url-input').value.trim(), key=$('sb-key-input').value.trim();
   if(!url||!key){ showSetupErr('Both fields are required.'); return; }
   if(!url.startsWith('https://')){ showSetupErr('URL must start with https://'); return; }
-  err.style.display='none';
-  saveSBConfig(url, key);
-  $('setup-screen').innerHTML = '<div class="setup-card" style="text-align:center"><div class="splash-logo" style="margin:0 auto 16px">PW</div><div style="color:#a5b4fc;font-size:14px;margin-bottom:8px">Saving configuration…</div><div class="splash-spinner" style="margin:16px auto 0"></div><div style="color:rgba(255,255,255,.35);font-size:11px;margin-top:16px">Redirecting to login…</div></div>';
-  setTimeout(() => location.reload(), 1500);
+  $('setup-err').style.display='none';
+  saveSBConfig(url,key);
+  $('setup-screen').innerHTML='<div class="setup-card" style="text-align:center"><div class="splash-logo" style="margin:0 auto 16px">PW</div><div style="color:#a5b4fc;font-size:14px;margin-bottom:8px">Saving configuration…</div><div class="splash-spinner" style="margin:16px auto 0"></div></div>';
+  setTimeout(()=>location.reload(),1500);
 }
 function showSetupErr(msg){ const e=$('setup-err'); if(e){e.textContent=msg;e.style.display='block';} }
 
-/* ═══════════════════════════════════════════════════════
-   SUPABASE DATA LAYER
-   ═══════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════
+   DATA LAYER
+   Every function tries sbClient first, then falls back
+   to direct REST (which is immune to DataCloneError).
+   ══════════════════════════════════════════════════════ */
 
-async function saveToSupabase() {
-  if(!currentUser||currentUser.role!=='employee'||!sbClient) return;
-  const payload = {
-    email: currentUser.email,
-    name: currentUser.name,
+async function restFetch(path, opts={}){
+  const cfg=getSBConfig(); if(!cfg) throw new Error('No Supabase config');
+  const res=await fetch(cfg.url+'/rest/v1/'+path, {
+    ...opts,
+    headers: {
+      'apikey': cfg.key,
+      'Authorization': 'Bearer '+cfg.key,
+      'Content-Type': 'application/json',
+      ...(opts.headers||{}),
+    },
+  });
+  return res;
+}
+
+async function saveToSupabase(){
+  if(!currentUser||currentUser.role!=='employee') return;
+  const payload={
+    email: currentUser.email, name: currentUser.name,
     data: {
-      name: currentUser.name,
-      email: currentUser.email,
-      role: 'employee',
-      tracking,
-      totalSeconds, activeSeconds, idleSeconds, sessionCount,
-      activityLog, qHistory,
-      totalQuestions: totalQToday(),
-      score: computeScore(),
-      attendance: attendanceStatus,
-      savedAt: Date.now(),
-      savedDate: todayIST(),
+      name:currentUser.name, email:currentUser.email, role:'employee',
+      tracking, totalSeconds, activeSeconds, idleSeconds, sessionCount,
+      activityLog, qHistory, totalQuestions:totalQToday(), score:computeScore(),
+      attendance:attendanceStatus, savedAt:Date.now(), savedDate:todayIST(),
     },
     updated_at: new Date().toISOString()
   };
-  // Try sbClient first, then fall back to direct REST upsert
-  let saved = false;
-  if(sbClient) {
-    try {
-      const {error} = await sbClient.from('pw_employees').upsert(payload, {onConflict:'email'});
-      if(!error) { setDBStatus('connected'); saved = true; }
-      else console.warn('sbClient save error:', error);
-    } catch(_) {}
+
+  // Try sbClient
+  if(sbClient){
+    try{
+      const {error}=await sbClient.from('pw_employees').upsert(payload,{onConflict:'email'});
+      if(!error){ setDBStatus('connected'); return; }
+    }catch(_){}
   }
-  if(!saved) {
-    // Direct REST fallback
-    const cfg = getSBConfig();
-    if(cfg) {
-      try {
-        const res = await fetch(cfg.url + '/rest/v1/pw_employees', {
-          method: 'POST',
-          headers: {
-            'apikey': cfg.key,
-            'Authorization': 'Bearer ' + cfg.key,
-            'Content-Type': 'application/json',
-            'Prefer': 'resolution=merge-duplicates,return=minimal'
-          },
-          body: JSON.stringify(payload)
-        });
-        if(res.ok || res.status === 201 || res.status === 204) {
-          setDBStatus('connected');
-        } else {
-          console.error('REST save failed:', res.status);
-          setDBStatus('error');
-        }
-      } catch(e){ console.error('Save REST exception:', e); setDBStatus('error'); }
-    }
-  }
+  // REST fallback
+  try{
+    const res=await restFetch('pw_employees',{
+      method:'POST',
+      headers:{'Prefer':'resolution=merge-duplicates,return=minimal'},
+      body:JSON.stringify(payload),
+    });
+    if(res.ok||res.status===201||res.status===204) setDBStatus('connected');
+    else setDBStatus('error');
+  }catch(e){ console.error('saveToSupabase REST error:',e); setDBStatus('error'); }
 }
 
-async function loadFromSupabase(email) {
-  if(!sbClient) return null;
-  try {
-    const {data,error} = await sbClient.from('pw_employees').select('data').eq('email',email).single();
-    if(error||!data) return null;
-    const d = data.data;
-    if(d && d.savedDate === todayIST()) return d;
-    return null;
-  } catch(_){ return null; }
+async function loadFromSupabase(email){
+  if(sbClient){
+    try{
+      const {data,error}=await sbClient.from('pw_employees').select('data').eq('email',email).single();
+      if(!error&&data?.data?.savedDate===todayIST()) return data.data;
+    }catch(_){}
+  }
+  try{
+    const res=await restFetch(`pw_employees?select=data&email=eq.${encodeURIComponent(email)}&limit=1`);
+    if(res.ok){ const arr=await res.json(); if(arr?.[0]?.data?.savedDate===todayIST()) return arr[0].data; }
+  }catch(_){}
+  return null;
 }
 
-async function loadAllEmployees() {
-  const cfg = getSBConfig();
-  const today = todayIST();
-  const process = (data) => (data||[])
+async function loadAllEmployees(){
+  const today=todayIST();
+  const process=data=>(data||[])
     .map(r=>r.data||{})
-    .filter(d=>d.email && d.email!==MANAGER_EMAIL && d.role!=='manager')
-    .filter(d=>d.savedDate===today || (d.savedAt&&Date.now()-d.savedAt<43200000));
+    .filter(d=>d.email&&d.email!==MANAGER_EMAIL&&d.role!=='manager')
+    .filter(d=>d.savedDate===today||(d.savedAt&&Date.now()-d.savedAt<43200000));
 
-  // Try sbClient first
-  if(sbClient) {
-    try {
-      const {data,error} = await sbClient.from('pw_employees').select('*').order('updated_at',{ascending:false});
-      if(!error) { setDBStatus('connected'); return process(data); }
-    } catch(_) {}
+  if(sbClient){
+    try{
+      const {data,error}=await sbClient.from('pw_employees').select('*').order('updated_at',{ascending:false});
+      if(!error){ setDBStatus('connected'); return process(data); }
+    }catch(_){}
   }
-  // Direct REST fallback
-  if(!cfg) return [];
-  try {
-    const res = await fetch(cfg.url + '/rest/v1/pw_employees?select=*&order=updated_at.desc', {
-      headers: { 'apikey': cfg.key, 'Authorization': 'Bearer ' + cfg.key }
-    });
-    if(res.ok) {
-      const data = await res.json();
-      setDBStatus('connected');
-      return process(Array.isArray(data) ? data : []);
-    }
-  } catch(e) { console.error('loadAllEmployees REST fallback failed:', e); }
+  try{
+    const res=await restFetch('pw_employees?select=*&order=updated_at.desc');
+    if(res.ok){ const data=await res.json(); setDBStatus('connected'); return process(Array.isArray(data)?data:[]); }
+  }catch(e){ console.error('loadAllEmployees error:',e); }
   setDBStatus('error');
   return [];
 }
 
-async function saveCredential(email, pass, name) {
-  if(!sbClient) return;
-  try {
-    await sbClient.from('pw_credentials').upsert({email:email.toLowerCase(), pass, name}, {onConflict:'email'});
-  } catch(e){ console.error('cred save error:',e); }
-  try {
-    const store = JSON.parse(localStorage.getItem(LOCAL_CRED)||'{}');
-    store[email.toLowerCase()] = {pass, name};
-    localStorage.setItem(LOCAL_CRED, JSON.stringify(store));
-  } catch(_){}
-}
+/* ══════════════════════════════════════════════════════
+   PATCH 2 — saveCredential
+   Also writes to pwt_creds_list (array) so loadCredentials
+   has a guaranteed local fallback even when Supabase is slow.
+   ══════════════════════════════════════════════════════ */
+async function saveCredential(email, pass, name){
+  const norm=email.toLowerCase();
 
-async function getCredential(email) {
-  const norm = email.toLowerCase();
-  try {
-    const store = JSON.parse(localStorage.getItem(LOCAL_CRED)||'{}');
-    if(store[norm]) return store[norm];
-  } catch(_){}
-  if(!sbClient) return null;
-  try {
-    const {data,error} = await sbClient.from('pw_credentials').select('pass,name').eq('email',norm).single();
-    if(error||!data) return null;
-    const store = JSON.parse(localStorage.getItem(LOCAL_CRED)||'{}');
-    store[norm] = {pass:data.pass, name:data.name};
-    localStorage.setItem(LOCAL_CRED, JSON.stringify(store));
-    return {pass:data.pass, name:data.name};
-  } catch(_){ return null; }
-}
+  // 1. Update object cache (used by getCredential)
+  try{
+    const store=JSON.parse(localStorage.getItem(LOCAL_CRED)||'{}');
+    store[norm]={pass,name};
+    localStorage.setItem(LOCAL_CRED,JSON.stringify(store));
+  }catch(_){}
 
-async function loadCredentials() {
-  // Try sbClient first, fall back to direct REST fetch (bypasses any client issues)
-  if(sbClient) {
-    try {
-      const {data,error} = await sbClient.from('pw_credentials').select('*');
-      if(!error) { setDBStatus('connected'); return data||[]; }
-    } catch(_) {}
+  // 2. NEW: update list cache (used by loadCredentials)
+  try{
+    const list=JSON.parse(localStorage.getItem(LOCAL_CRED_LIST)||'[]');
+    const idx=list.findIndex(x=>x.email===norm);
+    if(idx>=0) list[idx]={email:norm,pass,name};
+    else list.push({email:norm,pass,name});
+    localStorage.setItem(LOCAL_CRED_LIST,JSON.stringify(list));
+  }catch(_){}
+
+  // 3. Supabase (best-effort)
+  if(sbClient){
+    try{ await sbClient.from('pw_credentials').upsert({email:norm,pass,name},{onConflict:'email'}); }catch(_){}
   }
-  // Direct REST fallback — works independently of sbClient state
-  const cfg = getSBConfig();
-  if(!cfg) return [];
-  try {
-    const res = await fetch(cfg.url + '/rest/v1/pw_credentials?select=*', {
-      headers: { 'apikey': cfg.key, 'Authorization': 'Bearer ' + cfg.key }
+  // REST fallback
+  try{
+    await restFetch('pw_credentials',{
+      method:'POST',
+      headers:{'Prefer':'resolution=merge-duplicates,return=minimal'},
+      body:JSON.stringify({email:norm,pass,name}),
     });
-    if(res.ok) {
-      const data = await res.json();
+  }catch(_){}
+}
+
+async function getCredential(email){
+  const norm=email.toLowerCase();
+  // Object cache
+  try{ const s=JSON.parse(localStorage.getItem(LOCAL_CRED)||'{}'); if(s[norm]) return s[norm]; }catch(_){}
+  // Supabase
+  if(sbClient){
+    try{
+      const {data,error}=await sbClient.from('pw_credentials').select('pass,name').eq('email',norm).single();
+      if(!error&&data){
+        try{ const s=JSON.parse(localStorage.getItem(LOCAL_CRED)||'{}'); s[norm]={pass:data.pass,name:data.name}; localStorage.setItem(LOCAL_CRED,JSON.stringify(s)); }catch(_){}
+        return{pass:data.pass,name:data.name};
+      }
+    }catch(_){}
+  }
+  // REST fallback
+  try{
+    const res=await restFetch(`pw_credentials?select=pass,name&email=eq.${encodeURIComponent(norm)}&limit=1`);
+    if(res.ok){ const arr=await res.json(); if(arr?.[0]){ return{pass:arr[0].pass,name:arr[0].name}; } }
+  }catch(_){}
+  return null;
+}
+
+/* ══════════════════════════════════════════════════════
+   PATCH 3 — loadCredentials
+   Three-tier: sbClient → REST → localStorage list cache.
+   This is what sendInvite / renderEmpList depend on.
+   ══════════════════════════════════════════════════════ */
+async function loadCredentials(){
+  // 1. sbClient
+  if(sbClient){
+    try{
+      const {data,error}=await sbClient.from('pw_credentials').select('*');
+      if(!error){
+        setDBStatus('connected');
+        // Refresh list cache from fresh Supabase data
+        try{ localStorage.setItem(LOCAL_CRED_LIST,JSON.stringify(data||[])); }catch(_){}
+        return data||[];
+      }
+    }catch(_){}
+  }
+  // 2. Direct REST
+  try{
+    const res=await restFetch('pw_credentials?select=*');
+    if(res.ok){
+      const data=await res.json();
       setDBStatus('connected');
-      return Array.isArray(data) ? data : [];
+      const arr=Array.isArray(data)?data:[];
+      try{ localStorage.setItem(LOCAL_CRED_LIST,JSON.stringify(arr)); }catch(_){}
+      return arr;
     }
-  } catch(e) { console.error('loadCredentials REST fallback failed:', e); }
+  }catch(e){ console.error('loadCredentials REST error:',e); }
+  // 3. ← NEW: localStorage list cache as last resort
+  try{
+    const cached=JSON.parse(localStorage.getItem(LOCAL_CRED_LIST)||'[]');
+    if(cached.length){
+      console.warn('loadCredentials: using localStorage cache ('+cached.length+' records)');
+      // Don't set error — Supabase may be temporarily unreachable
+      return cached;
+    }
+  }catch(_){}
   setDBStatus('error');
   return [];
 }
 
-function subscribeRealtime() {
-  // Disabled — realtime causes DataCloneError; polling handles updates
-}
+function subscribeRealtime(){ /* disabled — polling used instead */ }
 
-/* ═══════════════════════════════════════════════════════
-   URL-BASED INVITE AUTO-LOGIN
-   ═══════════════════════════════════════════════════════ */
-function buildInviteUrl(email, pass, name) {
-  const base = window.location.href.split('?')[0];
+/* ══ INVITE URL ══ */
+function buildInviteUrl(email,pass,name){
+  const base=window.location.href.split('?')[0];
   return `${base}?e=${encodeURIComponent(btoa(email))}&p=${encodeURIComponent(btoa(pass))}&n=${encodeURIComponent(btoa(name))}`;
 }
 
-async function handleInviteUrl() {
-  const params = new URLSearchParams(window.location.search);
-  const e64=params.get('e'), p64=params.get('p'), n64=params.get('n');
+async function handleInviteUrl(){
+  const params=new URLSearchParams(window.location.search);
+  const e64=params.get('e'),p64=params.get('p'),n64=params.get('n');
   if(!e64||!p64) return false;
-  try {
-    const email = atob(decodeURIComponent(e64));
-    const pass  = atob(decodeURIComponent(p64));
-    const name  = n64 ? atob(decodeURIComponent(n64)) : email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+  try{
+    const email=atob(decodeURIComponent(e64));
+    const pass=atob(decodeURIComponent(p64));
+    const name=n64?atob(decodeURIComponent(n64)):email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
     if(!email.endsWith('@pw.live')||email===MANAGER_EMAIL) return false;
-    await saveCredential(email, pass, name);
+    await saveCredential(email,pass,name);
     window.history.replaceState({},document.title,window.location.pathname);
     showSplash(`Welcome, ${name.split(' ')[0]}! Signing you in…`);
     await new Promise(r=>setTimeout(r,1200));
     hideSplash();
-    await doLoginSuccess({name, email, role:'employee'});
+    await doLoginSuccess({name,email,role:'employee'});
     return true;
-  } catch(e){ console.warn('Invite URL error:',e); return false; }
+  }catch(e){ console.warn('Invite URL error:',e); return false; }
 }
 
-/* ═══════════════════════════════════════════════════════
-   AUTH
-   ═══════════════════════════════════════════════════════ */
-function selectRole(r) {
-  selectedRole = r;
-  const re=$('rb-emp'), rm=$('rb-mgr');
-  const warn=$('mgr-warn'), he=$('hint-emp'), hm=$('hint-mgr');
+/* ══ AUTH ══ */
+function selectRole(r){
+  selectedRole=r;
+  const re=$('rb-emp'),rm=$('rb-mgr'),warn=$('mgr-warn'),he=$('hint-emp'),hm=$('hint-mgr');
   if(r==='employee'){
     re.className='role-btn active'; rm.className='role-btn';
     if(warn)warn.style.display='none'; if(he)he.classList.remove('hidden'); if(hm)hm.classList.add('hidden');
-  } else {
+  }else{
     rm.className='role-btn active mgr'; re.className='role-btn';
     if(warn)warn.style.display='block'; if(he)he.classList.add('hidden'); if(hm)hm.classList.remove('hidden');
   }
 }
 
-async function doLogin() {
-  const raw  = $('email-input').value.trim();
-  const pass = $('pass-input').value;
-  const email= raw.includes('@') ? raw.toLowerCase() : raw.toLowerCase()+'@pw.live';
-  const err  = $('login-err');
-
-  if(!raw) { showErr('⚠ Enter your username.'); return; }
+async function doLogin(){
+  const raw=$('email-input').value.trim(), pass=$('pass-input').value;
+  const email=raw.includes('@')?raw.toLowerCase():raw.toLowerCase()+'@pw.live';
+  if(!raw){ showErr('⚠ Enter your username.'); return; }
   if(!email.endsWith('@pw.live')){ showErr('⚠ Only @pw.live accounts allowed.'); return; }
   if(!pass){ showErr('⚠ Enter your password.'); return; }
 
   if(selectedRole==='manager'){
     if(email!==MANAGER_EMAIL){ showErr(`⚠ Manager access is restricted to ${MANAGER_EMAIL}.`); return; }
     if(pass!==getMgrPass()){ showErr('⚠ Incorrect manager password.'); $('pass-input').value=''; return; }
-    err.classList.add('hidden');
-    await doLoginSuccess({name:'Aditya Malik', email, role:'manager'});
+    $('login-err').classList.add('hidden');
+    await doLoginSuccess({name:'Aditya Malik',email,role:'manager'});
     return;
   }
 
+  const err=$('login-err');
   err.innerHTML='<span style="color:var(--amber)">Checking credentials…</span>';
   err.classList.remove('hidden');
-  const cred = await getCredential(email);
-  if(!cred){
-    showErr(`⚠ No account found for ${email}. Ask your manager to add you and send your invite link — it auto-signs you in on this device.`);
-    return;
-  }
-  if(pass !== cred.pass){
-    showErr('⚠ Incorrect password. Check your onboarding email.');
-    $('pass-input').value='';
-    return;
-  }
+  const cred=await getCredential(email);
+  if(!cred){ showErr(`⚠ No account found for ${email}. Ask your manager to add you and send your invite link.`); return; }
+  if(pass!==cred.pass){ showErr('⚠ Incorrect password. Check your onboarding email.'); $('pass-input').value=''; return; }
   err.classList.add('hidden');
-  const name = cred.name || email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
-  await doLoginSuccess({name, email, role:'employee'});
+  const name=cred.name||email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+  await doLoginSuccess({name,email,role:'employee'});
 }
 
 function showErr(msg){ const e=$('login-err'); e.innerHTML=msg; e.classList.remove('hidden'); }
 function showSplash(msg){ const s=$('splash'); s.style.display='flex'; setTxt('splash-msg',msg||'Loading…'); }
 function hideSplash(){ $('splash').style.display='none'; }
 
-async function restoreSession() {
-  try {
-    const raw = sessionStorage.getItem(SS_KEY);
-    if(!raw) return false;
-    const u = JSON.parse(raw);
-    if(!u||!u.email||!u.email.endsWith('@pw.live')) return false;
+async function restoreSession(){
+  try{
+    const raw=sessionStorage.getItem(SS_KEY); if(!raw) return false;
+    const u=JSON.parse(raw); if(!u||!u.email||!u.email.endsWith('@pw.live')) return false;
     setTxt('splash-msg',`Welcome back, ${u.name.split(' ')[0]}!`);
     if(u.role==='employee'){
-      const d = await loadFromSupabase(u.email);
+      const d=await loadFromSupabase(u.email);
       if(d){
         totalSeconds=d.totalSeconds||0; activeSeconds=d.activeSeconds||0;
         idleSeconds=d.idleSeconds||0; sessionCount=d.sessionCount||0;
@@ -1219,27 +1155,30 @@ async function restoreSession() {
         attendanceStatus=d.attendance||'present';
       }
     }
-    await doLoginSuccess(u, true);
+    await doLoginSuccess(u,true);
     return true;
-  } catch(_){ return false; }
+  }catch(_){ return false; }
 }
 
-async function doLoginSuccess(user, skipSave=false) {
-  currentUser = user;
-  if(!skipSave) {
-    try { sessionStorage.setItem(SS_KEY,JSON.stringify(user)); } catch(_){}
-  }
-  $('login-screen').style.display = 'none';
-  $('app').style.display = 'flex';
+/* ══════════════════════════════════════════════════════
+   PATCH 4 — doLoginSuccess
+   Force setDBStatus('connected') immediately after
+   successful login — login itself proves Supabase works.
+   ══════════════════════════════════════════════════════ */
+async function doLoginSuccess(user, skipSave=false){
+  currentUser=user;
+  if(!skipSave){ try{ sessionStorage.setItem(SS_KEY,JSON.stringify(user)); }catch(_){} }
+  $('login-screen').style.display='none';
+  $('app').style.display='flex';
 
   const av=$('sb-av'); av.textContent=avI(user.name); av.style.background=avC(user.email);
-  setTxt('sb-name', user.name);
-  setTxt('sb-role', user.role==='manager'?'Manager · @pw.live':'Employee · @pw.live');
-  setTxt('my-email', user.email);
-  const ds = new Date().toLocaleDateString('en-IN',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+  setTxt('sb-name',user.name);
+  setTxt('sb-role',user.role==='manager'?'Manager · @pw.live':'Employee · @pw.live');
+  setTxt('my-email',user.email);
+  const ds=new Date().toLocaleDateString('en-IN',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
   setTxt('topbar-date',ds); setTxt('today-date',ds);
-  setTxt('mgr-email-lbl', MANAGER_EMAIL); setTxt('mgr-email-warn', MANAGER_EMAIL);
-  setTxt('db-url-display', getSBConfig()?.url||'–');
+  setTxt('mgr-email-lbl',MANAGER_EMAIL); setTxt('mgr-email-warn',MANAGER_EMAIL);
+  setTxt('db-url-display',getSBConfig()?.url||'–');
 
   if(user.role==='employee'){
     if(isSunday()) attendanceStatus='off';
@@ -1249,26 +1188,23 @@ async function doLoginSuccess(user, skipSave=false) {
     $('page-tracker').classList.add('active');
     renderGreeting('emp-',user.name);
     startWatchdog(); startIdleDetect(); setupAway();
-  } else {
+  }else{
     $('nav-emp').classList.add('hidden'); $('nav-mgr').classList.remove('hidden');
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
     $('page-overview').classList.add('active');
     renderGreeting('mgr-',user.name);
-    subscribeRealtime();
     startMgrPolling();
     await loadDashboard();
     setTimeout(()=>initCharts(),150);
     setTimeout(()=>refreshEjsUI(),200);
   }
-  // Login succeeded = Supabase is reachable. Mark connected immediately.
-  // No polling interval needed — save/load operations update the dot live.
+
+  // ← PATCH 4: Login success = Supabase reachable → green dot immediately
   setDBStatus('connected');
 }
 
-function logout() {
+function logout(){
   if(tracking) stopTracking();
-  if(realtimeSub){ try{ sbClient.removeChannel(realtimeSub); }catch(_){} realtimeSub=null; }
-  // (no health-check interval to clear)
   try{ sessionStorage.removeItem(SS_KEY); }catch(_){}
   currentUser=null; tracking=false;
   totalSeconds=activeSeconds=idleSeconds=sessionCount=0;
@@ -1276,9 +1212,9 @@ function logout() {
   $('app').style.display='none';
   $('login-screen').style.display='flex';
   $('email-input').value=''; $('pass-input').value='';
+  setDBStatus('connecting');
 }
 
-/* ══ NAVIGATION ══ */
 function showPage(page,el){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   $('page-'+page).classList.add('active');
@@ -1288,8 +1224,7 @@ function showPage(page,el){
   if(page==='settings') renderEmpList();
 }
 
-/* ══ FLASH BANNER ══ */
-function flash(html, type='amber'){
+function flash(html,type='amber'){
   const b=$('flash-banner'); if(!b)return;
   b.innerHTML=html;
   const st={amber:'background:var(--amberbg);border:1px solid var(--amberborder);color:var(--amber)',
@@ -1301,13 +1236,10 @@ function flash(html, type='amber'){
 }
 
 /* ══ ATTENDANCE ══ */
-const attLabel = s=>({present:'Present ✅',halfday:'Half Day 🕐',leave:'On Leave 🏖️',off:'Off 🔴'}[s]||s);
-const attColor = s=>({present:'var(--green)',halfday:'var(--amber)',leave:'var(--red)',off:'var(--text3)'}[s]||'var(--text3)');
+const attLabel=s=>({present:'Present ✅',halfday:'Half Day 🕐',leave:'On Leave 🏖️',off:'Off 🔴'}[s]||s);
+const attColor=s=>({present:'var(--green)',halfday:'var(--amber)',leave:'var(--red)',off:'var(--text3)'}[s]||'var(--text3)');
 function getTargetMins(){ if(attendanceStatus==='leave'||attendanceStatus==='off')return 0; return attendanceStatus==='halfday'?225:450; }
-function computeScore(){
-  const t=getTargetMins(); if(!t)return null;
-  return Math.min(100,Math.round(((totalSeconds/60)+totalQToday()*5)*100/t));
-}
+function computeScore(){ const t=getTargetMins(); if(!t)return null; return Math.min(100,Math.round(((totalSeconds/60)+totalQToday()*5)*100/t)); }
 function setAttendance(s){
   if(isSunday()&&s!=='off'){ flash('🔴 Today is Sunday.','amber'); return; }
   if(tracking&&(s==='leave'||s==='off')) stopTracking();
@@ -1315,12 +1247,10 @@ function setAttendance(s){
 }
 function renderAttBtn(){
   ['present','halfday','leave','off'].forEach(s=>{
-    const b=$('att-'+s); if(!b) return;
+    const b=$('att-'+s); if(!b)return;
     const a=attendanceStatus===s;
-    b.style.background=a?attColor(s):'var(--bg3)';
-    b.style.color=a?'#fff':'var(--text2)';
-    b.style.borderColor=a?attColor(s):'var(--border)';
-    b.style.fontWeight=a?'700':'500';
+    b.style.background=a?attColor(s):'var(--bg3)'; b.style.color=a?'#fff':'var(--text2)';
+    b.style.borderColor=a?attColor(s):'var(--border)'; b.style.fontWeight=a?'700':'500';
   });
   const sl=$('att-status-lbl'); if(sl){sl.textContent=attLabel(attendanceStatus);sl.style.color=attColor(attendanceStatus);}
 }
@@ -1328,23 +1258,20 @@ function renderAttBtn(){
 /* ══ QUESTIONS ══ */
 function totalQToday(){ return qHistory.reduce((s,e)=>s+(parseInt(e.count)||0),0); }
 function addQ(){
-  const cnt=parseInt($('q-count').value)||0;
-  if(cnt<=0){alert('Enter at least 1.');return;}
-  const note=$('q-note').value.trim();
-  const now=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+  const cnt=parseInt($('q-count').value)||0; if(cnt<=0){alert('Enter at least 1.');return;}
+  const note=$('q-note').value.trim(), now=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
   qHistory.push({count:cnt,note:note||'General',time:now,ts:Date.now()});
   $('q-count').value=''; $('q-note').value='';
   renderQChips(); saveToSupabase();
 }
 function renderQChips(){
   const c=$('q-chips'); if(!c)return;
-  const total=totalQToday();
-  setTxt('q-total',total); setTxt('my-questions',total);
+  const total=totalQToday(); setTxt('q-total',total); setTxt('my-questions',total);
   if(!qHistory.length){c.innerHTML='<span style="font-size:12px;color:var(--text3)">No entries yet</span>';return;}
   c.innerHTML=qHistory.slice().reverse().map(e=>`<div class="q-chip"><span class="q-chip-num">${e.count}</span><span>${e.note}</span><span style="color:var(--text3);font-size:10px">${e.time}</span></div>`).join('')+`<div class="q-total">Total: ${total}</div>`;
 }
 
-/* ══ TIMER DISPLAY ══ */
+/* ══ TIMER ══ */
 function updateTimerDisplay(){
   const h=Math.floor(totalSeconds/3600),m=Math.floor((totalSeconds%3600)/60),s=totalSeconds%60;
   setTxt('timer',`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`);
@@ -1352,8 +1279,7 @@ function updateTimerDisplay(){
   setTxt('stat-total',fmtS(totalSeconds)); setTxt('stat-idle',fmtS(idleSeconds)); setTxt('my-total',fmtS(totalSeconds));
   const idlePct=totalSeconds>0?Math.round((idleSeconds/totalSeconds)*100):0;
   const iss=$('stat-idle-sub'); if(iss)iss.textContent=`${idlePct}% of session`;
-  const sc=computeScore();
-  const scEl=$('stat-score');
+  const sc=computeScore(), scEl=$('stat-score');
   if(sc===null){setTxt('stat-score','–');if(scEl)scEl.style.color='var(--text3)';}
   else{setTxt('stat-score',sc+'%');if(scEl)scEl.style.color=sc>=80?'var(--green)':sc>=60?'var(--amber)':'var(--red)';}
   const pct=Math.min(100,sc||0);
@@ -1363,7 +1289,6 @@ function updateTimerDisplay(){
     else{const tgt=getTargetMins();pl.textContent=`${Math.round(totalSeconds/60)}m + ${totalQToday()*5}m bonus = ${pct}% of ${tgt}m`;}}
 }
 
-/* ══ ACTIVITY LIST ══ */
 function renderActivity(){
   const list=$('activity-list'); if(!list)return;
   const CC={work:'#059669',neutral:'#d97706',distract:'#dc2626'};
@@ -1376,7 +1301,6 @@ function renderActivity(){
   </div>`).join('');
 }
 
-/* ══ TAB BARS ══ */
 function renderTabBars(){
   const chart=$('tab-bars'); if(!chart)return;
   if(!activityLog.length){chart.innerHTML='<div style="font-size:12px;color:var(--text3)">No tabs logged.</div>';setTxt('tab-badge','0 tabs');return;}
@@ -1385,7 +1309,7 @@ function renderTabBars(){
   const CC={work:'var(--green)',neutral:'var(--amber)',distract:'var(--red)'};
   chart.innerHTML=sorted.map(a=>{
     const pct=total>0?Math.round(((a.timeSeconds||0)/total)*100):0;
-    const isAct=a.domain===activeDomain, col=CC[a.cat]||'var(--accent)';
+    const isAct=a.domain===activeDomain,col=CC[a.cat]||'var(--accent)';
     const safeD=a.domain.replace(/'/g,"\\'");
     return`<div style="margin-bottom:8px">
       <div style="display:flex;align-items:center;gap:7px;margin-bottom:3px">
@@ -1442,12 +1366,11 @@ function stopTracking(){
   renderTabBars(); saveToSupabase();
 }
 
-/* ══ DOMAIN LOGGING ══ */
 function logDomain(){
   const inp=$('domain-inp');
   const raw=(inp?inp.value.trim():'').toLowerCase().replace(/^https?:\/\//,'').replace(/^www\./,'').replace(/\/.*/,'').split('?')[0].trim();
   if(!raw)return;
-  const minsEl=$('domain-mins'), catEl=$('cat-sel');
+  const minsEl=$('domain-mins'),catEl=$('cat-sel');
   const mins=(minsEl&&minsEl.value?parseInt(minsEl.value):null)||1;
   const cat=(catEl?catEl.value:null)||catD(raw);
   const seconds=mins*60;
@@ -1461,7 +1384,6 @@ function logDomain(){
 function setActiveTab(d){ activeDomain=(activeDomain===d)?null:d; renderTabBars(); }
 function removeTab(d){ activityLog=activityLog.filter(a=>a.domain!==d); if(activeDomain===d)activeDomain=null; renderActivity();renderTabBars();saveToSupabase(); }
 
-/* ══ IDLE DETECTION ══ */
 function startIdleDetect(){
   clearInterval(idleDetectInterval);
   const reset=()=>{ lastActivity=Date.now(); hiddenSince=null; if(isIdle)wakeIdle(); };
@@ -1479,7 +1401,6 @@ function startIdleDetect(){
 function goIdle(){ isIdle=true; const t=$('tracking-tag'); if(t){t.className='tag tag-idle';t.textContent='💤 Idle';} }
 function wakeIdle(){ isIdle=false; const t=$('tracking-tag'); if(t&&tracking){t.className='tag tag-live';t.textContent='● Tracking';} }
 
-/* ══ WORK HOURS WATCHDOG ══ */
 function startWatchdog(){
   clearInterval(workWatchdog);
   let hb=0;
@@ -1496,7 +1417,6 @@ function startWatchdog(){
   },1000);
 }
 
-/* ══ AWAY DETECTION ══ */
 function setupAway(){
   document.addEventListener('visibilitychange',()=>{
     if(document.hidden){if(tracking&&awayStart===null){awayStart=Date.now();awayTabDomain=null;}}
@@ -1518,34 +1438,28 @@ function setupAway(){
   },true);
 }
 
-/* ══ DATA DELETE ══ */
 async function deleteSelf(){
-  if(!currentUser||!sbClient)return;
-  if(!confirm('Delete all your tracking data?'))return;
-  await sbClient.from('pw_employees').delete().eq('email',currentUser.email);
+  if(!currentUser) return;
+  if(!confirm('Delete all your tracking data?')) return;
+  if(sbClient){ try{ await sbClient.from('pw_employees').delete().eq('email',currentUser.email); }catch(_){} }
+  try{ await restFetch(`pw_employees?email=eq.${encodeURIComponent(currentUser.email)}`,{method:'DELETE'}); }catch(_){}
   totalSeconds=activeSeconds=idleSeconds=sessionCount=0; activityLog=[]; qHistory=[]; activeDomain=null;
   updateTimerDisplay();renderActivity();renderQChips();renderTabBars();
   alert('Data deleted.');
 }
 
-/* ═══════════════════════════════════════════════════════
-   MANAGER DASHBOARD
-   ═══════════════════════════════════════════════════════ */
-let mgrPollTimer = null;
+/* ══ MANAGER DASHBOARD ══ */
+let mgrPollTimer=null;
 function startMgrPolling(){
-  if(mgrPollTimer) clearInterval(mgrPollTimer);
-  mgrPollTimer = setInterval(()=>{ if(currentUser?.role==='manager') loadDashboard(); }, 4000);
+  if(mgrPollTimer)clearInterval(mgrPollTimer);
+  mgrPollTimer=setInterval(()=>{ if(currentUser?.role==='manager') loadDashboard(); },4000);
 }
 
 async function loadDashboard(){
-  if(!sbClient||currentUser?.role!=='manager') return;
-  const emps = await loadAllEmployees(); // ← setDBStatus called inside loadAllEmployees
+  if(currentUser?.role!=='manager') return;
+  const emps=await loadAllEmployees();
   setTxt('last-refreshed','↻ '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'}));
-  updateNotice(emps);
-  updateKPIs(emps);
-  renderOverviewTable(emps);
-  renderDetailTable(emps);
-  updateAlerts(emps);
+  updateNotice(emps); updateKPIs(emps); renderOverviewTable(emps); renderDetailTable(emps); updateAlerts(emps);
 }
 
 function updateNotice(emps){
@@ -1553,10 +1467,10 @@ function updateNotice(emps){
   if(!emps.length){
     n.className='notice info';
     n.innerHTML='<div class="notice-icon">⚠️</div><div><strong>No employee data yet</strong><span>Add employees in Settings → send them their invite email → they sign in → data appears here automatically.</span></div>';
-  } else {
+  }else{
     const act=emps.filter(e=>e.tracking).length;
     n.className='notice ok';
-    n.innerHTML=`<div class="notice-icon">✅</div><div><strong>${emps.length} employee${emps.length>1?'s':''} tracked today — ${act} live now</strong><span>Auto-refreshing every 4 seconds via Supabase.</span></div>`;
+    n.innerHTML=`<div class="notice-icon">✅</div><div><strong>${emps.length} employee${emps.length>1?'s':''} tracked today — ${act} live now</strong><span>Auto-refreshing every 4 seconds.</span></div>`;
   }
 }
 
@@ -1569,8 +1483,7 @@ function updateKPIs(emps){
   const act=emps.filter(e=>e.tracking).length;
   setTxt('kpi-hrs',avgH==='–'?'–':avgH+'h');
   setTxt('kpi-score',isNaN(avgSc)||avgSc==='–'?'–':avgSc+'%');
-  setTxt('kpi-q',totalQ);
-  setTxt('kpi-live',act);
+  setTxt('kpi-q',totalQ); setTxt('kpi-live',act);
   setTxt('kpi-hrs-sub',avgH!=='–'?`${Math.round(parseFloat(avgH)/7.5*100)}% of 7.5h target`:'');
   setTxt('kpi-score-sub','Category-weighted');
   setTxt('kpi-live-sub',`of ${emps.length} tracked today`);
@@ -1607,22 +1520,17 @@ function renderDetailTable(emps){
     const att=e.attendance||'present',isAct=e.tracking&&att!=='leave'&&att!=='off';
     const scC=sc==null?'var(--text3)':sc>=80?'var(--green)':sc>=60?'var(--amber)':'var(--red)';
     const uid=e.email.replace(/[@.]/g,'_');
-    const totalMin=Math.round((e.totalSeconds||0)/60), idleMin=Math.round((e.idleSeconds||0)/60);
+    const totalMin=Math.round((e.totalSeconds||0)/60),idleMin=Math.round((e.idleSeconds||0)/60);
     const idlePct=totalMin>0?Math.round((idleMin/totalMin)*100):0;
     const tgtMin=att==='halfday'?225:att==='leave'||att==='off'?0:450;
-
     const domRows=(e.activityLog&&e.activityLog.length)
       ?[...e.activityLog].sort((a,b)=>(b.timeSeconds||0)-(a.timeSeconds||0)).slice(0,8).map(a=>{
           const ttl=e.activityLog.reduce((s,x)=>s+(x.timeSeconds||0),0);
           const p=ttl?Math.round(((a.timeSeconds||0)/ttl)*100):0;
           return`<div style="margin-bottom:5px"><div style="display:flex;align-items:center;gap:7px;margin-bottom:2px"><div style="width:6px;height:6px;border-radius:50%;background:${CC[a.cat]||'#888'};flex-shrink:0"></div><span style="font-size:12px;font-weight:600;flex:1">${a.domain}</span><span style="font-size:11px;font-weight:700;color:${CC[a.cat]||'var(--text3)'}">${a.time}</span></div><div style="height:4px;background:var(--bg4);border-radius:3px;overflow:hidden"><div style="width:${p}%;height:100%;background:${CC[a.cat]||'var(--accent)'};border-radius:3px"></div></div></div>`;
-        }).join('')
-      :'<div style="font-size:12px;color:var(--text3)">No tabs logged.</div>';
-
+        }).join(''):'<div style="font-size:12px;color:var(--text3)">No tabs logged.</div>';
     const qRows=(e.qHistory&&e.qHistory.length)
-      ?e.qHistory.map(x=>`<span style="background:var(--purplebg);border:1px solid #ddd6fe;border-radius:12px;padding:2px 8px;font-size:11px;color:var(--purple);font-weight:700;display:inline-flex;gap:3px;margin:2px"><b>${x.count}</b>${x.note}<span style="opacity:.5">${x.time}</span></span>`).join('')
-      :'<span style="font-size:12px;color:var(--text3)">None.</span>';
-
+      ?e.qHistory.map(x=>`<span style="background:var(--purplebg);border:1px solid #ddd6fe;border-radius:12px;padding:2px 8px;font-size:11px;color:var(--purple);font-weight:700;display:inline-flex;gap:3px;margin:2px"><b>${x.count}</b>${x.note}<span style="opacity:.5">${x.time}</span></span>`).join(''):'<span style="font-size:12px;color:var(--text3)">None.</span>';
     return`
     <tr style="cursor:pointer" onclick="toggleRow('${uid}')">
       <td><div class="emp-name"><div class="emp-av" style="background:${col}">${ini}</div><div><div style="font-weight:600;font-size:13px">${e.name}</div><div style="font-size:11px;color:var(--text3)">${e.email}</div></div></div></td>
@@ -1682,11 +1590,9 @@ function updateAlerts(emps){
   p.innerHTML=alerts.join('');
 }
 
-/* ═══════════════════════════════════════════════════════
-   SETTINGS — EMPLOYEE MANAGEMENT
-   ═══════════════════════════════════════════════════════ */
+/* ══ SETTINGS — EMPLOYEES ══ */
 async function addEmployee(){
-  const nameEl=$('inv-name'), emailEl=$('inv-email');
+  const nameEl=$('inv-name'),emailEl=$('inv-email');
   const rawEmail=(emailEl?emailEl.value.trim():'');
   const email=rawEmail.includes('@')?rawEmail.toLowerCase():rawEmail.toLowerCase()+'@pw.live';
   const name=(nameEl?nameEl.value.trim():'')||email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
@@ -1696,28 +1602,28 @@ async function addEmployee(){
   const w1=['Swift','Bright','Bold','Sharp','Quick','Clear','Smart','Keen','Brave','Cool'];
   const w2=['Falcon','Tiger','Eagle','Hawk','Lion','Wolf','Fox','Bear','Shark','Storm'];
   const pass=w1[Math.floor(Math.random()*w1.length)]+w2[Math.floor(Math.random()*w2.length)]+(100+Math.floor(Math.random()*900));
-  await saveCredential(email, pass, name);
+  await saveCredential(email,pass,name);
   if(nameEl)nameEl.value=''; if(emailEl)emailEl.value='';
   renderEmpList();
 }
 
 async function renderEmpList(){
-  const list=$('emp-list'), sar=$('send-all-row');
+  const list=$('emp-list'),sar=$('send-all-row');
   if(!list)return;
-  const creds = await loadCredentials();
-  const empCreds = creds.filter(c=>c.email!==MANAGER_EMAIL);
-  if(sar) sar.style.display=empCreds.length?'flex':'none';
+  const creds=await loadCredentials();
+  const empCreds=creds.filter(c=>c.email!==MANAGER_EMAIL);
+  if(sar)sar.style.display=empCreds.length?'flex':'none';
   refreshEjsUI();
   if(!empCreds.length){list.innerHTML='<div style="text-align:center;padding:14px;color:var(--text3);font-size:13px">No employees added yet.</div>';return;}
-  const ejsOn = ejsReady();
-  list.innerHTML = empCreds.map(c=>{
-    const invUrl = buildInviteUrl(c.email, c.pass, c.name||'');
-    const safeUrl = invUrl.replace(/'/g,"\\'");
-    const safeE = c.email.replace(/'/g,"\\'");
-    const sendBtnLabel = ejsOn ? '📧 Send Invite' : '📧 Open Gmail';
-    const sendBtnStyle = ejsOn
-      ? 'background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;border:none'
-      : 'background:linear-gradient(135deg,#ea4335,#fbbc04);color:white;border:none';
+  const ejsOn=ejsReady();
+  list.innerHTML=empCreds.map(c=>{
+    const invUrl=buildInviteUrl(c.email,c.pass,c.name||'');
+    const safeUrl=invUrl.replace(/'/g,"\\'");
+    const safeE=c.email.replace(/'/g,"\\'");
+    const sendBtnLabel=ejsOn?'📧 Send Invite':'📧 Open Gmail';
+    const sendBtnStyle=ejsOn
+      ?'background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;border:none'
+      :'background:linear-gradient(135deg,#ea4335,#fbbc04);color:white;border:none';
     return`<div style="padding:11px 14px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius2);display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap">
       <div style="width:34px;height:34px;border-radius:50%;background:${avC(c.email)};display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;color:white;flex-shrink:0;margin-top:2px">${avI(c.name||c.email)}</div>
       <div style="flex:1;min-width:160px">
@@ -1738,192 +1644,153 @@ async function renderEmpList(){
 }
 
 async function removeEmployee(email){
-  if(!sbClient)return;
-  if(!confirm(`Remove ${email}?`))return;
-  await sbClient.from('pw_credentials').delete().eq('email',email);
-  await sbClient.from('pw_employees').delete().eq('email',email);
-  try{const s=JSON.parse(localStorage.getItem(LOCAL_CRED)||'{}');delete s[email];localStorage.setItem(LOCAL_CRED,JSON.stringify(s));}catch(_){}
+  if(!confirm(`Remove ${email}?`)) return;
+  if(sbClient){ try{ await sbClient.from('pw_credentials').delete().eq('email',email); await sbClient.from('pw_employees').delete().eq('email',email); }catch(_){} }
+  try{ await restFetch(`pw_credentials?email=eq.${encodeURIComponent(email)}`,{method:'DELETE'}); }catch(_){}
+  try{ await restFetch(`pw_employees?email=eq.${encodeURIComponent(email)}`,{method:'DELETE'}); }catch(_){}
+  // Remove from caches
+  try{ const s=JSON.parse(localStorage.getItem(LOCAL_CRED)||'{}'); delete s[email]; localStorage.setItem(LOCAL_CRED,JSON.stringify(s)); }catch(_){}
+  try{ const l=JSON.parse(localStorage.getItem(LOCAL_CRED_LIST)||'[]'); localStorage.setItem(LOCAL_CRED_LIST,JSON.stringify(l.filter(x=>x.email!==email))); }catch(_){}
   renderEmpList();
 }
 
 async function clearEmployees(){
-  if(!sbClient)return;
-  if(!confirm('Remove ALL employees from Supabase?'))return;
+  if(!confirm('Remove ALL employees?')) return;
   const creds=await loadCredentials();
   for(const c of creds.filter(x=>x.email!==MANAGER_EMAIL)){
-    await sbClient.from('pw_credentials').delete().eq('email',c.email);
-    await sbClient.from('pw_employees').delete().eq('email',c.email);
+    if(sbClient){ try{ await sbClient.from('pw_credentials').delete().eq('email',c.email); await sbClient.from('pw_employees').delete().eq('email',c.email); }catch(_){} }
+    try{ await restFetch(`pw_credentials?email=eq.${encodeURIComponent(c.email)}`,{method:'DELETE'}); }catch(_){}
+    try{ await restFetch(`pw_employees?email=eq.${encodeURIComponent(c.email)}`,{method:'DELETE'}); }catch(_){}
   }
-  localStorage.removeItem(LOCAL_CRED);
+  localStorage.removeItem(LOCAL_CRED); localStorage.removeItem(LOCAL_CRED_LIST);
   renderEmpList();
 }
 
-/* ═══════════════════════════════════════════════════════
-   EMAILJS — real email sending from the browser
-   ═══════════════════════════════════════════════════════ */
-const EJS_CFG_KEY = 'pwt_emailjs';
+/* ══ EMAILJS ══ */
+const EJS_CFG_KEY='pwt_emailjs';
+function getEjsConfig(){ try{ return JSON.parse(localStorage.getItem(EJS_CFG_KEY)||'null'); }catch(_){ return null; } }
+function ejsReady(){ const c=getEjsConfig(); return !!(c&&c.serviceId&&c.templateId&&c.publicKey); }
 
-function getEjsConfig() {
-  try { return JSON.parse(localStorage.getItem(EJS_CFG_KEY)||'null'); } catch(_){ return null; }
+function refreshEjsUI(){
+  const cfg=getEjsConfig(), ready=!!(cfg&&cfg.serviceId);
+  const cr=$('ejs-configured-row'),tb=$('ejs-toggle-btn');
+  if(cr)cr.style.display=ready?'flex':'none';
+  if(tb)tb.style.display=ready?'none':'block';
+  if(ready&&window.emailjs) window.emailjs.init({publicKey:cfg.publicKey});
 }
 
-function ejsReady() {
-  const c = getEjsConfig();
-  return !!(c && c.serviceId && c.templateId && c.publicKey);
+function toggleEjsSetup(){
+  const body=$('ejs-setup-body'); if(!body)return;
+  const isOpen=body.style.display!=='none';
+  body.style.display=isOpen?'none':'block';
+  const btn=$('ejs-toggle-btn'); if(btn)btn.textContent=isOpen?'Configure ▼':'Hide ▲';
 }
 
-function refreshEjsUI() {
-  const cfg = getEjsConfig();
-  const ready = !!(cfg && cfg.serviceId);
-  const configuredRow = $('ejs-configured-row');
-  const toggleBtn = $('ejs-toggle-btn');
-  if(configuredRow) configuredRow.style.display = ready ? 'flex' : 'none';
-  if(toggleBtn) toggleBtn.style.display = ready ? 'none' : 'block';
-  if(ready && window.emailjs) {
-    window.emailjs.init({ publicKey: cfg.publicKey });
+async function saveEjsConfig(){
+  const serviceId=($('ejs-service')||{}).value?.trim();
+  const templateId=($('ejs-template')||{}).value?.trim();
+  const publicKey=($('ejs-pubkey')||{}).value?.trim();
+  if(!serviceId||!templateId||!publicKey){ showEjsMsg('⚠ All three fields are required.',false); return; }
+  try{
+    window.emailjs.init({publicKey});
+    showEjsMsg('⏳ Sending test email to verify…',null);
+    await window.emailjs.send(serviceId,templateId,{to_email:MANAGER_EMAIL,to_name:'Aditya Malik',from_name:'PW.live Tracker',invite_url:window.location.href.split('?')[0],password:'(test)',app_url:window.location.href.split('?')[0]});
+    localStorage.setItem(EJS_CFG_KEY,JSON.stringify({serviceId,templateId,publicKey}));
+    showEjsMsg('✅ Test email sent! EmailJS is working. Configuration saved.',true);
+    setTimeout(()=>{ refreshEjsUI(); renderEmpList(); },1500);
+  }catch(e){
+    console.error('EmailJS test failed:',e);
+    showEjsMsg('❌ Failed: '+(e?.text||e?.message||JSON.stringify(e))+'. Check your IDs and try again.',false);
   }
 }
 
-function toggleEjsSetup() {
-  const body = $('ejs-setup-body');
-  if(!body) return;
-  const isOpen = body.style.display !== 'none';
-  body.style.display = isOpen ? 'none' : 'block';
-  const btn = $('ejs-toggle-btn');
-  if(btn) btn.textContent = isOpen ? 'Configure ▼' : 'Hide ▲';
+function showEjsMsg(txt,ok){
+  const msg=$('ejs-status-msg'); if(!msg)return;
+  msg.style.display='block'; msg.textContent=txt;
+  if(ok===true) { msg.style.background='var(--greenbg)'; msg.style.color='var(--green)'; msg.style.border='1px solid var(--greenborder)'; }
+  if(ok===false){ msg.style.background='var(--redbg)'; msg.style.color='var(--red)'; msg.style.border='1px solid var(--redborder)'; }
+  if(ok===null) { msg.style.background='var(--amberbg)'; msg.style.color='var(--amber)'; msg.style.border='1px solid var(--amberborder)'; }
 }
 
-async function saveEjsConfig() {
-  const serviceId  = ($('ejs-service') ||{}).value?.trim();
-  const templateId = ($('ejs-template')||{}).value?.trim();
-  const publicKey  = ($('ejs-pubkey')  ||{}).value?.trim();
-  const msg = $('ejs-status-msg');
+function clearEjsConfig(){
+  if(!confirm('Remove EmailJS configuration?')) return;
+  localStorage.removeItem(EJS_CFG_KEY); refreshEjsUI();
+  const body=$('ejs-setup-body'); if(body)body.style.display='none';
+  const btn=$('ejs-toggle-btn'); if(btn){btn.style.display='block';btn.textContent='Configure ▼';}
+}
 
-  if(!serviceId||!templateId||!publicKey) {
-    showEjsMsg('⚠ All three fields are required.', false); return;
-  }
-
-  // Init EmailJS and send a test email to manager
-  try {
-    window.emailjs.init({ publicKey });
-    showEjsMsg('⏳ Sending test email to verify…', null);
-    const testParams = {
-      to_email:   MANAGER_EMAIL,
-      to_name:    'Aditya Malik',
-      from_name:  'PW.live Tracker',
-      invite_url: window.location.href.split('?')[0],
-      password:   '(test)',
-      app_url:    window.location.href.split('?')[0],
-    };
-    await window.emailjs.send(serviceId, templateId, testParams);
-    localStorage.setItem(EJS_CFG_KEY, JSON.stringify({serviceId, templateId, publicKey}));
-    showEjsMsg('✅ Test email sent to your Gmail! EmailJS is working. Configuration saved.', true);
-    setTimeout(()=>{ refreshEjsUI(); renderEmpList(); }, 1500);
-  } catch(e) {
-    console.error('EmailJS test failed:', e);
-    showEjsMsg('❌ Failed: '+(e?.text||e?.message||JSON.stringify(e))+'. Check your IDs and try again.', false);
+async function sendInviteEmail(c){
+  const cfg=getEjsConfig(), inviteUrl=buildInviteUrl(c.email,c.pass,c.name||'');
+  if(cfg&&cfg.serviceId&&window.emailjs){
+    const params={to_email:c.email,to_name:c.name||c.email.split('@')[0],from_name:'Aditya Malik · PW.live',invite_url:inviteUrl,password:c.pass,app_url:window.location.href.split('?')[0]};
+    await window.emailjs.send(cfg.serviceId,cfg.templateId,params);
+    return{method:'emailjs'};
+  }else{
+    window.open(buildGmailUrl(c),'_blank');
+    return{method:'gmail_compose'};
   }
 }
 
-function showEjsMsg(txt, ok) {
-  const msg = $('ejs-status-msg');
-  if(!msg) return;
-  msg.style.display = 'block';
-  msg.textContent = txt;
-  if(ok === true)  { msg.style.background='var(--greenbg)'; msg.style.color='var(--green)'; msg.style.border='1px solid var(--greenborder)'; }
-  if(ok === false) { msg.style.background='var(--redbg)'; msg.style.color='var(--red)'; msg.style.border='1px solid var(--redborder)'; }
-  if(ok === null)  { msg.style.background='var(--amberbg)'; msg.style.color='var(--amber)'; msg.style.border='1px solid var(--amberborder)'; }
-}
-
-function clearEjsConfig() {
-  if(!confirm('Remove EmailJS configuration? You can reconfigure anytime.')) return;
-  localStorage.removeItem(EJS_CFG_KEY);
-  refreshEjsUI();
-  const body = $('ejs-setup-body');
-  if(body) body.style.display = 'none';
-  const btn = $('ejs-toggle-btn');
-  if(btn) { btn.style.display = 'block'; btn.textContent = 'Configure ▼'; }
-}
-
-// Send one invite — real email if EmailJS configured, Gmail compose fallback otherwise
-async function sendInviteEmail(c) {
-  const cfg = getEjsConfig();
-  const inviteUrl = buildInviteUrl(c.email, c.pass, c.name||'');
-
-  if(cfg && cfg.serviceId && window.emailjs) {
-    // Real email via EmailJS
-    const params = {
-      to_email:   c.email,
-      to_name:    c.name || c.email.split('@')[0],
-      from_name:  'Aditya Malik · PW.live',
-      invite_url: inviteUrl,
-      password:   c.pass,
-      app_url:    window.location.href.split('?')[0],
-    };
-    await window.emailjs.send(cfg.serviceId, cfg.templateId, params);
-    return { method: 'emailjs' };
-  } else {
-    // Fallback: open Gmail compose (requires popup permission)
-    window.open(buildGmailUrl(c), '_blank');
-    return { method: 'gmail_compose' };
-  }
-}
-
+/* ══════════════════════════════════════════════════════
+   PATCH 5 — sendInvite
+   If loadCredentials() can't find the employee (rare
+   race condition), fall back to localStorage caches
+   before giving up.
+   ══════════════════════════════════════════════════════ */
 async function sendInvite(email){
-  if(!sbClient) return;
-  const creds = await loadCredentials();
-  const c = creds.find(x=>x.email===email);
-  if(!c) return;
+  let creds=await loadCredentials();
+  let c=creds.find(x=>x.email===email);
 
-  // Find the button and show loading state
-  const btn = document.querySelector(`[data-send-btn="${email}"]`);
-  if(btn) { btn.disabled=true; btn.textContent='Sending…'; }
+  // Fallback: try localStorage list cache directly
+  if(!c){
+    try{
+      const cached=JSON.parse(localStorage.getItem(LOCAL_CRED_LIST)||'[]');
+      c=cached.find(x=>x.email===email);
+    }catch(_){}
+  }
+  // Fallback: try object cache
+  if(!c){
+    try{
+      const store=JSON.parse(localStorage.getItem(LOCAL_CRED)||'{}');
+      if(store[email]) c={email,...store[email]};
+    }catch(_){}
+  }
 
-  try {
-    const result = await sendInviteEmail(c);
-    if(btn) {
-      btn.textContent = result.method==='emailjs' ? '✓ Sent!' : '✓ Gmail opened';
-      btn.style.background = 'var(--green)';
-      setTimeout(()=>{ btn.disabled=false; btn.textContent='📧 Send Invite'; btn.style.background=''; }, 3000);
+  if(!c){ alert('Employee not found: '+email+'\nTry refreshing the page.'); return; }
+
+  const btn=document.querySelector(`[data-send-btn="${email}"]`);
+  if(btn){btn.disabled=true;btn.textContent='Sending…';}
+  try{
+    const result=await sendInviteEmail(c);
+    if(btn){
+      btn.textContent=result.method==='emailjs'?'✓ Sent!':'✓ Gmail opened';
+      btn.style.background='var(--green)';
+      setTimeout(()=>{btn.disabled=false;btn.textContent='📧 Send Invite';btn.style.background='';},3000);
     }
-  } catch(e) {
-    console.error('Send invite failed:', e);
-    if(btn) { btn.disabled=false; btn.textContent='❌ Failed — retry'; btn.style.background='var(--red)'; }
+  }catch(e){
+    console.error('Send invite failed:',e);
+    if(btn){btn.disabled=false;btn.textContent='❌ Failed — retry';btn.style.background='var(--red)';}
     alert('Failed to send invite to '+email+':\n'+(e?.text||e?.message||e));
   }
 }
 
 async function sendAllInvites(){
-  const creds = await loadCredentials();
-  const emp = creds.filter(c=>c.email!==MANAGER_EMAIL);
-  if(!emp.length){ alert('No employees added.'); return; }
-
-  const btn = $('send-all-btn'), prog = $('send-all-progress'), lbl = $('send-all-label');
-  if(btn) btn.disabled = true;
-  if(prog) { prog.style.display='block'; }
-
-  let sent=0, failed=0;
-  for(let i=0; i<emp.length; i++){
-    const c = emp[i];
-    if(prog) prog.textContent = `Sending ${i+1}/${emp.length}: ${c.name||c.email}…`;
-    try {
-      await sendInviteEmail(c);
-      sent++;
-    } catch(e) {
-      console.error('Failed for '+c.email, e);
-      failed++;
-    }
-    // Small delay between sends to avoid rate limits
-    if(i < emp.length-1) await new Promise(r=>setTimeout(r,500));
+  const creds=await loadCredentials();
+  const emp=creds.filter(c=>c.email!==MANAGER_EMAIL);
+  if(!emp.length){alert('No employees added.');return;}
+  const btn=$('send-all-btn'),prog=$('send-all-progress'),lbl=$('send-all-label');
+  if(btn)btn.disabled=true; if(prog)prog.style.display='block';
+  let sent=0,failed=0;
+  for(let i=0;i<emp.length;i++){
+    const c=emp[i];
+    if(prog)prog.textContent=`Sending ${i+1}/${emp.length}: ${c.name||c.email}…`;
+    try{ await sendInviteEmail(c); sent++; }catch(e){ console.error('Failed for '+c.email,e); failed++; }
+    if(i<emp.length-1) await new Promise(r=>setTimeout(r,500));
   }
-
-  if(btn) btn.disabled = false;
-  if(lbl) lbl.textContent = 'Send invites to all';
-  if(prog) {
-    prog.textContent = `✓ Done — ${sent} sent${failed>0?' · '+failed+' failed':''}`;
-    setTimeout(()=>{ prog.style.display='none'; }, 5000);
-  }
-  if(failed > 0) alert(`${sent} invite(s) sent, ${failed} failed. Check console for details.`);
+  if(btn)btn.disabled=false;
+  if(lbl)lbl.textContent='Send invites to all';
+  if(prog){ prog.textContent=`✓ Done — ${sent} sent${failed>0?' · '+failed+' failed':''}`; setTimeout(()=>prog.style.display='none',5000); }
+  if(failed>0)alert(`${sent} invite(s) sent, ${failed} failed.`);
 }
 
 function buildGmailUrl(c){
@@ -1939,9 +1806,6 @@ You've been added to the PW.live Time Tracker.
 ${inviteUrl}
 ━━━━━━━━━━━━━━━━━━━━━━━━
 
-👆 Click the link — it auto-signs you in on your device instantly.
-Bookmark it for future logins.
-
 📋 MANUAL LOGIN (alternative):
   URL:      ${window.location.href.split('?')[0]}
   Email:    ${c.email}
@@ -1951,15 +1815,8 @@ Bookmark it for future logins.
 ⏰ WORK HOURS: 9:00 AM – 9:00 PM IST
 🎯 DAILY TARGET: 7.5 hours
 
-STEPS:
-1. Mark your attendance
-2. Click "Start tracking"
-3. Log tabs/domains you use
-4. Add Questions Curated count
-
 Best,
-Aditya Malik · PW.live`
-  );
+Aditya Malik · PW.live`);
   return `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(c.email)}&su=${subject}&body=${body}`;
 }
 
@@ -1979,14 +1836,14 @@ async function exportCSV(){
 /* ══ CHARTS ══ */
 function initCharts(){
   const L=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],gc='rgba(79,70,229,.06)',tc='#8b90b8',df={family:"'DM Sans',sans-serif",size:11};
-  const mk=(id,cfg)=>{if(chartInstances[id])chartInstances[id].destroy();const el=$(id);if(!el)return;chartInstances[id]=new Chart(el,cfg);};
+  const mk=(id,cfg)=>{ if(chartInstances[id])chartInstances[id].destroy(); const el=$(id); if(!el)return; chartInstances[id]=new Chart(el,cfg); };
   mk('chartActivity',{type:'bar',data:{labels:L,datasets:[{label:'Active hrs',data:[7.2,7.5,6.8,7.6,7.4,3.2,0.8],backgroundColor:'rgba(99,102,241,.75)',borderRadius:4,borderSkipped:false},{label:'Idle hrs',data:[0.5,0.4,0.8,0.4,0.5,0.2,0.1],backgroundColor:'rgba(217,119,6,.5)',borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc,font:df,boxWidth:9}}},scales:{x:{stacked:true,grid:{color:gc},ticks:{color:tc,font:df}},y:{stacked:true,grid:{color:gc},ticks:{color:tc,font:df,callback:v=>v+'h'},max:9}}}});
   mk('chartDonut',{type:'doughnut',data:{labels:['Work','Neutral','Distracting'],datasets:[{data:[72,20,8],backgroundColor:['rgba(5,150,105,.85)','rgba(217,119,6,.8)','rgba(220,38,38,.75)'],borderWidth:0,hoverOffset:5}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{color:tc,font:df,boxWidth:9,padding:11}}}}});
   mk('chartWeekly',{type:'line',data:{labels:['W1','W2','W3','W4','W5','W6','W7','W8'],datasets:[{label:'Avg %',data:[74,71,76,74,79,77,80,82],borderColor:'#6366f1',backgroundColor:'rgba(99,102,241,.08)',borderWidth:2,fill:true,tension:.4,pointRadius:3,pointBackgroundColor:'#6366f1'},{label:'Target',data:[85,85,85,85,85,85,85,85],borderColor:'rgba(5,150,105,.5)',borderWidth:1.5,borderDash:[4,4],pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc,font:df}}},scales:{x:{grid:{color:gc},ticks:{color:tc,font:df}},y:{grid:{color:gc},ticks:{color:tc,font:df,callback:v=>v+'%'},min:60,max:100}}}});
   mk('chartStacked',{type:'bar',data:{labels:L,datasets:[{label:'Work',data:[5.2,5.5,5.0,5.8,5.4,2.2,0.5],backgroundColor:'rgba(5,150,105,.75)',borderRadius:3,borderSkipped:false},{label:'Neutral',data:[1.6,1.5,1.3,1.3,1.5,0.7,0.2],backgroundColor:'rgba(217,119,6,.65)',borderRadius:3,borderSkipped:false},{label:'Distracting',data:[0.4,0.5,0.5,0.5,0.5,0.3,0.1],backgroundColor:'rgba(220,38,38,.55)',borderRadius:3,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc,font:df,boxWidth:9}}},scales:{x:{stacked:true,grid:{color:gc},ticks:{color:tc,font:df}},y:{stacked:true,grid:{color:gc},ticks:{color:tc,font:df,callback:v=>v+'h'},max:9}}}});
 }
 
-/* ══ CHANGE MANAGER PASSWORD ══ */
+/* ══ CHANGE PASSWORD ══ */
 function changeMgrPassword(){
   const cur=$('mgr-pass-current'),nw=$('mgr-pass-new'),cf=$('mgr-pass-confirm'),msg=$('mgr-pass-msg');
   const showMsg=(txt,ok)=>{msg.style.display='block';msg.textContent=txt;msg.style.background=ok?'var(--greenbg)':'var(--redbg)';msg.style.color=ok?'var(--green)':'var(--red)';msg.style.border='1px solid '+(ok?'var(--greenborder)':'var(--redborder)');};
@@ -1994,60 +1851,40 @@ function changeMgrPassword(){
   if(cur.value!==getMgrPass()){showMsg('⚠ Current password is incorrect.',false);cur.value='';return;}
   if(nw.value.length<8){showMsg('⚠ New password must be at least 8 characters.',false);return;}
   if(nw.value!==cf.value){showMsg('⚠ Passwords do not match.',false);cf.value='';return;}
-  setMgrPass(nw.value);
-  cur.value='';nw.value='';cf.value='';
-  showMsg('✅ Password updated successfully! Use it on your next login.',true);
+  setMgrPass(nw.value);cur.value='';nw.value='';cf.value='';
+  showMsg('✅ Password updated successfully!',true);
   setTimeout(()=>{if(msg)msg.style.display='none';},5000);
 }
 
 /* ══ BOOKMARKLET ══ */
-function showBkmkModal(){const m=$('bkmk-modal');if(m)m.style.display='flex';}
-function closeBkmkModal(){const m=$('bkmk-modal');if(m)m.style.display='none';}
+function showBkmkModal(){ const m=$('bkmk-modal'); if(m)m.style.display='flex'; }
+function closeBkmkModal(){ const m=$('bkmk-modal'); if(m)m.style.display='none'; }
 
-/* ═══════════════════════════════════════════════════════
-   BOOT SEQUENCE
-   ═══════════════════════════════════════════════════════ */
+/* ══ BOOT ══ */
 async function boot(){
-  const cfg = getSBConfig();
-  if(!cfg){
-    $('setup-screen').style.display='flex';
-    return;
-  }
-
-  initSupabase(cfg.url, cfg.key);
+  const cfg=getSBConfig();
+  if(!cfg){ $('setup-screen').style.display='flex'; return; }
+  initSupabase(cfg.url,cfg.key);
   showSplash('Loading…');
-
-  // Supabase client ready. Status dot will update once user logs in.
-
   if(await handleInviteUrl()) return;
-
   setTxt('splash-msg','Restoring session…');
   if(await restoreSession()){ hideSplash(); return; }
-
   hideSplash();
   $('login-screen').style.display='flex';
 }
 
-// Build bookmarklet
+// Bookmarklet
 (function(){
   const code=`(function(){try{var d=window.location.hostname.replace(/^www\\./,'');try{var bc=new BroadcastChannel('pwt_channel');bc.postMessage({type:'tab',domain:d});bc.close();}catch(e){}var b=document.createElement('div');b.style='position:fixed;top:16px;right:16px;z-index:99999;background:#4f46e5;color:white;padding:10px 18px;border-radius:20px;font-family:sans-serif;font-size:13px;font-weight:bold;box-shadow:0 4px 14px rgba(79,70,229,.4);pointer-events:none';b.textContent='✓ '+d+' sent to PW Tracker';document.body.appendChild(b);setTimeout(function(){b.remove()},3000);}catch(e){alert('Bookmarklet error: '+e.message);}})()`;
-  const link=$('bkmk-link');
-  if(link) link.href='javascript:'+encodeURIComponent(code);
+  const link=$('bkmk-link'); if(link)link.href='javascript:'+encodeURIComponent(code);
 })();
 
 try{
   const bkCh=new BroadcastChannel('pwt_channel');
-  bkCh.onmessage=e=>{
-    if(e.data&&e.data.type==='tab'&&e.data.domain&&tracking){
-      const inp=$('domain-inp'); if(inp)inp.value=e.data.domain;
-      flash(`📌 ${e.data.domain} auto-filled`,'accent');
-    }
-  };
+  bkCh.onmessage=e=>{ if(e.data&&e.data.type==='tab'&&e.data.domain&&tracking){ const inp=$('domain-inp'); if(inp)inp.value=e.data.domain; flash(`📌 ${e.data.domain} auto-filled`,'accent'); } };
 }catch(_){}
 
-document.addEventListener('DOMContentLoaded',()=>{
-  const el=$('mgr-email-warn'); if(el)el.textContent=MANAGER_EMAIL;
-});
+document.addEventListener('DOMContentLoaded',()=>{ const el=$('mgr-email-warn'); if(el)el.textContent=MANAGER_EMAIL; });
 
 boot();
 </script>
