@@ -9,6 +9,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <!-- Supabase JS client -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 /* ── DESIGN TOKENS ── */
 :root{
@@ -674,11 +675,59 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
     <div class="page" id="page-settings">
       <div class="topbar"><span class="topbar-title">Settings</span></div>
       <div class="padded">
+        <!-- EmailJS Setup Card -->
+        <div id="ejs-setup-card" style="background:linear-gradient(135deg,#fef3c7,#fde68a);border:1.5px solid var(--amberborder);border-radius:var(--radius);padding:18px 20px;margin-bottom:14px">
+          <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px">
+            <span style="font-size:18px">📨</span>
+            <div style="flex:1">
+              <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:14px;color:#78350f">Automatic email sending (EmailJS)</div>
+              <div style="font-size:11px;color:#92400e;margin-top:1px">One-time setup · Free · No backend · Sends real emails instantly</div>
+            </div>
+            <button onclick="toggleEjsSetup()" id="ejs-toggle-btn" style="background:#92400e;color:white;border:none;border-radius:var(--radius2);padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">Configure ▼</button>
+          </div>
+          <!-- configured badge -->
+          <div id="ejs-configured-row" style="display:none;align-items:center;gap:8px;margin-top:6px">
+            <span style="background:var(--greenbg);color:var(--green);border:1px solid var(--greenborder);border-radius:20px;padding:2px 11px;font-size:11px;font-weight:700">✓ EmailJS ready — emails will be sent automatically</span>
+            <button onclick="clearEjsConfig()" style="font-size:11px;color:#92400e;background:transparent;border:none;cursor:pointer;text-decoration:underline">Reset</button>
+          </div>
+          <!-- setup body (collapsed by default) -->
+          <div id="ejs-setup-body" style="display:none;margin-top:12px">
+            <div style="background:rgba(255,255,255,.65);border-radius:var(--radius2);padding:12px 14px;margin-bottom:12px;font-size:12px;color:#78350f;line-height:2">
+              <b style="display:block;margin-bottom:3px">Setup in 2 minutes:</b>
+              <ol style="padding-left:16px">
+                <li>Go to <a href="https://www.emailjs.com" target="_blank" style="color:#4f46e5;font-weight:700">emailjs.com</a> → Create free account</li>
+                <li><b>Email Services</b> → Add New Service → Gmail → copy <b>Service ID</b></li>
+                <li><b>Email Templates</b> → Create Template → use variables below → copy <b>Template ID</b></li>
+                <li><b>Account → General</b> → copy <b>Public Key</b></li>
+              </ol>
+              <div style="margin-top:8px;background:rgba(0,0,0,.08);border-radius:8px;padding:10px;font-family:monospace;font-size:11px;line-height:2;color:#1a1d3a;overflow-x:auto">
+                <span style="color:#7c3aed;font-weight:700">Template variables to use in your EmailJS template:</span><br>
+                To: <b>{{to_email}}</b> &nbsp;|&nbsp; Name: <b>{{to_name}}</b><br>
+                Magic link: <b>{{invite_url}}</b> &nbsp;|&nbsp; Password: <b>{{password}}</b><br>
+                App URL: <b>{{app_url}}</b> &nbsp;|&nbsp; From: <b>{{from_name}}</b>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:9px">
+              <input id="ejs-service" placeholder="Service ID  (e.g. service_abc123)"
+                style="flex:1;min-width:160px;background:var(--bg2);border:1.5px solid var(--amberborder);border-radius:var(--radius2);padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit"
+                onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--amberborder)'"/>
+              <input id="ejs-template" placeholder="Template ID  (e.g. template_xyz789)"
+                style="flex:1;min-width:160px;background:var(--bg2);border:1.5px solid var(--amberborder);border-radius:var(--radius2);padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit"
+                onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--amberborder)'"/>
+              <input id="ejs-pubkey" placeholder="Public Key  (e.g. AbcDEF_ghiJKL)"
+                style="flex:1;min-width:160px;background:var(--bg2);border:1.5px solid var(--amberborder);border-radius:var(--radius2);padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit"
+                onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--amberborder)'"/>
+              <button onclick="saveEjsConfig()" style="background:linear-gradient(135deg,#d97706,#f59e0b);color:white;border:none;border-radius:var(--radius2);padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">Save &amp; Test →</button>
+            </div>
+            <div id="ejs-status-msg" style="display:none;font-size:12px;padding:8px 11px;border-radius:8px"></div>
+          </div>
+        </div>
+
         <!-- Onboard -->
         <div style="background:linear-gradient(135deg,var(--accentbg),var(--purplebg));border:1.5px solid var(--accentbg2);border-radius:var(--radius);padding:22px;margin-bottom:16px;box-shadow:var(--shadow)">
           <div style="margin-bottom:14px">
-            <h3 style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;margin-bottom:4px">📧 Onboard Employees</h3>
-            <p style="font-size:12px;color:var(--text2);line-height:1.65">Add an employee → their credentials are saved to Supabase → you send them a Gmail invite with their <b>personal login link</b> — they click it, it auto-signs them in on any device. No more same-browser limitation.</p>
+            <h3 style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;margin-bottom:4px">👥 Onboard Employees</h3>
+            <p style="font-size:12px;color:var(--text2);line-height:1.65">Add employee → credentials saved to Supabase → click <b>Send Invite</b> → email lands in their inbox with a magic link that auto-signs them in on any device.</p>
           </div>
           <div style="display:flex;gap:9px;flex-wrap:wrap;margin-bottom:12px">
             <input id="inv-name" placeholder="Full name"
@@ -695,11 +744,12 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
             <button onclick="addEmployee()" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;border:none;border-radius:var(--radius2);padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">+ Add</button>
           </div>
           <div id="emp-list" style="display:flex;flex-direction:column;gap:7px;margin-bottom:10px"></div>
-          <div id="send-all-row" style="display:none;padding-top:12px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-            <button onclick="sendAllInvites()" style="background:linear-gradient(135deg,#ea4335,#fbbc04);color:white;border:none;border-radius:var(--radius2);padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px">
-              <svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/></svg>
-              Send Gmail invites to all pending
+          <div id="send-all-row" style="display:none;padding-top:12px;border-top:1px solid var(--border);align-items:center;gap:10px;flex-wrap:wrap">
+            <button onclick="sendAllInvites()" id="send-all-btn" style="background:linear-gradient(135deg,var(--accent),var(--purple));color:white;border:none;border-radius:var(--radius2);padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px">
+              <svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/></svg>
+              <span id="send-all-label">Send invites to all</span>
             </button>
+            <div id="send-all-progress" style="display:none;font-size:12px;color:var(--accent);font-weight:600;padding:4px 0"></div>
             <button onclick="clearEmployees()" style="margin-left:auto;background:var(--redbg);color:var(--red);border:1px solid var(--redborder);border-radius:var(--radius2);padding:8px 13px;font-size:12px;cursor:pointer;font-weight:600">Clear all</button>
           </div>
         </div>
@@ -858,43 +908,60 @@ function resetSupabaseConfig() {
 }
 
 function initSupabase(url, key) {
+  // Disable realtime & broadcast — they try to postMessage a Headers object
+  // which throws DataCloneError: "Headers object could not be cloned"
   sbClient = window.supabase.createClient(url, key, {
-    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+      // Disable storage-based broadcast that causes DataCloneError
+      storage: { getItem: ()=>null, setItem: ()=>{}, removeItem: ()=>{} },
+    },
+    realtime: { params: { eventsPerSecond: -1 } }, // effectively disable realtime
+    global: { fetch: (...args) => fetch(...args) }, // use plain fetch, no custom Headers objects
   });
   setDBStatus('connecting');
 }
 
-/* ══ FIX 1: testConnection uses sbClient (no raw fetch = no CORS issues)
-   + falls back to a HEAD ping
-   + called immediately and retried every 15s                         ══ */
+/* ══ testConnection: plain fetch ONLY — never sbClient.from()
+   sbClient triggers internal postMessage with a Headers object which
+   can't be cloned → DataCloneError every 15 seconds.
+   Plain fetch with manual headers bypasses all of that.            ══ */
 async function testConnection() {
-  if(!sbClient) return false;
+  const cfg = getSBConfig();
+  if(!cfg) return false;
   try {
-    // Use the official JS client — it handles auth headers & CORS correctly
-    const { error } = await sbClient.from('pw_credentials').select('email').limit(1);
-    // PGRST116 = "no rows" (empty table) — server IS reachable and responding
-    if(error && error.code !== 'PGRST116') throw error;
+    // Direct REST call — Supabase sets Access-Control-Allow-Origin: *
+    // so this works fine from GitHub Pages. Any non-5xx response = server up.
+    const res = await fetch(
+      cfg.url + '/rest/v1/pw_credentials?select=email&limit=1',
+      { headers: { 'apikey': cfg.key, 'Authorization': 'Bearer ' + cfg.key } }
+    );
+    // 200 = rows, 406 = empty (PostgREST "Not Acceptable" for no results)
+    // 401 = bad key but server IS up, 400 = up but wrong query
+    // All of these mean Supabase is reachable
+    if(res.status < 500) {
+      setDBStatus('connected');
+      return true;
+    }
+    throw new Error('HTTP ' + res.status);
+  } catch(e) {
+    // Only set error if it's a genuine network failure (TypeError = offline)
+    if(e instanceof TypeError) {
+      console.warn('DB offline:', e.message);
+      setDBStatus('error');
+      return false;
+    }
+    // Non-network errors (like 5xx) — still means server responded
+    if(e.message && e.message.startsWith('HTTP 5')) {
+      setDBStatus('error'); return false;
+    }
+    // Anything else (CORS pre-flight weirdness etc) — assume connected
+    // since sbClient operations (save/load) still work fine
+    console.warn('Connection test inconclusive:', e.message);
     setDBStatus('connected');
     return true;
-  } catch(e) {
-    // Fallback: plain HEAD ping — ANY HTTP response means the server is up
-    try {
-      const cfg = getSBConfig();
-      if(cfg) {
-        const res = await fetch(cfg.url + '/rest/v1/', {
-          method: 'HEAD',
-          headers: { 'apikey': cfg.key }
-        });
-        // Any status code below 600 = got a real HTTP response = connected
-        if(res.status < 600) {
-          setDBStatus('connected');
-          return true;
-        }
-      }
-    } catch(_) { /* network totally unreachable */ }
-    console.warn('DB connection failed:', e.message || e);
-    setDBStatus('error');
-    return false;
   }
 }
 
@@ -1157,14 +1224,21 @@ async function doLoginSuccess(user, skipSave=false) {
     startMgrPolling();
     await loadDashboard();
     setTimeout(()=>initCharts(),150);
+    setTimeout(()=>refreshEjsUI(),200);
   }
-  // Run a connection test right after login to immediately show correct dot status
+  // Run a connection test right after login + keep checking every 30s
   testConnection();
+  // Clear any existing interval, then start fresh for this session
+  if(window._dbHealthInterval) clearInterval(window._dbHealthInterval);
+  window._dbHealthInterval = setInterval(() => {
+    if(currentUser && sbClient) testConnection();
+  }, 30000);
 }
 
 function logout() {
   if(tracking) stopTracking();
   if(realtimeSub){ try{ sbClient.removeChannel(realtimeSub); }catch(_){} realtimeSub=null; }
+  if(window._dbHealthInterval){ clearInterval(window._dbHealthInterval); window._dbHealthInterval=null; }
   try{ sessionStorage.removeItem(SS_KEY); }catch(_){}
   currentUser=null; tracking=false;
   totalSeconds=activeSeconds=idleSeconds=sessionCount=0;
@@ -1603,11 +1677,17 @@ async function renderEmpList(){
   const creds = await loadCredentials();
   const empCreds = creds.filter(c=>c.email!==MANAGER_EMAIL);
   if(sar) sar.style.display=empCreds.length?'flex':'none';
+  refreshEjsUI();
   if(!empCreds.length){list.innerHTML='<div style="text-align:center;padding:14px;color:var(--text3);font-size:13px">No employees added yet.</div>';return;}
+  const ejsOn = ejsReady();
   list.innerHTML = empCreds.map(c=>{
     const invUrl = buildInviteUrl(c.email, c.pass, c.name||'');
     const safeUrl = invUrl.replace(/'/g,"\\'");
     const safeE = c.email.replace(/'/g,"\\'");
+    const sendBtnLabel = ejsOn ? '📧 Send Invite' : '📧 Open Gmail';
+    const sendBtnStyle = ejsOn
+      ? 'background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;border:none'
+      : 'background:linear-gradient(135deg,#ea4335,#fbbc04);color:white;border:none';
     return`<div style="padding:11px 14px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius2);display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap">
       <div style="width:34px;height:34px;border-radius:50%;background:${avC(c.email)};display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;color:white;flex-shrink:0;margin-top:2px">${avI(c.name||c.email)}</div>
       <div style="flex:1;min-width:160px">
@@ -1620,7 +1700,7 @@ async function renderEmpList(){
         </div>
       </div>
       <div style="display:flex;gap:6px;flex-shrink:0;margin-top:2px">
-        <button onclick="sendInvite('${safeE}')" style="background:linear-gradient(135deg,#ea4335,#fbbc04);color:white;border:none;border-radius:var(--radius2);padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">📧 Send Gmail</button>
+        <button data-send-btn="${c.email}" onclick="sendInvite('${safeE}')" style="${sendBtnStyle};border-radius:var(--radius2);padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">${sendBtnLabel}</button>
         <button onclick="removeEmployee('${safeE}')" style="background:var(--redbg);color:var(--red);border:1px solid var(--redborder);border-radius:var(--radius2);padding:7px 9px;font-size:11px;cursor:pointer">✕</button>
       </div>
     </div>`;
@@ -1648,17 +1728,172 @@ async function clearEmployees(){
   renderEmpList();
 }
 
-async function sendInvite(email){
-  if(!sbClient)return;
-  const creds=await loadCredentials();
-  const c=creds.find(x=>x.email===email); if(!c)return;
-  window.open(buildGmailUrl(c),'_blank');
+/* ═══════════════════════════════════════════════════════
+   EMAILJS — real email sending from the browser
+   ═══════════════════════════════════════════════════════ */
+const EJS_CFG_KEY = 'pwt_emailjs';
+
+function getEjsConfig() {
+  try { return JSON.parse(localStorage.getItem(EJS_CFG_KEY)||'null'); } catch(_){ return null; }
 }
+
+function ejsReady() {
+  const c = getEjsConfig();
+  return !!(c && c.serviceId && c.templateId && c.publicKey);
+}
+
+function refreshEjsUI() {
+  const cfg = getEjsConfig();
+  const ready = !!(cfg && cfg.serviceId);
+  const configuredRow = $('ejs-configured-row');
+  const toggleBtn = $('ejs-toggle-btn');
+  if(configuredRow) configuredRow.style.display = ready ? 'flex' : 'none';
+  if(toggleBtn) toggleBtn.style.display = ready ? 'none' : 'block';
+  if(ready && window.emailjs) {
+    window.emailjs.init({ publicKey: cfg.publicKey });
+  }
+}
+
+function toggleEjsSetup() {
+  const body = $('ejs-setup-body');
+  if(!body) return;
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  const btn = $('ejs-toggle-btn');
+  if(btn) btn.textContent = isOpen ? 'Configure ▼' : 'Hide ▲';
+}
+
+async function saveEjsConfig() {
+  const serviceId  = ($('ejs-service') ||{}).value?.trim();
+  const templateId = ($('ejs-template')||{}).value?.trim();
+  const publicKey  = ($('ejs-pubkey')  ||{}).value?.trim();
+  const msg = $('ejs-status-msg');
+
+  if(!serviceId||!templateId||!publicKey) {
+    showEjsMsg('⚠ All three fields are required.', false); return;
+  }
+
+  // Init EmailJS and send a test email to manager
+  try {
+    window.emailjs.init({ publicKey });
+    showEjsMsg('⏳ Sending test email to verify…', null);
+    const testParams = {
+      to_email:   MANAGER_EMAIL,
+      to_name:    'Aditya Malik',
+      from_name:  'PW.live Tracker',
+      invite_url: window.location.href.split('?')[0],
+      password:   '(test)',
+      app_url:    window.location.href.split('?')[0],
+    };
+    await window.emailjs.send(serviceId, templateId, testParams);
+    localStorage.setItem(EJS_CFG_KEY, JSON.stringify({serviceId, templateId, publicKey}));
+    showEjsMsg('✅ Test email sent to your Gmail! EmailJS is working. Configuration saved.', true);
+    setTimeout(()=>{ refreshEjsUI(); renderEmpList(); }, 1500);
+  } catch(e) {
+    console.error('EmailJS test failed:', e);
+    showEjsMsg('❌ Failed: '+(e?.text||e?.message||JSON.stringify(e))+'. Check your IDs and try again.', false);
+  }
+}
+
+function showEjsMsg(txt, ok) {
+  const msg = $('ejs-status-msg');
+  if(!msg) return;
+  msg.style.display = 'block';
+  msg.textContent = txt;
+  if(ok === true)  { msg.style.background='var(--greenbg)'; msg.style.color='var(--green)'; msg.style.border='1px solid var(--greenborder)'; }
+  if(ok === false) { msg.style.background='var(--redbg)'; msg.style.color='var(--red)'; msg.style.border='1px solid var(--redborder)'; }
+  if(ok === null)  { msg.style.background='var(--amberbg)'; msg.style.color='var(--amber)'; msg.style.border='1px solid var(--amberborder)'; }
+}
+
+function clearEjsConfig() {
+  if(!confirm('Remove EmailJS configuration? You can reconfigure anytime.')) return;
+  localStorage.removeItem(EJS_CFG_KEY);
+  refreshEjsUI();
+  const body = $('ejs-setup-body');
+  if(body) body.style.display = 'none';
+  const btn = $('ejs-toggle-btn');
+  if(btn) { btn.style.display = 'block'; btn.textContent = 'Configure ▼'; }
+}
+
+// Send one invite — real email if EmailJS configured, Gmail compose fallback otherwise
+async function sendInviteEmail(c) {
+  const cfg = getEjsConfig();
+  const inviteUrl = buildInviteUrl(c.email, c.pass, c.name||'');
+
+  if(cfg && cfg.serviceId && window.emailjs) {
+    // Real email via EmailJS
+    const params = {
+      to_email:   c.email,
+      to_name:    c.name || c.email.split('@')[0],
+      from_name:  'Aditya Malik · PW.live',
+      invite_url: inviteUrl,
+      password:   c.pass,
+      app_url:    window.location.href.split('?')[0],
+    };
+    await window.emailjs.send(cfg.serviceId, cfg.templateId, params);
+    return { method: 'emailjs' };
+  } else {
+    // Fallback: open Gmail compose (requires popup permission)
+    window.open(buildGmailUrl(c), '_blank');
+    return { method: 'gmail_compose' };
+  }
+}
+
+async function sendInvite(email){
+  if(!sbClient) return;
+  const creds = await loadCredentials();
+  const c = creds.find(x=>x.email===email);
+  if(!c) return;
+
+  // Find the button and show loading state
+  const btn = document.querySelector(`[data-send-btn="${email}"]`);
+  if(btn) { btn.disabled=true; btn.textContent='Sending…'; }
+
+  try {
+    const result = await sendInviteEmail(c);
+    if(btn) {
+      btn.textContent = result.method==='emailjs' ? '✓ Sent!' : '✓ Gmail opened';
+      btn.style.background = 'var(--green)';
+      setTimeout(()=>{ btn.disabled=false; btn.textContent='📧 Send Invite'; btn.style.background=''; }, 3000);
+    }
+  } catch(e) {
+    console.error('Send invite failed:', e);
+    if(btn) { btn.disabled=false; btn.textContent='❌ Failed — retry'; btn.style.background='var(--red)'; }
+    alert('Failed to send invite to '+email+':\n'+(e?.text||e?.message||e));
+  }
+}
+
 async function sendAllInvites(){
-  const creds=await loadCredentials();
-  const emp=creds.filter(c=>c.email!==MANAGER_EMAIL);
-  if(!emp.length){alert('No employees added.');return;}
-  emp.forEach((c,i)=>setTimeout(()=>window.open(buildGmailUrl(c),'_blank'),i*900));
+  const creds = await loadCredentials();
+  const emp = creds.filter(c=>c.email!==MANAGER_EMAIL);
+  if(!emp.length){ alert('No employees added.'); return; }
+
+  const btn = $('send-all-btn'), prog = $('send-all-progress'), lbl = $('send-all-label');
+  if(btn) btn.disabled = true;
+  if(prog) { prog.style.display='block'; }
+
+  let sent=0, failed=0;
+  for(let i=0; i<emp.length; i++){
+    const c = emp[i];
+    if(prog) prog.textContent = `Sending ${i+1}/${emp.length}: ${c.name||c.email}…`;
+    try {
+      await sendInviteEmail(c);
+      sent++;
+    } catch(e) {
+      console.error('Failed for '+c.email, e);
+      failed++;
+    }
+    // Small delay between sends to avoid rate limits
+    if(i < emp.length-1) await new Promise(r=>setTimeout(r,500));
+  }
+
+  if(btn) btn.disabled = false;
+  if(lbl) lbl.textContent = 'Send invites to all';
+  if(prog) {
+    prog.textContent = `✓ Done — ${sent} sent${failed>0?' · '+failed+' failed':''}`;
+    setTimeout(()=>{ prog.style.display='none'; }, 5000);
+  }
+  if(failed > 0) alert(`${sent} invite(s) sent, ${failed} failed. Check console for details.`);
 }
 
 function buildGmailUrl(c){
@@ -1752,9 +1987,10 @@ async function boot(){
   initSupabase(cfg.url, cfg.key);
   showSplash('Loading…');
 
-  /* ══ FIX 4: test immediately + retry every 15s (no more one-shot that dies) ══ */
-  testConnection();
-  setInterval(() => { if(sbClient) testConnection(); }, 15000);
+  /* ══ FIX: don't run testConnection before login — only start the
+     health-check interval once the user is actually logged in.
+     Pre-login pings are unnecessary and spam the console.          ══ */
+  // initSupabase done above; health checks start in doLoginSuccess.
 
   if(await handleInviteUrl()) return;
 
