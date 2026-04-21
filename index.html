@@ -924,45 +924,20 @@ function initSupabase(url, key) {
   setDBStatus('connecting');
 }
 
-/* ══ testConnection: plain fetch ONLY — never sbClient.from()
-   sbClient triggers internal postMessage with a Headers object which
-   can't be cloned → DataCloneError every 15 seconds.
-   Plain fetch with manual headers bypasses all of that.            ══ */
-async function testConnection() {
-  const cfg = getSBConfig();
-  if(!cfg) return false;
-  try {
-    // Direct REST call — Supabase sets Access-Control-Allow-Origin: *
-    // so this works fine from GitHub Pages. Any non-5xx response = server up.
-    const res = await fetch(
-      cfg.url + '/rest/v1/pw_credentials?select=email&limit=1',
-      { headers: { 'apikey': cfg.key, 'Authorization': 'Bearer ' + cfg.key } }
-    );
-    // 200 = rows, 406 = empty (PostgREST "Not Acceptable" for no results)
-    // 401 = bad key but server IS up, 400 = up but wrong query
-    // All of these mean Supabase is reachable
-    if(res.status < 500) {
-      setDBStatus('connected');
-      return true;
-    }
-    throw new Error('HTTP ' + res.status);
-  } catch(e) {
-    // Only set error if it's a genuine network failure (TypeError = offline)
-    if(e instanceof TypeError) {
-      console.warn('DB offline:', e.message);
-      setDBStatus('error');
-      return false;
-    }
-    // Non-network errors (like 5xx) — still means server responded
-    if(e.message && e.message.startsWith('HTTP 5')) {
-      setDBStatus('error'); return false;
-    }
-    // Anything else (CORS pre-flight weirdness etc) — assume connected
-    // since sbClient operations (save/load) still work fine
-    console.warn('Connection test inconclusive:', e.message);
-    setDBStatus('connected');
-    return true;
-  }
+/* ══ testConnection: NO standalone network ping.
+   External pings cause CORS preflight failures on GitHub Pages and
+   DataCloneError from Supabase's internal broadcast — both show false
+   "Connection error" even when everything works fine.
+   Status is now derived purely from real data operations:
+     login success      → setDBStatus('connected')  [in doLoginSuccess]
+     save/load success  → setDBStatus('connected')  [in saveToSupabase / loadAllEmployees]
+     save/load failure  → setDBStatus('error')
+   This function simply reflects what we already know.              ══ */
+function testConnection() {
+  if(!sbClient) { setDBStatus('connecting'); return false; }
+  if(currentUser) { setDBStatus('connected'); return true; }
+  setDBStatus('connecting');
+  return false;
 }
 
 function setDBStatus(status) {
@@ -1011,12 +986,39 @@ async function saveToSupabase() {
     },
     updated_at: new Date().toISOString()
   };
-  try {
-    const {error} = await sbClient.from('pw_employees').upsert(payload, {onConflict:'email'});
-    /* ══ FIX 3: update status dot on every save ══ */
-    if(error) { console.error('Save error:', error); setDBStatus('error'); }
-    else { setDBStatus('connected'); }
-  } catch(e){ console.error('Save exception:', e); setDBStatus('error'); }
+  // Try sbClient first, then fall back to direct REST upsert
+  let saved = false;
+  if(sbClient) {
+    try {
+      const {error} = await sbClient.from('pw_employees').upsert(payload, {onConflict:'email'});
+      if(!error) { setDBStatus('connected'); saved = true; }
+      else console.warn('sbClient save error:', error);
+    } catch(_) {}
+  }
+  if(!saved) {
+    // Direct REST fallback
+    const cfg = getSBConfig();
+    if(cfg) {
+      try {
+        const res = await fetch(cfg.url + '/rest/v1/pw_employees', {
+          method: 'POST',
+          headers: {
+            'apikey': cfg.key,
+            'Authorization': 'Bearer ' + cfg.key,
+            'Content-Type': 'application/json',
+            'Prefer': 'resolution=merge-duplicates,return=minimal'
+          },
+          body: JSON.stringify(payload)
+        });
+        if(res.ok || res.status === 201 || res.status === 204) {
+          setDBStatus('connected');
+        } else {
+          console.error('REST save failed:', res.status);
+          setDBStatus('error');
+        }
+      } catch(e){ console.error('Save REST exception:', e); setDBStatus('error'); }
+    }
+  }
 }
 
 async function loadFromSupabase(email) {
@@ -1030,19 +1032,35 @@ async function loadFromSupabase(email) {
   } catch(_){ return null; }
 }
 
-/* ══ FIX 2: loadAllEmployees updates the status dot on success / failure ══ */
 async function loadAllEmployees() {
-  if(!sbClient) return [];
+  const cfg = getSBConfig();
+  const today = todayIST();
+  const process = (data) => (data||[])
+    .map(r=>r.data||{})
+    .filter(d=>d.email && d.email!==MANAGER_EMAIL && d.role!=='manager')
+    .filter(d=>d.savedDate===today || (d.savedAt&&Date.now()-d.savedAt<43200000));
+
+  // Try sbClient first
+  if(sbClient) {
+    try {
+      const {data,error} = await sbClient.from('pw_employees').select('*').order('updated_at',{ascending:false});
+      if(!error) { setDBStatus('connected'); return process(data); }
+    } catch(_) {}
+  }
+  // Direct REST fallback
+  if(!cfg) return [];
   try {
-    const {data,error} = await sbClient.from('pw_employees').select('*').order('updated_at',{ascending:false});
-    if(error) throw error;
-    setDBStatus('connected'); /* ← dot turns green after every successful poll */
-    const today = todayIST();
-    return (data||[])
-      .map(r=>r.data||{})
-      .filter(d=>d.email && d.email!==MANAGER_EMAIL && d.role!=='manager')
-      .filter(d=>d.savedDate===today || (d.savedAt&&Date.now()-d.savedAt<43200000));
-  } catch(e){ console.error('loadAll error:',e); setDBStatus('error'); return []; }
+    const res = await fetch(cfg.url + '/rest/v1/pw_employees?select=*&order=updated_at.desc', {
+      headers: { 'apikey': cfg.key, 'Authorization': 'Bearer ' + cfg.key }
+    });
+    if(res.ok) {
+      const data = await res.json();
+      setDBStatus('connected');
+      return process(Array.isArray(data) ? data : []);
+    }
+  } catch(e) { console.error('loadAllEmployees REST fallback failed:', e); }
+  setDBStatus('error');
+  return [];
 }
 
 async function saveCredential(email, pass, name) {
@@ -1075,12 +1093,28 @@ async function getCredential(email) {
 }
 
 async function loadCredentials() {
-  if(!sbClient) return [];
+  // Try sbClient first, fall back to direct REST fetch (bypasses any client issues)
+  if(sbClient) {
+    try {
+      const {data,error} = await sbClient.from('pw_credentials').select('*');
+      if(!error) { setDBStatus('connected'); return data||[]; }
+    } catch(_) {}
+  }
+  // Direct REST fallback — works independently of sbClient state
+  const cfg = getSBConfig();
+  if(!cfg) return [];
   try {
-    const {data,error} = await sbClient.from('pw_credentials').select('*');
-    if(error) throw error;
-    return data||[];
-  } catch(_){ return []; }
+    const res = await fetch(cfg.url + '/rest/v1/pw_credentials?select=*', {
+      headers: { 'apikey': cfg.key, 'Authorization': 'Bearer ' + cfg.key }
+    });
+    if(res.ok) {
+      const data = await res.json();
+      setDBStatus('connected');
+      return Array.isArray(data) ? data : [];
+    }
+  } catch(e) { console.error('loadCredentials REST fallback failed:', e); }
+  setDBStatus('error');
+  return [];
 }
 
 function subscribeRealtime() {
@@ -1226,19 +1260,15 @@ async function doLoginSuccess(user, skipSave=false) {
     setTimeout(()=>initCharts(),150);
     setTimeout(()=>refreshEjsUI(),200);
   }
-  // Run a connection test right after login + keep checking every 30s
-  testConnection();
-  // Clear any existing interval, then start fresh for this session
-  if(window._dbHealthInterval) clearInterval(window._dbHealthInterval);
-  window._dbHealthInterval = setInterval(() => {
-    if(currentUser && sbClient) testConnection();
-  }, 30000);
+  // Login succeeded = Supabase is reachable. Mark connected immediately.
+  // No polling interval needed — save/load operations update the dot live.
+  setDBStatus('connected');
 }
 
 function logout() {
   if(tracking) stopTracking();
   if(realtimeSub){ try{ sbClient.removeChannel(realtimeSub); }catch(_){} realtimeSub=null; }
-  if(window._dbHealthInterval){ clearInterval(window._dbHealthInterval); window._dbHealthInterval=null; }
+  // (no health-check interval to clear)
   try{ sessionStorage.removeItem(SS_KEY); }catch(_){}
   currentUser=null; tracking=false;
   totalSeconds=activeSeconds=idleSeconds=sessionCount=0;
@@ -1987,10 +2017,7 @@ async function boot(){
   initSupabase(cfg.url, cfg.key);
   showSplash('Loading…');
 
-  /* ══ FIX: don't run testConnection before login — only start the
-     health-check interval once the user is actually logged in.
-     Pre-login pings are unnecessary and spam the console.          ══ */
-  // initSupabase done above; health checks start in doLoginSuccess.
+  // Supabase client ready. Status dot will update once user logs in.
 
   if(await handleInviteUrl()) return;
 
