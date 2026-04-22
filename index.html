@@ -1924,13 +1924,18 @@ function clearEjsConfig() {
   if(btn) { btn.style.display = 'block'; btn.textContent = 'Configure ▼'; }
 }
 
-// Send one invite — real email if EmailJS configured, Gmail compose fallback otherwise
+// Send one invite — real email via EmailJS, Gmail compose as fallback
 async function sendInviteEmail(c) {
   const cfg = getEjsConfig();
   const inviteUrl = buildInviteUrl(c.email, c.pass, c.name||'');
 
-  if(cfg && cfg.serviceId && window.emailjs) {
-    // Real email via EmailJS
+  if(cfg && cfg.serviceId && cfg.templateId && cfg.publicKey) {
+    // Always re-init before sending — page reload can lose the init state
+    if(window.emailjs) {
+      window.emailjs.init({ publicKey: cfg.publicKey });
+    } else {
+      throw new Error('EmailJS library not loaded. Check your internet connection and reload.');
+    }
     const params = {
       to_email:   c.email,
       to_name:    c.name || c.email.split('@')[0],
@@ -1939,26 +1944,41 @@ async function sendInviteEmail(c) {
       password:   c.pass,
       app_url:    window.location.href.split('?')[0],
     };
-    await window.emailjs.send(cfg.serviceId, cfg.templateId, params);
+    console.log('Sending invite email to', c.email, 'via EmailJS...');
+    const response = await window.emailjs.send(cfg.serviceId, cfg.templateId, params);
+    console.log('EmailJS send response:', response);
     return { method: 'emailjs' };
   } else {
-    // Fallback: open Gmail compose (requires popup permission)
+    // Fallback: Gmail compose
+    console.log('EmailJS not configured, opening Gmail compose for', c.email);
     window.open(buildGmailUrl(c), '_blank');
     return { method: 'gmail_compose' };
   }
 }
 
 async function sendInvite(email){
-  if(!sbClient) return;
-  const creds = await loadCredentials();
-  const c = creds.find(x=>x.email===email);
-  if(!c) return;
+  // FIX: removed "if(!sbClient) return" — sbClient issues must not block email sending
 
-  // Find the button and show loading state
-  const btn = document.querySelector(`[data-send-btn="${email}"]`);
-  if(btn) { btn.disabled=true; btn.textContent='Sending…'; }
+  const btn = document.querySelector('[data-send-btn="'+email+'"]');
+  if(btn) { btn.disabled=true; btn.textContent='Sending…'; btn.style.background='var(--amber)'; }
 
   try {
+    // Load credentials with all fallbacks (sbClient → REST → local cache)
+    const creds = await loadCredentials();
+    let c = creds.find(x=>x.email===email);
+
+    // If not found via loadCredentials, try getCredential directly
+    if(!c) {
+      const cred = await getCredential(email);
+      if(cred) {
+        c = { email, pass: cred.pass, name: cred.name };
+      }
+    }
+
+    if(!c) {
+      throw new Error('Could not load credentials for '+email+'. Try refreshing the page.');
+    }
+
     const result = await sendInviteEmail(c);
     if(btn) {
       btn.textContent = result.method==='emailjs' ? '✓ Sent!' : '✓ Gmail opened';
@@ -1966,22 +1986,34 @@ async function sendInvite(email){
       setTimeout(()=>{ btn.disabled=false; btn.textContent='📧 Send Invite'; btn.style.background=''; }, 3000);
     }
   } catch(e) {
-    console.error('Send invite failed:', e);
-    if(btn) { btn.disabled=false; btn.textContent='❌ Failed — retry'; btn.style.background='var(--red)'; }
-    alert('Failed to send invite to '+email+':\n'+(e?.text||e?.message||e));
+    console.error('sendInvite failed for', email, e);
+    const errMsg = e?.text || e?.message || String(e);
+    if(btn) {
+      btn.disabled=false;
+      btn.textContent='❌ Failed — retry';
+      btn.style.background='var(--red)';
+      setTimeout(()=>{ btn.textContent='📧 Send Invite'; btn.style.background=''; }, 5000);
+    }
+    alert('Failed to send invite to '+email+':\n\n'+errMsg+'\n\nCheck the browser console (F12) for details.');
   }
 }
 
 async function sendAllInvites(){
   const creds = await loadCredentials();
   const emp = creds.filter(c=>c.email!==MANAGER_EMAIL);
-  if(!emp.length){ alert('No employees added.'); return; }
+  if(!emp.length){ alert('No employees added yet. Add employees first using the form above.'); return; }
 
   const btn = $('send-all-btn'), prog = $('send-all-progress'), lbl = $('send-all-label');
   if(btn) btn.disabled = true;
-  if(prog) { prog.style.display='block'; }
+  if(prog) prog.style.display='block';
 
-  let sent=0, failed=0;
+  // Re-init EmailJS before batch send
+  const ejsCfg = getEjsConfig();
+  if(ejsCfg && window.emailjs) {
+    window.emailjs.init({ publicKey: ejsCfg.publicKey });
+  }
+
+  let sent=0, failed=0, failedNames=[];
   for(let i=0; i<emp.length; i++){
     const c = emp[i];
     if(prog) prog.textContent = `Sending ${i+1}/${emp.length}: ${c.name||c.email}…`;
@@ -1989,20 +2021,25 @@ async function sendAllInvites(){
       await sendInviteEmail(c);
       sent++;
     } catch(e) {
-      console.error('Failed for '+c.email, e);
+      console.error('sendAllInvites failed for '+c.email, e);
       failed++;
+      failedNames.push(c.name||c.email);
     }
-    // Small delay between sends to avoid rate limits
-    if(i < emp.length-1) await new Promise(r=>setTimeout(r,500));
+    // 600ms delay between sends to stay within EmailJS rate limits
+    if(i < emp.length-1) await new Promise(r=>setTimeout(r,600));
   }
 
   if(btn) btn.disabled = false;
   if(lbl) lbl.textContent = 'Send invites to all';
   if(prog) {
-    prog.textContent = `✓ Done — ${sent} sent${failed>0?' · '+failed+' failed':''}`;
-    setTimeout(()=>{ prog.style.display='none'; }, 5000);
+    prog.textContent = sent > 0
+      ? `✓ ${sent} sent${failed>0?' · ⚠ '+failed+' failed: '+failedNames.join(', '):''}`
+      : `⚠ All ${failed} failed — check console`;
+    setTimeout(()=>{ prog.style.display='none'; }, 8000);
   }
-  if(failed > 0) alert(`${sent} invite(s) sent, ${failed} failed. Check console for details.`);
+  if(failed > 0) {
+    alert(`${sent} sent, ${failed} failed:\n${failedNames.join('\n')}\n\nOpen browser console (F12) for error details.`);
+  }
 }
 
 function buildGmailUrl(c){
