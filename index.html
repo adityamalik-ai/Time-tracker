@@ -828,6 +828,7 @@ function setMgrPass(p){ localStorage.setItem(MGR_PASS_KEY,p); }
 const SS_KEY        = 'pwt_session';
 const SB_CFG_KEY    = 'pwt_supabase';
 const LOCAL_CRED    = 'pwt_creds';
+const LOCAL_EMPS    = 'pwt_employees'; // local employee list — instant, no network needed
 
 /* ══ SUPABASE STATE ══ */
 let sbClient = null;
@@ -1763,38 +1764,84 @@ function updateAlerts(emps){
 
 /* ═══════════════════════════════════════════════════════
    SETTINGS — EMPLOYEE MANAGEMENT
+   LOCAL-FIRST: localStorage is instant source of truth.
+   Supabase syncs in background — never blocks the UI.
    ═══════════════════════════════════════════════════════ */
+
+/* ── Local employee store helpers ── */
+function getLocalEmps() {
+  try { return JSON.parse(localStorage.getItem(LOCAL_EMPS)||'[]'); } catch(_){ return []; }
+}
+function saveLocalEmps(list) {
+  try { localStorage.setItem(LOCAL_EMPS, JSON.stringify(list)); } catch(_){}
+}
+function addLocalEmp(emp) {
+  const list = getLocalEmps().filter(e=>e.email!==emp.email);
+  list.push(emp);
+  saveLocalEmps(list);
+}
+function removeLocalEmp(email) {
+  saveLocalEmps(getLocalEmps().filter(e=>e.email!==email));
+  try{const s=JSON.parse(localStorage.getItem(LOCAL_CRED)||'{}');delete s[email];localStorage.setItem(LOCAL_CRED,JSON.stringify(s));}catch(_){}
+}
+
+/* ── Sync remote Supabase credentials into local store (background) ── */
+async function syncEmpsFromSupabase() {
+  try {
+    const remote = await loadCredentials();
+    const empRemote = remote.filter(c=>c.email!==MANAGER_EMAIL);
+    if(empRemote.length > 0) {
+      const local = getLocalEmps();
+      const merged = [...empRemote];
+      local.forEach(le => { if(!merged.find(r=>r.email===le.email)) merged.push(le); });
+      saveLocalEmps(merged);
+    }
+  } catch(_){}
+}
+
 async function addEmployee(){
   const nameEl=$('inv-name'), emailEl=$('inv-email');
   const rawEmail=(emailEl?emailEl.value.trim():'');
   const email=rawEmail.includes('@')?rawEmail.toLowerCase():rawEmail.toLowerCase()+'@pw.live';
-  const name=(nameEl?nameEl.value.trim():'')||email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+  const name=(nameEl?nameEl.value.trim():'')||email.split('@')[0].replace(/[._-]/g,' ').replace(/\w/g,c=>c.toUpperCase());
   if(!rawEmail){if(emailEl)emailEl.focus();return;}
   if(!email.endsWith('@pw.live')){alert('Only @pw.live emails.');return;}
   if(email===MANAGER_EMAIL){alert('Cannot add manager as employee.');return;}
+  if(getLocalEmps().find(e=>e.email===email)){alert(email+' is already added.');if(emailEl)emailEl.value='';return;}
   const w1=['Swift','Bright','Bold','Sharp','Quick','Clear','Smart','Keen','Brave','Cool'];
   const w2=['Falcon','Tiger','Eagle','Hawk','Lion','Wolf','Fox','Bear','Shark','Storm'];
   const pass=w1[Math.floor(Math.random()*w1.length)]+w2[Math.floor(Math.random()*w2.length)]+(100+Math.floor(Math.random()*900));
-  await saveCredential(email, pass, name);
+  const emp = {email, pass, name};
+  // Step 1: Save locally IMMEDIATELY — UI shows employee right away
+  addLocalEmp(emp);
   if(nameEl)nameEl.value=''; if(emailEl)emailEl.value='';
-  renderEmpList();
+  renderEmpList(); // instant — reads from local store
+  // Step 2: Sync to Supabase in background — never blocks UI
+  saveCredential(email, pass, name).catch(e=>console.warn('Background Supabase sync failed (local save succeeded):',e));
 }
 
-async function renderEmpList(){
+function renderEmpList(){
   const list=$('emp-list'), sar=$('send-all-row');
   if(!list)return;
-  const creds = await loadCredentials();
-  const empCreds = creds.filter(c=>c.email!==MANAGER_EMAIL);
-  if(sar) sar.style.display=empCreds.length?'flex':'none';
+  // Read from LOCAL store — instant, no network needed
+  const empList = getLocalEmps().filter(c=>c.email!==MANAGER_EMAIL);
+  if(sar) sar.style.display=empList.length?'flex':'none';
   refreshEjsUI();
-  if(!empCreds.length){list.innerHTML='<div style="text-align:center;padding:14px;color:var(--text3);font-size:13px">No employees added yet.</div>';return;}
+  if(!empList.length){
+    list.innerHTML='<div style="text-align:center;padding:14px;color:var(--text3);font-size:13px">No employees added yet. Enter a name and username above and click + Add.</div>';
+    // Sync from Supabase in background in case employees were added from another device
+    syncEmpsFromSupabase().then(()=>{
+      if(getLocalEmps().filter(c=>c.email!==MANAGER_EMAIL).length>0) renderEmpList();
+    });
+    return;
+  }
   const ejsOn = ejsReady();
-  list.innerHTML = empCreds.map(c=>{
+  list.innerHTML = empList.map(c=>{
     const invUrl = buildInviteUrl(c.email, c.pass, c.name||'');
-    const safeUrl = invUrl.replace(/'/g,"\\'");
-    const safeE = c.email.replace(/'/g,"\\'");
+    const safeUrl = invUrl.replace(/'/g,"\'");
+    const safeE = c.email.replace(/'/g,"\'");
     const sendBtnLabel = ejsOn ? '📧 Send Invite' : '📧 Open Gmail';
-    const sendBtnStyle = ejsOn
+    const sendBtnColor = ejsOn
       ? 'background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;border:none'
       : 'background:linear-gradient(135deg,#ea4335,#fbbc04);color:white;border:none';
     return`<div style="padding:11px 14px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius2);display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap">
@@ -1809,32 +1856,71 @@ async function renderEmpList(){
         </div>
       </div>
       <div style="display:flex;gap:6px;flex-shrink:0;margin-top:2px">
-        <button data-send-btn="${c.email}" onclick="sendInvite('${safeE}')" style="${sendBtnStyle};border-radius:var(--radius2);padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">${sendBtnLabel}</button>
+        <button data-send-btn="${c.email}" onclick="sendInviteById('${safeE}')" style="${sendBtnColor};border-radius:var(--radius2);padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">${sendBtnLabel}</button>
         <button onclick="removeEmployee('${safeE}')" style="background:var(--redbg);color:var(--red);border:1px solid var(--redborder);border-radius:var(--radius2);padding:7px 9px;font-size:11px;cursor:pointer">✕</button>
       </div>
     </div>`;
   }).join('');
 }
 
+// Send invite using LOCAL credential data — zero network dependency
+async function sendInviteById(email) {
+  const btn = document.querySelector('[data-send-btn="'+email+'"]');
+  if(btn){btn.disabled=true;btn.textContent='Sending…';btn.style.background='var(--amber)';}
+  try {
+    // Get from local store first — always has the password
+    let c = getLocalEmps().find(e=>e.email===email);
+    if(!c){
+      const cred = await getCredential(email);
+      if(cred) c={email,pass:cred.pass,name:cred.name};
+    }
+    if(!c) throw new Error('No credentials found for '+email+'. Please add the employee first using the form above.');
+    const result = await sendInviteEmail(c);
+    if(btn){
+      btn.textContent=result.method==='emailjs'?'✓ Sent!':'✓ Gmail opened';
+      btn.style.background='var(--green)';
+      setTimeout(()=>{btn.disabled=false;btn.textContent='📧 Send Invite';btn.style.background='';},3000);
+    }
+  } catch(e){
+    console.error('sendInviteById failed for',email,e);
+    if(btn){btn.disabled=false;btn.textContent='❌ Failed — retry';btn.style.background='var(--red)';
+      setTimeout(()=>{btn.textContent='📧 Send Invite';btn.style.background='';},5000);}
+    alert('Failed to send invite to '+email+':\n\n'+(e?.text||e?.message||String(e))+'\n\nOpen F12 console for details.');
+  }
+}
+
 async function removeEmployee(email){
-  if(!sbClient)return;
-  if(!confirm(`Remove ${email}?`))return;
-  await sbClient.from('pw_credentials').delete().eq('email',email);
-  await sbClient.from('pw_employees').delete().eq('email',email);
-  try{const s=JSON.parse(localStorage.getItem(LOCAL_CRED)||'{}');delete s[email];localStorage.setItem(LOCAL_CRED,JSON.stringify(s));}catch(_){}
+  if(!confirm('Remove '+email+'?'))return;
+  removeLocalEmp(email);
   renderEmpList();
+  try{
+    if(sbClient){
+      sbClient.from('pw_credentials').delete().eq('email',email).then(()=>{});
+      sbClient.from('pw_employees').delete().eq('email',email).then(()=>{});
+    } else {
+      const cfg=getSBConfig();
+      if(cfg){
+        fetch(cfg.url+'/rest/v1/pw_credentials?email=eq.'+encodeURIComponent(email),{method:'DELETE',headers:{'apikey':cfg.key,'Authorization':'Bearer '+cfg.key}});
+        fetch(cfg.url+'/rest/v1/pw_employees?email=eq.'+encodeURIComponent(email),{method:'DELETE',headers:{'apikey':cfg.key,'Authorization':'Bearer '+cfg.key}});
+      }
+    }
+  } catch(e){console.warn('Supabase delete failed (local removal succeeded):',e);}
 }
 
 async function clearEmployees(){
-  if(!sbClient)return;
-  if(!confirm('Remove ALL employees from Supabase?'))return;
-  const creds=await loadCredentials();
-  for(const c of creds.filter(x=>x.email!==MANAGER_EMAIL)){
-    await sbClient.from('pw_credentials').delete().eq('email',c.email);
-    await sbClient.from('pw_employees').delete().eq('email',c.email);
-  }
+  if(!confirm('Remove ALL employees? This cannot be undone.'))return;
+  saveLocalEmps([]);
   localStorage.removeItem(LOCAL_CRED);
   renderEmpList();
+  try{
+    const creds=await loadCredentials();
+    for(const c of creds.filter(x=>x.email!==MANAGER_EMAIL)){
+      if(sbClient){
+        sbClient.from('pw_credentials').delete().eq('email',c.email).then(()=>{});
+        sbClient.from('pw_employees').delete().eq('email',c.email).then(()=>{});
+      }
+    }
+  }catch(e){console.warn('Supabase clear error:',e);}
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -1999,8 +2085,8 @@ async function sendInvite(email){
 }
 
 async function sendAllInvites(){
-  const creds = await loadCredentials();
-  const emp = creds.filter(c=>c.email!==MANAGER_EMAIL);
+  // Use local store — instant, no network needed for the employee list
+  const emp = getLocalEmps().filter(c=>c.email!==MANAGER_EMAIL);
   if(!emp.length){ alert('No employees added yet. Add employees first using the form above.'); return; }
 
   const btn = $('send-all-btn'), prog = $('send-all-progress'), lbl = $('send-all-label');
