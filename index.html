@@ -410,6 +410,7 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
         <div class="topbar-actions">
           <span class="tag tag-idle" id="tracking-tag">● Idle</span>
           <span style="font-size:11px;color:var(--text3);background:var(--bg3);padding:3px 10px;border-radius:20px;border:1px solid var(--border)" id="ist-clock">–:– IST</span>
+          <span id="att-topbar-tag" style="font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;background:var(--greenbg);color:var(--green);border:1px solid var(--greenborder)">Present ✅</span>
           <span style="font-size:11px;color:var(--text3)" id="topbar-date"></span>
         </div>
       </div>
@@ -856,10 +857,27 @@ const $ = id => document.getElementById(id);
 const setTxt = (id,v) => { const e=$(id); if(e) e.textContent=v; };
 
 /* ══ IST ══ */
-function getIST() { return new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Kolkata'})); }
-function todayIST() { const d=getIST(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
-function workHours() { const h=getIST().getHours(); return h>=9&&h<21; }
-function isSunday() { return getIST().getDay()===0; }
+function getIST() {
+  // Try Intl timezone first (most accurate)
+  try {
+    const d = new Date(new Date().toLocaleString('en-US', {timeZone:'Asia/Kolkata'}));
+    if(!isNaN(d.getTime())) return d;
+  } catch(_) {}
+  // Fallback: UTC + 5:30 offset (always works on every browser/device)
+  return new Date(Date.now() + 5.5 * 3600000);
+}
+function todayIST() {
+  const d = getIST();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function workHours() {
+  try { const h = getIST().getHours(); return h >= 9 && h < 21; }
+  catch(_) { return true; } // if check fails, allow tracking
+}
+function isSunday() {
+  try { return getIST().getDay() === 0; }
+  catch(_) { return false; }
+}
 function clock() {
   const d=getIST(),h=d.getHours(),m=d.getMinutes(),s=d.getSeconds();
   const p=n=>String(n).padStart(2,'0');
@@ -1339,6 +1357,8 @@ async function doLoginSuccess(user, skipSave=false) {
     await loadDashboard();
     setTimeout(()=>initCharts(),150);
     setTimeout(()=>refreshEjsUI(),200);
+    // Sync employee list from Supabase into local store on login
+    syncEmpsFromSupabase().then(()=>{ if($('emp-list')) renderEmpList(); });
   }
   // Login succeeded = Supabase is reachable. Mark connected immediately.
   // No polling interval needed — save/load operations update the dot live.
@@ -1365,7 +1385,11 @@ function showPage(page,el){
   document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
   if(el) el.classList.add('active');
   if(['overview','employees','reports'].includes(page)){ loadDashboard(); setTimeout(()=>initCharts(),80); }
-  if(page==='settings') renderEmpList();
+  if(page==='settings'){
+    // First show local data instantly, then sync from Supabase and refresh
+    renderEmpList();
+    syncEmpsFromSupabase().then(()=>renderEmpList());
+  }
 }
 
 /* ══ FLASH BANNER ══ */
@@ -1403,6 +1427,17 @@ function renderAttBtn(){
     b.style.fontWeight=a?'700':'500';
   });
   const sl=$('att-status-lbl'); if(sl){sl.textContent=attLabel(attendanceStatus);sl.style.color=attColor(attendanceStatus);}
+  // Also update topbar attendance tag
+  const tag=$('att-topbar-tag');
+  if(tag){
+    tag.textContent=attLabel(attendanceStatus);
+    const colorMap={present:'var(--green)',halfday:'var(--amber)',leave:'var(--red)',off:'var(--text3)'};
+    const bgMap={present:'var(--greenbg)',halfday:'var(--amberbg)',leave:'var(--redbg)',off:'var(--bg3)'};
+    const borderMap={present:'var(--greenborder)',halfday:'var(--amberborder)',leave:'var(--redborder)',off:'var(--border)'};
+    tag.style.color=colorMap[attendanceStatus]||'var(--text3)';
+    tag.style.background=bgMap[attendanceStatus]||'var(--bg3)';
+    tag.style.border='1px solid '+(borderMap[attendanceStatus]||'var(--border)');
+  }
 }
 
 /* ══ QUESTIONS ══ */
@@ -1487,10 +1522,28 @@ function renderTabBars(){
 
 /* ══ TRACKING ══ */
 function toggleTracking(){ if(!tracking)startTracking();else stopTracking(); }
+/* Show a persistent error message inside the tracker hero so employee can READ it */
+function showTrackBlock(msg, type='amber'){
+  const sub = $('timer-sub');
+  if(sub){
+    sub.innerHTML = `<span style="color:${type==='red'?'var(--red)':type==='green'?'var(--green)':'var(--amber)'};font-weight:700;font-size:13px">${msg}</span>`;
+    setTimeout(()=>{ if(sub) sub.textContent = tracking?'Session active — log your tabs below':'Start tracking to begin your session'; }, 8000);
+  }
+  flash(msg, type);
+}
+
 function startTracking(){
-  if(attendanceStatus==='leave'){flash('🏖️ On Leave — tracking disabled.','red');return;}
-  if(attendanceStatus==='off'){flash('🔴 Day Off — disabled.','red');return;}
-  if(!workHours()){flash(getIST().getHours()<9?'⛔ Opens at 9 AM IST.':'⛔ Tracking only 9 AM–9 PM IST.','amber');return;}
+  if(attendanceStatus==='leave'){
+    showTrackBlock('🏖️ You are marked On Leave. Change attendance above to start tracking.','red'); return;
+  }
+  if(attendanceStatus==='off'){
+    showTrackBlock('🔴 Marked as Off / Holiday. Change attendance above to start tracking.','amber'); return;
+  }
+  // Work hours check — permissive: if IST can't be determined, allow tracking
+  const istHour = getIST().getHours();
+  if(istHour < 9 || istHour >= 21){
+    showTrackBlock(`⛔ Tracking is available 9 AM–9 PM IST. Current IST time: ${String(istHour).padStart(2,'0')}:${String(getIST().getMinutes()).padStart(2,'0')}. Please try again during work hours.`,'amber'); return;
+  }
   tracking=true; sessionCount++; lastActivity=Date.now(); isIdle=false; hiddenSince=null;
   $('track-btn').className='track-btn stop'; setTxt('track-btn-txt','Stop tracking');
   $('timer').classList.add('running'); setTxt('timer-sub','Session active — log your tabs below');
@@ -1498,7 +1551,11 @@ function startTracking(){
   $('tracking-tag').className='tag tag-live'; $('tracking-tag').textContent='● Tracking';
   $('tab-card').classList.remove('hidden');
   timerInterval=setInterval(()=>{
-    if(!workHours()){stopTracking();return;}
+    // Only auto-stop if we can reliably confirm it's past 9 PM (not just unknown)
+    try {
+      const h = getIST().getHours();
+      if(h >= 21) { stopTracking(); flash('🕘 9 PM IST — tracking auto-stopped. Great work!','green'); return; }
+    } catch(_) {} // if time check fails, keep tracking
     totalSeconds++;
     if(isIdle)idleSeconds++;else activeSeconds++;
     if(activeDomain&&!isIdle){
@@ -1816,6 +1873,9 @@ async function addEmployee(){
   addLocalEmp(emp);
   if(nameEl)nameEl.value=''; if(emailEl)emailEl.value='';
   renderEmpList(); // instant — reads from local store
+  // Show success flash
+  const addBtn = document.querySelector('[onclick="addEmployee()"]');
+  if(addBtn){const orig=addBtn.textContent;addBtn.textContent='✓ Added!';addBtn.style.background='var(--green)';setTimeout(()=>{addBtn.textContent=orig;addBtn.style.background='';},2000);}
   // Step 2: Sync to Supabase in background — never blocks UI
   saveCredential(email, pass, name).catch(e=>console.warn('Background Supabase sync failed (local save succeeded):',e));
 }
@@ -2042,52 +2102,20 @@ async function sendInviteEmail(c) {
   }
 }
 
-async function sendInvite(email){
-  // FIX: removed "if(!sbClient) return" — sbClient issues must not block email sending
-
-  const btn = document.querySelector('[data-send-btn="'+email+'"]');
-  if(btn) { btn.disabled=true; btn.textContent='Sending…'; btn.style.background='var(--amber)'; }
-
-  try {
-    // Load credentials with all fallbacks (sbClient → REST → local cache)
-    const creds = await loadCredentials();
-    let c = creds.find(x=>x.email===email);
-
-    // If not found via loadCredentials, try getCredential directly
-    if(!c) {
-      const cred = await getCredential(email);
-      if(cred) {
-        c = { email, pass: cred.pass, name: cred.name };
-      }
-    }
-
-    if(!c) {
-      throw new Error('Could not load credentials for '+email+'. Try refreshing the page.');
-    }
-
-    const result = await sendInviteEmail(c);
-    if(btn) {
-      btn.textContent = result.method==='emailjs' ? '✓ Sent!' : '✓ Gmail opened';
-      btn.style.background = 'var(--green)';
-      setTimeout(()=>{ btn.disabled=false; btn.textContent='📧 Send Invite'; btn.style.background=''; }, 3000);
-    }
-  } catch(e) {
-    console.error('sendInvite failed for', email, e);
-    const errMsg = e?.text || e?.message || String(e);
-    if(btn) {
-      btn.disabled=false;
-      btn.textContent='❌ Failed — retry';
-      btn.style.background='var(--red)';
-      setTimeout(()=>{ btn.textContent='📧 Send Invite'; btn.style.background=''; }, 5000);
-    }
-    alert('Failed to send invite to '+email+':\n\n'+errMsg+'\n\nCheck the browser console (F12) for details.');
-  }
-}
+// sendInvite removed — use sendInviteById() which reads from local store
 
 async function sendAllInvites(){
   // Use local store — instant, no network needed for the employee list
   const emp = getLocalEmps().filter(c=>c.email!==MANAGER_EMAIL);
-  if(!emp.length){ alert('No employees added yet. Add employees first using the form above.'); return; }
+  if(!emp.length){ 
+    alert('No employees added yet. Add employees first using the form above, then click Send invites to all.'); 
+    return; 
+  }
+  if(!ejsReady()){ 
+    if(!confirm('EmailJS is not configured — emails will open in Gmail compose (you must click Send manually for each).
+
+Continue anyway?')) return;
+  }
 
   const btn = $('send-all-btn'), prog = $('send-all-progress'), lbl = $('send-all-label');
   if(btn) btn.disabled = true;
