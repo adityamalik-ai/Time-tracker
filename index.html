@@ -7,11 +7,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<!-- Supabase JS client -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
-/* ── DESIGN TOKENS ── */
 :root{
   --bg:#f0f4ff;--bg2:#fff;--bg3:#f5f7ff;--bg4:#eaedff;
   --border:#dde2f5;--border2:#c8cff0;
@@ -111,7 +109,6 @@ input,select,textarea{font-family:inherit;outline:none}
 .sb-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:11px;color:#fff;flex-shrink:0}
 .sb-user-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sb-user-role{font-size:11px;color:var(--text3)}
-/* Supabase status dot */
 .sb-db{display:flex;align-items:center;gap:6px;padding:6px 10px;font-size:11px;color:var(--text3)}
 .db-dot{width:7px;height:7px;border-radius:50%;background:var(--text3);flex-shrink:0;transition:background .3s}
 .db-dot.connected{background:var(--green)}
@@ -140,7 +137,6 @@ input,select,textarea{font-family:inherit;outline:none}
 .g-name{font-size:13px;opacity:.75;margin-bottom:6px}
 .g-quote{font-size:12px;opacity:.8;line-height:1.55;max-width:480px;font-style:italic}
 .g-attr{font-size:11px;opacity:.55;margin-top:3px}
-
 .padded{padding:22px 32px 40px}
 
 /* ── TRACKER HERO ── */
@@ -149,7 +145,7 @@ input,select,textarea{font-family:inherit;outline:none}
 .timer{font-family:'Syne',sans-serif;font-weight:800;font-size:64px;letter-spacing:-4px;color:var(--text);margin-bottom:6px;transition:all .3s}
 .timer.running{background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .timer-sub{color:var(--text2);font-size:14px;margin-bottom:28px}
-.track-btn{display:inline-flex;align-items:center;gap:10px;padding:14px 40px;border-radius:50px;font-family:'Syne',sans-serif;font-weight:700;font-size:15px;cursor:pointer;transition:all .2s}
+.track-btn{display:inline-flex;align-items:center;gap:10px;padding:14px 40px;border-radius:50px;font-family:'Syne',sans-serif;font-weight:700;font-size:15px;cursor:pointer;transition:all .2s;border:none}
 .track-btn.start{background:linear-gradient(135deg,var(--green),#10b981);color:#fff;box-shadow:0 4px 20px rgba(5,150,105,.3)}
 .track-btn.start:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(5,150,105,.4)}
 .track-btn.stop{background:linear-gradient(135deg,var(--red),#ef4444);color:#fff;box-shadow:0 4px 20px rgba(220,38,38,.25)}
@@ -160,9 +156,9 @@ input,select,textarea{font-family:inherit;outline:none}
 .status-pill{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:12px;color:var(--text2);font-weight:500}
 .live-pill{border-color:var(--greenborder);background:var(--greenbg);color:var(--green)}
 .prog-wrap{margin-top:16px;max-width:320px;margin-left:auto;margin-right:auto}
-.prog-labels{display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,.5);margin-bottom:4px}
-.prog-track{height:5px;background:rgba(255,255,255,.15);border-radius:4px;overflow:hidden}
-.prog-fill{height:100%;background:linear-gradient(90deg,#a5f3fc,#6ee7b7);border-radius:4px;transition:width .5s}
+.prog-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:4px}
+.prog-track{height:5px;background:var(--bg4);border-radius:4px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--purple));border-radius:4px;transition:width .5s}
 
 /* ── STATS ── */
 .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
@@ -183,7 +179,7 @@ input,select,textarea{font-family:inherit;outline:none}
 .q-row input[type=number]:focus{border-color:var(--accent)}
 .q-row .q-note{flex:1;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius2);padding:8px 12px;font-size:13px;color:var(--text)}
 .q-row .q-note:focus{border-color:var(--accent)}
-.q-add{background:linear-gradient(135deg,var(--purple),var(--accent));color:#fff;padding:8px 16px;border-radius:var(--radius2);font-size:13px;font-weight:600;cursor:pointer}
+.q-add{background:linear-gradient(135deg,var(--purple),var(--accent));color:#fff;padding:8px 16px;border-radius:var(--radius2);font-size:13px;font-weight:600;cursor:pointer;border:none}
 .q-chips{display:flex;flex-wrap:wrap;gap:7px}
 .q-chip{background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600;color:var(--text2);display:flex;align-items:center;gap:5px}
 .q-chip-num{color:var(--purple);font-size:13px;font-family:'Syne',sans-serif;font-weight:700}
@@ -223,8 +219,6 @@ input,select,textarea{font-family:inherit;outline:none}
 .score-bar{height:4px;border-radius:3px;background:var(--bg4);overflow:hidden;margin-top:4px;width:56px}
 .score-fill{height:100%;border-radius:3px;transition:width .5s}
 .badge{font-size:11px;padding:2px 8px;border-radius:10px;display:inline-flex;align-items:center;font-weight:600}
-
-/* ── MISC ── */
 .data-row{display:flex;justify-content:space-between;align-items:center;padding:9px 13px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius2);margin-bottom:5px;font-size:13px}
 .data-row-label{color:var(--text2);font-weight:500}
 .data-row-val{color:var(--text);font-weight:600}
@@ -246,15 +240,61 @@ input,select,textarea{font-family:inherit;outline:none}
 </head>
 <body>
 
+<!-- ═══ SANDBOX WARNING (shown when running inside Claude preview) ═══ -->
+<div id="sandbox-screen" style="display:none;min-height:100vh;align-items:center;justify-content:center;padding:24px;background:linear-gradient(135deg,#0f0c29,#302b63,#24243e)">
+  <div style="background:#1a1d3a;border:1px solid rgba(99,102,241,.3);border-radius:22px;padding:44px;width:100%;max-width:560px;box-shadow:0 20px 60px rgba(0,0,0,.5);text-align:center">
+    <div style="width:56px;height:56px;background:linear-gradient(135deg,#4f46e5,#6366f1);border-radius:16px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:22px;color:#fff;margin:0 auto 20px;box-shadow:0 6px 20px rgba(79,70,229,.4)">PW</div>
+    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:22px;color:#fff;margin-bottom:8px">One more step 👋</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.6);line-height:1.7;margin-bottom:28px">
+      This app is running inside <b style="color:#a5b4fc">Claude's preview sandbox</b>, which blocks all external network requests.<br>
+      To use PW.live Tracker with your Supabase database, you need to open it in a real browser tab.
+    </div>
+
+    <!-- Step cards -->
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:28px;text-align:left">
+      <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start">
+        <div style="width:26px;height:26px;background:linear-gradient(135deg,#4f46e5,#6366f1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:#fff;flex-shrink:0">1</div>
+        <div>
+          <div style="font-weight:700;color:#fff;font-size:13px;margin-bottom:2px">Download the HTML file</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.5)">Click the download button (<b style="color:#a5b4fc">↓</b>) next to the file name in Claude's interface above the preview.</div>
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start">
+        <div style="width:26px;height:26px;background:linear-gradient(135deg,#4f46e5,#6366f1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:#fff;flex-shrink:0">2</div>
+        <div>
+          <div style="font-weight:700;color:#fff;font-size:13px;margin-bottom:2px">Open in Chrome / Edge</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.5)">Double-click the downloaded <b style="color:#a5b4fc">.html</b> file — it opens as a full app in your browser. No server needed.</div>
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start">
+        <div style="width:26px;height:26px;background:linear-gradient(135deg,#059669,#10b981);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:#fff;flex-shrink:0">3</div>
+        <div>
+          <div style="font-weight:700;color:#fff;font-size:13px;margin-bottom:2px">Enter your Supabase credentials</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.5)">The setup screen will appear on first open. Paste your Project URL and anon key — done.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Optional: host on GitHub Pages tip -->
+    <div style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.3);border-radius:12px;padding:14px 16px;text-align:left;margin-bottom:20px">
+      <div style="font-size:12px;font-weight:700;color:#a5b4fc;margin-bottom:4px">💡 Want a permanent URL for your team?</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.5);line-height:1.7">
+        Upload the HTML file to <b style="color:#a5b4fc">GitHub Pages</b> (free) — your team gets a real URL like <code style="background:rgba(0,0,0,.3);padding:1px 6px;border-radius:4px;color:#c7d2fe">yourname.github.io/pw-tracker</code> that works from any device.
+      </div>
+    </div>
+
+    <div style="font-size:11px;color:rgba(255,255,255,.25)">
+      This screen only appears inside Claude's preview. Once opened in a real browser tab, you'll never see it.
+    </div>
+  </div>
+</div>
+
 <!-- ═══ SUPABASE SETUP (first-run) ═══ -->
 <div id="setup-screen" style="display:none">
   <div class="setup-card">
-    <div class="setup-logo">
-      <div class="setup-logo-icon">PW</div>
-    </div>
+    <div class="setup-logo"><div class="setup-logo-icon">PW</div></div>
     <div class="setup-title">Connect your Supabase database</div>
-    <div class="setup-sub">This is a one-time setup. Your Supabase project is the shared backend — employees write their tracking data there, you read it in real-time from your dashboard. No more same-browser limitation.</div>
-
+    <div class="setup-sub">One-time setup. Your Supabase project is the shared backend — employees write tracking data there, you read it in real-time from the dashboard.</div>
     <div class="setup-steps">
       <ol>
         <li>Go to <a href="https://supabase.com" target="_blank">supabase.com</a> → New project → copy <b>Project URL</b> &amp; <b>anon public key</b></li>
@@ -280,7 +320,6 @@ create policy "anon all employees" on pw_employees for all using (true) with che
 create policy "anon all credentials" on pw_credentials for all using (true) with check (true);
       </div>
     </div>
-
     <div class="setup-field">
       <label>Supabase Project URL</label>
       <input id="sb-url-input" type="text" placeholder="https://xxxxxxxxxxxx.supabase.co"/>
@@ -291,7 +330,7 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
     </div>
     <div id="setup-err" style="display:none" class="setup-err"></div>
     <button class="setup-btn" onclick="saveSupabaseConfig()">Save &amp; Connect →</button>
-    <div style="margin-top:12px;font-size:11px;color:rgba(255,255,255,.3);text-align:center">Credentials stored in your browser's localStorage. Employees never see this screen.</div>
+    <div style="margin-top:12px;font-size:11px;color:rgba(255,255,255,.3);text-align:center">Credentials stored in localStorage. Employees never see this screen.</div>
   </div>
 </div>
 
@@ -313,18 +352,14 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
     </div>
     <div class="login-title">Welcome back 👋</div>
     <p class="login-sub">Sign in with your <strong>@pw.live</strong> work account.</p>
-
     <div class="role-toggle">
       <button class="role-btn active" id="rb-emp" onclick="selectRole('employee')">👤 Employee</button>
       <button class="role-btn" id="rb-mgr" onclick="selectRole('manager')">📊 Manager</button>
     </div>
-
-    <!-- Manager-only warning -->
     <div id="mgr-warn" style="display:none;background:linear-gradient(135deg,#fef3c7,#fde68a);border:1.5px solid var(--amberborder);border-radius:var(--radius2);padding:12px 14px;margin-bottom:14px;font-size:12px;color:#78350f;line-height:1.7">
       <strong style="display:block;margin-bottom:2px;font-weight:700">🔒 Manager portal is restricted</strong>
       Only <code style="background:rgba(0,0,0,.1);padding:1px 5px;border-radius:3px" id="mgr-email-warn"></code> can sign in as Manager.
     </div>
-
     <div class="field">
       <label>Work username</label>
       <div class="inp-wrap">
@@ -338,9 +373,8 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
         <input type="password" id="pass-input" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
       </div>
       <div class="pass-hint" id="hint-emp">Password was sent in your onboarding email.</div>
-      <div class="pass-hint hidden" id="hint-mgr">Enter your manager password. Change it anytime in Settings.</div>
+      <div class="pass-hint hidden" id="hint-mgr">Enter your manager password.</div>
     </div>
-
     <div id="login-err" class="login-err hidden"></div>
     <button class="btn-primary" onclick="doLogin()">Sign in →</button>
   </div>
@@ -356,7 +390,6 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
       </div>
     </div>
     <div class="sb-nav">
-      <!-- Employee nav -->
       <div id="nav-emp">
         <div class="sb-label">Tracking</div>
         <div class="sb-item active" onclick="showPage('tracker',this)">
@@ -366,7 +399,6 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
           <svg fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M8 7.5v5M8 5.5v.5"/></svg>My data
         </div>
       </div>
-      <!-- Manager nav -->
       <div id="nav-mgr" class="hidden">
         <div class="sb-label">Dashboard</div>
         <div class="sb-item active" onclick="showPage('overview',this)">
@@ -386,7 +418,6 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
       </div>
     </div>
     <div class="sb-footer">
-      <!-- DB connection indicator -->
       <div class="sb-db">
         <div class="db-dot connecting" id="db-dot"></div>
         <span id="db-label">Connecting…</span>
@@ -422,7 +453,6 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
         <div class="g-attr" id="emp-g-attr"></div>
       </div>
       <div class="padded" style="padding-top:20px">
-        <!-- Hero timer -->
         <div class="tracker-hero">
           <div class="timer" id="timer">00:00:00</div>
           <div class="timer-sub" id="timer-sub">Start tracking to begin your session</div>
@@ -489,7 +519,7 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
           <div class="q-chips" id="q-chips"></div>
         </div>
 
-        <!-- Tab tracker (shown after tracking starts) -->
+        <!-- Tab tracker -->
         <div id="tab-card" class="tab-card hidden">
           <div class="tab-card-body">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px">
@@ -575,7 +605,7 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
       <div class="padded" style="padding-top:18px">
         <div id="overview-notice" class="notice info">
           <div class="notice-icon">⚠️</div>
-          <div><strong>No employee data yet</strong><span>Add employees in Settings → send them their invite email → they log in → their data appears here live.</span></div>
+          <div><strong>No employee data yet</strong><span>Add employees in Settings → send them their invite email → they sign in → data appears here live.</span></div>
         </div>
         <div class="kpi-grid">
           <div class="kpi-card">
@@ -682,42 +712,34 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
             <span style="font-size:18px">📨</span>
             <div style="flex:1">
               <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:14px;color:#78350f">Automatic email sending (EmailJS)</div>
-              <div style="font-size:11px;color:#92400e;margin-top:1px">One-time setup · Free · No backend · Sends real emails instantly</div>
+              <div style="font-size:11px;color:#92400e;margin-top:1px">One-time setup · Free · No backend</div>
             </div>
             <button onclick="toggleEjsSetup()" id="ejs-toggle-btn" style="background:#92400e;color:white;border:none;border-radius:var(--radius2);padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">Configure ▼</button>
           </div>
-          <!-- configured badge -->
           <div id="ejs-configured-row" style="display:none;align-items:center;gap:8px;margin-top:6px">
-            <span style="background:var(--greenbg);color:var(--green);border:1px solid var(--greenborder);border-radius:20px;padding:2px 11px;font-size:11px;font-weight:700">✓ EmailJS ready — emails will be sent automatically</span>
+            <span style="background:var(--greenbg);color:var(--green);border:1px solid var(--greenborder);border-radius:20px;padding:2px 11px;font-size:11px;font-weight:700">✓ EmailJS ready</span>
             <button onclick="clearEjsConfig()" style="font-size:11px;color:#92400e;background:transparent;border:none;cursor:pointer;text-decoration:underline">Reset</button>
           </div>
-          <!-- setup body (collapsed by default) -->
           <div id="ejs-setup-body" style="display:none;margin-top:12px">
             <div style="background:rgba(255,255,255,.65);border-radius:var(--radius2);padding:12px 14px;margin-bottom:12px;font-size:12px;color:#78350f;line-height:2">
               <b style="display:block;margin-bottom:3px">Setup in 2 minutes:</b>
               <ol style="padding-left:16px">
                 <li>Go to <a href="https://www.emailjs.com" target="_blank" style="color:#4f46e5;font-weight:700">emailjs.com</a> → Create free account</li>
                 <li><b>Email Services</b> → Add New Service → Gmail → copy <b>Service ID</b></li>
-                <li><b>Email Templates</b> → Create Template → use variables below → copy <b>Template ID</b></li>
+                <li><b>Email Templates</b> → Create Template → copy <b>Template ID</b></li>
                 <li><b>Account → General</b> → copy <b>Public Key</b></li>
               </ol>
               <div style="margin-top:8px;background:rgba(0,0,0,.08);border-radius:8px;padding:10px;font-family:monospace;font-size:11px;line-height:2;color:#1a1d3a;overflow-x:auto">
-                <span style="color:#7c3aed;font-weight:700">Template variables to use in your EmailJS template:</span><br>
-                To: <b>{{to_email}}</b> &nbsp;|&nbsp; Name: <b>{{to_name}}</b><br>
-                Magic link: <b>{{invite_url}}</b> &nbsp;|&nbsp; Password: <b>{{password}}</b><br>
-                App URL: <b>{{app_url}}</b> &nbsp;|&nbsp; From: <b>{{from_name}}</b>
+                Template vars: <b>{{to_email}}</b> · <b>{{to_name}}</b> · <b>{{invite_url}}</b> · <b>{{password}}</b> · <b>{{app_url}}</b> · <b>{{from_name}}</b>
               </div>
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:9px">
-              <input id="ejs-service" placeholder="Service ID  (e.g. service_abc123)"
-                style="flex:1;min-width:160px;background:var(--bg2);border:1.5px solid var(--amberborder);border-radius:var(--radius2);padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit"
-                onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--amberborder)'"/>
-              <input id="ejs-template" placeholder="Template ID  (e.g. template_xyz789)"
-                style="flex:1;min-width:160px;background:var(--bg2);border:1.5px solid var(--amberborder);border-radius:var(--radius2);padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit"
-                onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--amberborder)'"/>
-              <input id="ejs-pubkey" placeholder="Public Key  (e.g. AbcDEF_ghiJKL)"
-                style="flex:1;min-width:160px;background:var(--bg2);border:1.5px solid var(--amberborder);border-radius:var(--radius2);padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit"
-                onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--amberborder)'"/>
+              <input id="ejs-service" placeholder="Service ID"
+                style="flex:1;min-width:160px;background:var(--bg2);border:1.5px solid var(--amberborder);border-radius:var(--radius2);padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit"/>
+              <input id="ejs-template" placeholder="Template ID"
+                style="flex:1;min-width:160px;background:var(--bg2);border:1.5px solid var(--amberborder);border-radius:var(--radius2);padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit"/>
+              <input id="ejs-pubkey" placeholder="Public Key"
+                style="flex:1;min-width:160px;background:var(--bg2);border:1.5px solid var(--amberborder);border-radius:var(--radius2);padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit"/>
               <button onclick="saveEjsConfig()" style="background:linear-gradient(135deg,#d97706,#f59e0b);color:white;border:none;border-radius:var(--radius2);padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">Save &amp; Test →</button>
             </div>
             <div id="ejs-status-msg" style="display:none;font-size:12px;padding:8px 11px;border-radius:8px"></div>
@@ -728,17 +750,15 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
         <div style="background:linear-gradient(135deg,var(--accentbg),var(--purplebg));border:1.5px solid var(--accentbg2);border-radius:var(--radius);padding:22px;margin-bottom:16px;box-shadow:var(--shadow)">
           <div style="margin-bottom:14px">
             <h3 style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;margin-bottom:4px">👥 Onboard Employees</h3>
-            <p style="font-size:12px;color:var(--text2);line-height:1.65">Add employee → credentials saved to Supabase → click <b>Send Invite</b> → email lands in their inbox with a magic link that auto-signs them in on any device.</p>
+            <p style="font-size:12px;color:var(--text2);line-height:1.65">Add employee → credentials saved to Supabase → click <b>Send Invite</b> → email lands in their inbox with a magic link.</p>
           </div>
           <div style="display:flex;gap:9px;flex-wrap:wrap;margin-bottom:12px">
             <input id="inv-name" placeholder="Full name"
               style="flex:1;min-width:140px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius2);padding:10px 13px;font-size:13px;color:var(--text);font-family:inherit"
-              onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"
               onkeydown="if(event.key==='Enter')document.getElementById('inv-email').focus()"/>
             <div style="position:relative;flex:1.4;min-width:160px">
               <input id="inv-email" placeholder="username"
                 style="width:100%;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius2);padding:10px 65px 10px 13px;font-size:13px;color:var(--text);font-family:inherit"
-                onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"
                 onkeydown="if(event.key==='Enter')addEmployee()"/>
               <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--accent);font-size:11px;font-weight:700;background:var(--accentbg);padding:1px 6px;border-radius:4px">@pw.live</span>
             </div>
@@ -755,7 +775,7 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
           </div>
         </div>
 
-        <!-- Manager lock info + password change -->
+        <!-- Manager password -->
         <div class="consent-card">
           <h3 style="font-family:'Syne',sans-serif;font-size:15px;margin-bottom:8px;font-weight:700">🔒 Manager Access &amp; Password</h3>
           <p style="font-size:12px;color:var(--text2);margin-bottom:12px">Portal is locked to your email only. Change your password below anytime.</p>
@@ -764,38 +784,71 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
             <div><div style="font-weight:600;font-size:13px">Aditya Malik</div><div id="mgr-email-lbl" style="font-size:11px;color:var(--text3)"></div></div>
             <span style="margin-left:auto;background:var(--purplebg);color:var(--purple);border:1px solid #ddd6fe;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700">Owner</span>
           </div>
-          <!-- Change password -->
           <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius2);padding:14px 16px">
             <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:10px">🔑 Change Manager Password</div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
               <input id="mgr-pass-current" type="password" placeholder="Current password"
-                style="flex:1;min-width:140px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius2);padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit"
-                onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>
+                style="flex:1;min-width:140px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius2);padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit"/>
               <input id="mgr-pass-new" type="password" placeholder="New password (min 8 chars)"
-                style="flex:1;min-width:140px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius2);padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit"
-                onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>
+                style="flex:1;min-width:140px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius2);padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit"/>
               <input id="mgr-pass-confirm" type="password" placeholder="Confirm new password"
-                style="flex:1;min-width:140px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius2);padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit"
-                onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>
+                style="flex:1;min-width:140px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius2);padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit"/>
               <button onclick="changeMgrPassword()" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;border:none;border-radius:var(--radius2);padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">Update</button>
             </div>
             <div id="mgr-pass-msg" style="display:none;font-size:12px;padding:7px 10px;border-radius:7px"></div>
-            <div style="font-size:11px;color:var(--text3);margin-top:4px">Password is stored securely in your browser's localStorage. Only you can change it.</div>
           </div>
         </div>
 
-        <!-- DB config -->
-        <div class="consent-card">
-          <h3 style="font-family:'Syne',sans-serif;font-size:15px;margin-bottom:10px;font-weight:700">☁️ Supabase Connection</h3>
-          <div class="data-row"><span class="data-row-label">Project URL</span><span class="data-row-val" id="db-url-display" style="font-size:11px;color:var(--text3);word-break:break-all">–</span></div>
-          <div class="data-row" style="margin-top:5px"><span class="data-row-label">Status</span><span id="db-status-label" class="data-row-val">–</span></div>
-          <button onclick="resetSupabaseConfig()" style="margin-top:10px;background:var(--redbg);color:var(--red);border:1px solid var(--redborder);border-radius:var(--radius2);padding:7px 14px;font-size:12px;cursor:pointer;font-weight:600">Reset &amp; reconfigure</button>
+        <!-- DB config + live diagnostics -->
+        <div class="consent-card" id="db-diag-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <h3 style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700">☁️ Supabase Connection</h3>
+            <button onclick="runDiagnostics()" id="diag-run-btn" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;border:none;border-radius:var(--radius2);padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px">
+              <svg fill="none" viewBox="0 0 14 14" stroke="currentColor" stroke-width="2" width="11" height="11"><path d="M12 2v4H8M2 12V8h4"/><path d="M2.05 9A5 5 0 1 0 3 4.5"/></svg>Run diagnostics
+            </button>
+          </div>
+
+          <!-- Current config display -->
+          <div class="data-row"><span class="data-row-label">Project URL</span><span class="data-row-val" id="db-url-display" style="font-size:11px;color:var(--text3);word-break:break-all;max-width:260px">–</span></div>
+          <div class="data-row" style="margin-top:4px"><span class="data-row-label">Status</span><span id="db-status-label" class="data-row-val">–</span></div>
+
+          <!-- Diagnostics output panel -->
+          <div id="diag-panel" style="display:none;margin-top:14px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius2);overflow:hidden">
+            <div style="padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px;font-weight:700;color:var(--text2);display:flex;align-items:center;gap:7px">
+              <span>🔬 Diagnostics</span>
+              <span id="diag-spinner" style="display:none" class="splash-spinner" style="width:14px;height:14px"></span>
+            </div>
+            <div id="diag-log" style="padding:12px 14px;font-family:monospace;font-size:11.5px;line-height:2;color:var(--text2)"></div>
+          </div>
+
+          <!-- Inline reconfigure (no reload needed) -->
+          <div id="reconfig-panel" style="display:none;margin-top:14px;background:linear-gradient(135deg,#fff8f0,#fff3e0);border:1.5px solid var(--amberborder);border-radius:var(--radius2);padding:14px">
+            <div style="font-size:12px;font-weight:700;color:#78350f;margin-bottom:10px">🔧 Update Supabase credentials</div>
+            <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px">
+              <input id="rc-url" type="text" placeholder="https://xxxx.supabase.co"
+                style="background:white;border:1.5px solid var(--amberborder);border-radius:var(--radius2);padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit;width:100%"
+                onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--amberborder)'"/>
+              <input id="rc-key" type="text" placeholder="eyJhbGci… (anon public key)"
+                style="background:white;border:1.5px solid var(--amberborder);border-radius:var(--radius2);padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit;width:100%"
+                onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--amberborder)'"/>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <button onclick="applyNewConfig()" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;border:none;border-radius:var(--radius2);padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer">Save &amp; Test →</button>
+              <button onclick="toggleReconfig(false)" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius2);padding:9px 14px;font-size:12px;cursor:pointer;color:var(--text2)">Cancel</button>
+              <span id="rc-msg" style="font-size:12px;font-weight:600"></span>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+            <button onclick="toggleReconfig(true)" style="background:var(--accentbg);color:var(--accent);border:1.5px solid var(--accentbg2);border-radius:var(--radius2);padding:7px 14px;font-size:12px;cursor:pointer;font-weight:600">🔧 Update credentials</button>
+            <button onclick="resetSupabaseConfig()" style="background:var(--redbg);color:var(--red);border:1px solid var(--redborder);border-radius:var(--radius2);padding:7px 14px;font-size:12px;cursor:pointer;font-weight:600">🗑 Reset &amp; reload</button>
+          </div>
         </div>
       </div>
     </div>
 
-  </div><!-- /main -->
-</div><!-- /app -->
+  </div>
+</div>
 
 <!-- BOOKMARKLET MODAL -->
 <div id="bkmk-modal" style="display:none;position:fixed;inset:0;z-index:1000;align-items:center;justify-content:center;background:rgba(15,15,30,.5);backdrop-filter:blur(8px)" onclick="if(event.target===this)closeBkmkModal()">
@@ -817,77 +870,88 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
 </div>
 
 <script>
+'use strict';
 /* ═══════════════════════════════════════════════════════════════
-   PW TIMETRACKER — SUPABASE EDITION
+   PW TIMETRACKER — FIXED & CLEANED
+   Key fixes:
+   1. totalQToday() defined BEFORE computeScore() uses it
+   2. Work hours check uses 24h range (9-21), not strict work hours blocking
+   3. All functions declared before first use
+   4. Removed multiline template literals inside function calls (syntax error risk)
+   5. sendAllInvites confirm() uses string concat instead of template literal
    ═══════════════════════════════════════════════════════════════ */
 
-/* ══ HARD-CODED CONSTANTS ══ */
+/* ══ CONSTANTS ══ */
 const MANAGER_EMAIL = 'aditya.malik@pw.live';
-const MGR_PASS_KEY = 'pwt_mgr_pass';
-function getMgrPass(){ return localStorage.getItem(MGR_PASS_KEY)||'PW@2026'; }
-function setMgrPass(p){ localStorage.setItem(MGR_PASS_KEY,p); }
+const MGR_PASS_KEY  = 'pwt_mgr_pass';
 const SS_KEY        = 'pwt_session';
 const SB_CFG_KEY    = 'pwt_supabase';
 const LOCAL_CRED    = 'pwt_creds';
-const LOCAL_EMPS    = 'pwt_employees'; // local employee list — instant, no network needed
+const LOCAL_EMPS    = 'pwt_employees';
+const EJS_CFG_KEY   = 'pwt_emailjs';
 
-/* ══ SUPABASE STATE ══ */
+function getMgrPass(){ return localStorage.getItem(MGR_PASS_KEY) || 'PW@2026'; }
+function setMgrPass(p){ localStorage.setItem(MGR_PASS_KEY, p); }
+
+/* ══ STATE ══ */
 let sbClient = null;
-let realtimeSub = null;
-
-/* ══ APP STATE ══ */
-let currentUser = null, selectedRole = 'employee', tracking = false;
-let timerInterval = null, totalSeconds = 0, idleSeconds = 0, activeSeconds = 0, sessionCount = 0;
-let activityLog = [], qHistory = [], chartInstances = {}, attendanceStatus = 'present';
+let currentUser = null, selectedRole = 'employee';
+let tracking = false;
+let timerInterval = null;
+let totalSeconds = 0, idleSeconds = 0, activeSeconds = 0, sessionCount = 0;
+let activityLog = [], qHistory = [];
+let chartInstances = {};
+let attendanceStatus = 'present';
 let lastActivity = Date.now(), isIdle = false, hiddenSince = null;
-let activeDomain = null, awayStart = null, awayTabDomain = null, awayTabTimer = null;
-let workWatchdog = null, idleDetectInterval = null;
-let employees = [];
+let activeDomain = null, awayStart = null;
+let workWatchdog = null, idleDetectInterval = null, mgrPollTimer = null;
 
 /* ══ UTILS ══ */
-const fmtS = s => { const h=Math.floor(s/3600),m=Math.floor((s%3600)/60); return h>0?`${h}h ${m}m`:`${m}m`; };
-const avI  = n => n.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
-const AV   = ['#6366f1','#059669','#d97706','#dc2626','#7c3aed','#0891b2','#ea580c','#16a34a','#db2777','#0d9488'];
-const avC  = e => { let h=0; for(const c of e) h=((h<<5)-h)+c.charCodeAt(0); return AV[Math.abs(h)%AV.length]; };
-const WORK_D = ['gmail.com','docs.google.com','drive.google.com','github.com','notion.so','figma.com','slack.com','meet.google.com','calendar.google.com','zoom.us','pw.live','trello.com','linear.app','jira.atlassian.com','asana.com','clickup.com'];
-const DIST_D = ['instagram.com','twitter.com','x.com','facebook.com','tiktok.com','reddit.com','snapchat.com','youtube.com'];
-const catD   = d => { const c=d.toLowerCase().replace(/^www\./,''); if(DIST_D.some(x=>c.includes(x)))return'distract'; if(WORK_D.some(x=>c.includes(x)))return'work'; return'neutral'; };
-const secToMin = s => Math.round(s/60)+'m';
-const $ = id => document.getElementById(id);
-const setTxt = (id,v) => { const e=$(id); if(e) e.textContent=v; };
+const fmtS = s => {
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
+  return h > 0 ? h + 'h ' + m + 'm' : m + 'm';
+};
+const avI = n => (n || '?').split(' ').map(w => w[0] || '').join('').slice(0, 2).toUpperCase();
+const AV  = ['#6366f1','#059669','#d97706','#dc2626','#7c3aed','#0891b2','#ea580c','#16a34a','#db2777','#0d9488'];
+const avC = e => { let h = 0; for (const c of (e||'')) h = ((h<<5)-h)+c.charCodeAt(0); return AV[Math.abs(h) % AV.length]; };
+const WORK_D  = ['gmail.com','docs.google.com','drive.google.com','github.com','notion.so','figma.com','slack.com','meet.google.com','calendar.google.com','zoom.us','pw.live','trello.com','linear.app','jira.atlassian.com','asana.com','clickup.com'];
+const DIST_D  = ['instagram.com','twitter.com','x.com','facebook.com','tiktok.com','reddit.com','snapchat.com','youtube.com'];
+const catD    = d => { const c = (d||'').toLowerCase().replace(/^www\./,''); if(DIST_D.some(x=>c.includes(x))) return 'distract'; if(WORK_D.some(x=>c.includes(x))) return 'work'; return 'neutral'; };
+const secToMin = s => Math.round(s/60) + 'm';
+const $       = id => document.getElementById(id);
+const setTxt  = (id, v) => { const e = $(id); if(e) e.textContent = v; };
 
-/* ══ IST ══ */
+/* ══ IST CLOCK ══ */
 function getIST() {
-  // Try Intl timezone first (most accurate)
   try {
-    const d = new Date(new Date().toLocaleString('en-US', {timeZone:'Asia/Kolkata'}));
-    if(!isNaN(d.getTime())) return d;
+    const d = new Date(new Date().toLocaleString('en-US', {timeZone: 'Asia/Kolkata'}));
+    if (!isNaN(d.getTime())) return d;
   } catch(_) {}
-  // Fallback: UTC + 5:30 offset (always works on every browser/device)
   return new Date(Date.now() + 5.5 * 3600000);
 }
 function todayIST() {
   const d = getIST();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
-function workHours() {
+function workHoursOk() {
   try { const h = getIST().getHours(); return h >= 9 && h < 21; }
-  catch(_) { return true; } // if check fails, allow tracking
+  catch(_) { return true; }
 }
 function isSunday() {
   try { return getIST().getDay() === 0; }
   catch(_) { return false; }
 }
-function clock() {
-  const d=getIST(),h=d.getHours(),m=d.getMinutes(),s=d.getSeconds();
-  const p=n=>String(n).padStart(2,'0');
-  const t=`${p(h)}:${p(m)}:${p(s)} IST`;
-  document.querySelectorAll('[id$="ist-clock"],[id="mgr-ist-clock"]').forEach(el=>el.textContent=t);
+function clockTick() {
+  const d = getIST(), h = d.getHours(), m = d.getMinutes(), s = d.getSeconds();
+  const p = n => String(n).padStart(2,'0');
+  const t = p(h) + ':' + p(m) + ':' + p(s) + ' IST';
+  document.querySelectorAll('#ist-clock, #mgr-ist-clock').forEach(el => el.textContent = t);
 }
-setInterval(clock,1000); clock();
+setInterval(clockTick, 1000);
+clockTick();
 
-/* ══ QUOTES / GREETING ══ */
-const QUOTES=[
+/* ══ QUOTES & GREETING ══ */
+const QUOTES = [
   {q:"The secret of getting ahead is getting started.",a:"Mark Twain"},
   {q:"Quality is not an act, it is a habit.",a:"Aristotle"},
   {q:"The only way to do great work is to love what you do.",a:"Steve Jobs"},
@@ -901,92 +965,330 @@ const QUOTES=[
   {q:"One day or day one — you decide.",a:"Anonymous"},
   {q:"Strive for progress, not perfection.",a:"Anonymous"},
 ];
-function dailyQuote() { const d=new Date(),s=new Date(d.getFullYear(),0,0); return QUOTES[Math.floor((d-s)/864e5)%QUOTES.length]; }
-function greeting() { const h=getIST().getHours(); return h<12?{t:'Good morning',i:'☀️'}:h<17?{t:'Good afternoon',i:'🌤️'}:h<21?{t:'Good evening',i:'🌆'}:{t:'Good night',i:'🌙'}; }
-function renderGreeting(px,name) {
-  const g=greeting(),q=dailyQuote();
-  setTxt(px+'g-time',g.t+' '+g.i);
-  setTxt(px+'g-name',name.split(' ')[0]+' — '+new Date().toLocaleDateString('en-IN',{weekday:'long',month:'long',day:'numeric'}));
-  setTxt(px+'g-quote','"'+q.q+'"');
-  setTxt(px+'g-attr','— '+q.a);
+function dailyQuote() {
+  const d = new Date(), s = new Date(d.getFullYear(), 0, 0);
+  return QUOTES[Math.floor((d - s) / 864e5) % QUOTES.length];
+}
+function greeting() {
+  const h = getIST().getHours();
+  return h < 12 ? {t:'Good morning', i:'☀️'} : h < 17 ? {t:'Good afternoon', i:'🌤️'} : h < 21 ? {t:'Good evening', i:'🌆'} : {t:'Good night', i:'🌙'};
+}
+function renderGreeting(px, name) {
+  const g = greeting(), q = dailyQuote();
+  setTxt(px + 'g-time', g.t + ' ' + g.i);
+  setTxt(px + 'g-name', (name||'').split(' ')[0] + ' — ' + new Date().toLocaleDateString('en-IN',{weekday:'long',month:'long',day:'numeric'}));
+  setTxt(px + 'g-quote', '"' + q.q + '"');
+  setTxt(px + 'g-attr', '— ' + q.a);
 }
 
-/* ═══════════════════════════════════════════════════════
-   SUPABASE SETUP & CONNECTION
-   ═══════════════════════════════════════════════════════ */
+/* ══ QUESTIONS — defined early so computeScore() can use it ══ */
+function totalQToday() {
+  return qHistory.reduce((s, e) => s + (parseInt(e.count) || 0), 0);
+}
+function addQ() {
+  const cnt = parseInt($('q-count').value) || 0;
+  if (cnt <= 0) { alert('Enter at least 1.'); return; }
+  const note = $('q-note').value.trim();
+  const now = new Date().toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'});
+  qHistory.push({count: cnt, note: note || 'General', time: now, ts: Date.now()});
+  $('q-count').value = '';
+  $('q-note').value = '';
+  renderQChips();
+  saveToSupabase();
+}
+function renderQChips() {
+  const c = $('q-chips'); if (!c) return;
+  const total = totalQToday();
+  setTxt('q-total', total);
+  setTxt('my-questions', total);
+  if (!qHistory.length) {
+    c.innerHTML = '<span style="font-size:12px;color:var(--text3)">No entries yet</span>';
+    return;
+  }
+  var html = qHistory.slice().reverse().map(e =>
+    '<div class="q-chip">' +
+    '<span class="q-chip-num">' + e.count + '</span>' +
+    '<span>' + e.note + '</span>' +
+    '<span style="color:var(--text3);font-size:10px">' + e.time + '</span>' +
+    '</div>'
+  ).join('');
+  html += '<div class="q-total">Total: ' + total + '</div>';
+  c.innerHTML = html;
+}
+
+/* ══ SCORE — defined after totalQToday ══ */
+function getTargetMins() {
+  if (attendanceStatus === 'leave' || attendanceStatus === 'off') return 0;
+  return attendanceStatus === 'halfday' ? 225 : 450;
+}
+function computeScore() {
+  const t = getTargetMins();
+  if (!t) return null;
+  return Math.min(100, Math.round(((totalSeconds / 60) + totalQToday() * 5) * 100 / t));
+}
+
+/* ══ SUPABASE — REST-ONLY (no SDK client, avoids BroadcastChannel/Headers clone errors) ══ */
+
+// Circuit breaker: stop hammering after repeated failures
+let _sbFails = 0, _sbOk = false;
+const SB_MAX_FAILS = 5; // after 5 consecutive fails, pause retries
+let _sbPaused = false, _sbPauseTimer = null;
+
 function getSBConfig() {
-  try { return JSON.parse(localStorage.getItem(SB_CFG_KEY)||'null'); } catch(_){ return null; }
+  try { return JSON.parse(localStorage.getItem(SB_CFG_KEY) || 'null'); } catch(_) { return null; }
 }
 function saveSBConfig(url, key) {
-  localStorage.setItem(SB_CFG_KEY, JSON.stringify({url,key}));
+  localStorage.setItem(SB_CFG_KEY, JSON.stringify({url: url.replace(/\/+$/, ''), key}));
 }
 function resetSupabaseConfig() {
-  if(!confirm('Reset Supabase config? You will need to re-enter credentials.')) return;
+  if (!confirm('Reset Supabase config? You will need to re-enter credentials on the next screen.')) return;
   localStorage.removeItem(SB_CFG_KEY);
   location.reload();
 }
 
-function initSupabase(url, key) {
-  // Disable realtime & broadcast — they try to postMessage a Headers object
-  // which throws DataCloneError: "Headers object could not be cloned"
-  sbClient = window.supabase.createClient(url, key, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-      detectSessionInUrl: false,
-      // Disable storage-based broadcast that causes DataCloneError
-      storage: { getItem: ()=>null, setItem: ()=>{}, removeItem: ()=>{} },
-    },
-    realtime: { params: { eventsPerSecond: -1 } }, // effectively disable realtime
-    global: { fetch: (...args) => fetch(...args) }, // use plain fetch, no custom Headers objects
-  });
-  setDBStatus('connecting');
+/* ══ LIVE DIAGNOSTICS ══ */
+function diagLog(html) {
+  const el = $('diag-log');
+  if (el) el.innerHTML += html + '<br>';
+}
+function diagClear() {
+  const el = $('diag-log'); if (el) el.innerHTML = '';
+}
+function diagStatus(icon, label, ok) {
+  const color = ok === true ? 'var(--green)' : ok === false ? 'var(--red)' : 'var(--amber)';
+  return '<span style="color:' + color + ';font-weight:700">' + icon + '</span> ' + label;
 }
 
-/* ══ testConnection: NO standalone network ping.
-   External pings cause CORS preflight failures on GitHub Pages and
-   DataCloneError from Supabase's internal broadcast — both show false
-   "Connection error" even when everything works fine.
-   Status is now derived purely from real data operations:
-     login success      → setDBStatus('connected')  [in doLoginSuccess]
-     save/load success  → setDBStatus('connected')  [in saveToSupabase / loadAllEmployees]
-     save/load failure  → setDBStatus('error')
-   This function simply reflects what we already know.              ══ */
-function testConnection() {
-  if(!sbClient) { setDBStatus('connecting'); return false; }
-  if(currentUser) { setDBStatus('connected'); return true; }
+async function runDiagnostics() {
+  const panel = $('diag-panel'), spinner = $('diag-spinner'), btn = $('diag-run-btn');
+  if (!panel) return;
+  panel.style.display = 'block';
+  diagClear();
+  if (spinner) spinner.style.display = 'inline-block';
+  if (btn) btn.disabled = true;
+
+  const cfg = getSBConfig();
+
+  // 1. Config present?
+  if (!cfg || !cfg.url || !cfg.key) {
+    diagLog(diagStatus('✗', 'No Supabase config saved. Click "Update credentials" below.', false));
+    if (spinner) spinner.style.display = 'none';
+    if (btn) btn.disabled = false;
+    return;
+  }
+
+  // 2. URL format check
+  const urlOk = cfg.url.startsWith('https://') && cfg.url.includes('.supabase.co');
+  diagLog(diagStatus(urlOk?'✓':'✗', 'URL format: <b>' + cfg.url + '</b>', urlOk));
+  if (!urlOk) {
+    diagLog(diagStatus('⚠', 'URL should be https://[project-id].supabase.co (no trailing slash, no /rest/v1)', null));
+  }
+
+  // 3. Key format check
+  const keyOk = cfg.key && cfg.key.startsWith('eyJ') && cfg.key.length > 100;
+  diagLog(diagStatus(keyOk?'✓':'✗', 'API key format: ' + (keyOk ? cfg.key.slice(0,20)+'…' : '<b>looks wrong</b> (should start with eyJ and be ~200 chars)'), keyOk));
+
+  if (!urlOk || !keyOk) {
+    diagLog(diagStatus('→', 'Fix your credentials using "Update credentials" below', null));
+    if (spinner) spinner.style.display = 'none';
+    if (btn) btn.disabled = false;
+    return;
+  }
+
+  // 4. Network: try to reach the REST endpoint (probe mode — won't trip circuit breaker)
+  diagLog('<span style="color:var(--amber)">… Testing network reach…</span>');
+
+  const r1 = await sbRest('GET', 'pw_credentials', 'select=email&limit=1', null, null, true);
+
+  if (r1.ok) {
+    _sbResetCircuit();
+    _sbMarkOk();
+  } else if (r1.status === 0 || r1.err) {
+    diagLog(diagStatus('✗', 'Network error: "Failed to fetch" — possible causes:', false));
+    diagLog('&nbsp;&nbsp;<b>1.</b> Wrong Project URL (copy it again from Supabase → Settings → API)');
+    diagLog('&nbsp;&nbsp;<b>2.</b> Your Supabase project is paused (free tier pauses after inactivity)');
+    diagLog('&nbsp;&nbsp;<b>3.</b> No internet / corporate firewall blocking *.supabase.co');
+    diagLog('&nbsp;&nbsp;<b>4.</b> Running from file:// — host on a web server or GitHub Pages');
+  } else if (r1.status === 401 || r1.status === 403) {
+    diagLog(diagStatus('✗', 'Auth error (HTTP ' + r1.status + ') — anon key is wrong or RLS policy missing', false));
+    diagLog('&nbsp;&nbsp;Run this SQL in Supabase → SQL Editor:');
+    diagLog('&nbsp;&nbsp;<code style="background:var(--bg4);padding:2px 6px;border-radius:4px">create policy "anon all credentials" on pw_credentials for all using (true) with check (true);</code>');
+  } else if (r1.status === 404) {
+    diagLog(diagStatus('✗', 'Table not found (HTTP 404) — SQL schema not run yet', false));
+    diagLog('&nbsp;&nbsp;Go to Supabase → SQL Editor and run the schema from the Setup screen.');
+    diagLog('&nbsp;&nbsp;Click "Reset &amp; reload" below to get back to the setup screen.');
+  } else {
+    diagLog(diagStatus('✗', 'Unexpected HTTP ' + r1.status + ' — see Supabase dashboard logs', false));
+  }
+
+  // 5. Check pw_employees table too
+  if (r1.ok) {
+    const r2 = await sbRest('GET', 'pw_employees', 'select=email&limit=1', null, null, true);
+    diagLog(diagStatus(r2.ok?'✓':'✗', 'Table <b>pw_employees</b>: ' + (r2.ok ? 'OK' : 'error HTTP ' + r2.status), r2.ok));
+    if (!r2.ok && r2.status === 404) {
+      diagLog('&nbsp;&nbsp;Run the full schema SQL — pw_employees table is missing.');
+    }
+    if (r1.ok && r2.ok) {
+      diagLog(diagStatus('✓', '<b>All checks passed!</b> Data will sync correctly.', true));
+    }
+  }
+
+  if (spinner) spinner.style.display = 'none';
+  if (btn) btn.disabled = false;
+}
+
+function toggleReconfig(show) {
+  const p = $('reconfig-panel');
+  if (!p) return;
+  p.style.display = show ? 'block' : 'none';
+  if (show) {
+    const cfg = getSBConfig() || {};
+    const rcUrl = $('rc-url'), rcKey = $('rc-key');
+    if (rcUrl) rcUrl.value = cfg.url || '';
+    if (rcKey) rcKey.value = cfg.key || '';
+    if (rcUrl) rcUrl.focus();
+    const msg = $('rc-msg'); if (msg) msg.textContent = '';
+  }
+}
+
+async function applyNewConfig() {
+  const urlEl = $('rc-url'), keyEl = $('rc-key'), msg = $('rc-msg');
+  const url = (urlEl ? urlEl.value.trim() : '').replace(/\/+$/, '');
+  const key = keyEl ? keyEl.value.trim() : '';
+  if (!url || !key) { if (msg) { msg.textContent = '⚠ Both fields required'; msg.style.color = 'var(--red)'; } return; }
+  if (!url.startsWith('https://')) { if (msg) { msg.textContent = '⚠ URL must start with https://'; msg.style.color = 'var(--red)'; } return; }
+  if (!key.startsWith('eyJ')) { if (msg) { msg.textContent = '⚠ Key should start with eyJ'; msg.style.color = 'var(--amber)'; } }
+
+  if (msg) { msg.textContent = '⏳ Testing…'; msg.style.color = 'var(--amber)'; }
+
+  // Temporarily apply the new config for testing
+  const oldCfg = getSBConfig();
+  saveSBConfig(url, key);
+  _sbResetCircuit(); // full reset so the test isn't blocked
+
+  const r = await sbRest('GET', 'pw_credentials', 'select=email&limit=1', null, null, true);
+  if (r.ok) {
+    _sbMarkOk();
+    if (msg) { msg.textContent = '✓ Connected!'; msg.style.color = 'var(--green)'; }
+    setDBStatus('connected');
+    setTxt('db-url-display', url);
+    // Reload settings display
+    setTimeout(() => {
+      toggleReconfig(false);
+      runDiagnostics();
+    }, 1200);
+  } else {
+    // Revert
+    if (oldCfg) saveSBConfig(oldCfg.url, oldCfg.key);
+    else localStorage.removeItem(SB_CFG_KEY);
+    const reason = r.status ? 'HTTP ' + r.status : 'Failed to fetch';
+    if (msg) { msg.textContent = '✗ Failed: ' + reason + ' — check URL & key'; msg.style.color = 'var(--red)'; }
+  }
+}
+
+// No SDK client needed — we use direct REST only
+function initSupabase(url, key) {
+  // Intentionally no-op for SDK; REST calls handle everything
+  sbClient = null; // always null — REST only
   setDBStatus('connecting');
-  return false;
 }
 
 function setDBStatus(status) {
-  const dot=$('db-dot'), lbl=$('db-label'), statusLbl=$('db-status-label');
-  const map={connecting:{cls:'connecting',txt:'Connecting…'},connected:{cls:'connected',txt:'Connected ✓'},error:{cls:'error',txt:'Connection error'}};
-  const s=map[status]||map.connecting;
-  if(dot){ dot.className='db-dot '+s.cls; }
-  if(lbl) lbl.textContent=s.txt;
-  if(statusLbl){ statusLbl.textContent=s.txt; statusLbl.style.color=status==='connected'?'var(--green)':status==='error'?'var(--red)':'var(--amber)'; }
+  const dot = $('db-dot'), lbl = $('db-label'), sl = $('db-status-label');
+  const map = {
+    connecting: {cls:'connecting', txt:'Connecting…'},
+    connected:  {cls:'connected',  txt:'Connected ✓'},
+    error:      {cls:'error',      txt:'Connection error'},
+    paused:     {cls:'error',      txt:'Retrying soon…'},
+  };
+  const s = map[status] || map.connecting;
+  if (dot) dot.className = 'db-dot ' + s.cls;
+  if (lbl) lbl.textContent = s.txt;
+  if (sl) {
+    sl.textContent = s.txt;
+    sl.style.color = status === 'connected' ? 'var(--green)' : status === 'error' || status === 'paused' ? 'var(--red)' : 'var(--amber)';
+  }
 }
 
-async function saveSupabaseConfig() {
-  const url = $('sb-url-input').value.trim();
-  const key = $('sb-key-input').value.trim();
-  const err = $('setup-err');
-  if(!url||!key){ showSetupErr('Both fields are required.'); return; }
-  if(!url.startsWith('https://')){ showSetupErr('URL must start with https://'); return; }
-  err.style.display='none';
-  saveSBConfig(url, key);
-  $('setup-screen').innerHTML = '<div class="setup-card" style="text-align:center"><div class="splash-logo" style="margin:0 auto 16px">PW</div><div style="color:#a5b4fc;font-size:14px;margin-bottom:8px">Saving configuration…</div><div class="splash-spinner" style="margin:16px auto 0"></div><div style="color:rgba(255,255,255,.35);font-size:11px;margin-top:16px">Redirecting to login…</div></div>';
-  setTimeout(() => location.reload(), 1500);
+function _sbMarkOk() {
+  _sbFails = 0; _sbOk = true; _sbPaused = false;
+  if (_sbPauseTimer) { clearTimeout(_sbPauseTimer); _sbPauseTimer = null; }
+  setDBStatus('connected');
 }
-function showSetupErr(msg){ const e=$('setup-err'); if(e){e.textContent=msg;e.style.display='block';} }
+function _sbMarkFail(context, err, isProbe) {
+  if (isProbe) return; // diagnostic/test probes don't count toward circuit breaker
+  _sbFails++;
+  // Log only the 1st failure, then every 20th — not every 10s poll
+  if (_sbFails === 1 || _sbFails % 20 === 0) {
+    console.warn('[PWT] DB ' + context + ' failed (×' + _sbFails + '):', err && (err.message || err));
+  }
+  if (_sbFails >= SB_MAX_FAILS && !_sbPaused) {
+    _sbPaused = true;
+    setDBStatus('paused');
+    // Auto-resume after 60 seconds (longer pause = less console noise)
+    _sbPauseTimer = setTimeout(() => {
+      _sbPaused = false;
+      _sbFails = 2; // don't fully reset — still cautious
+      setDBStatus('connecting');
+    }, 60000);
+  } else if (!_sbPaused) {
+    setDBStatus('error');
+  }
+}
 
-/* ═══════════════════════════════════════════════════════
-   SUPABASE DATA LAYER
-   ═══════════════════════════════════════════════════════ */
+// Manual reset of circuit breaker (used by diagnostics when user explicitly tests)
+function _sbResetCircuit() {
+  _sbFails = 0; _sbPaused = false; _sbOk = false;
+  if (_sbPauseTimer) { clearTimeout(_sbPauseTimer); _sbPauseTimer = null; }
+  setDBStatus('connecting');
+}
+
+// Core REST helper — single source of truth for all Supabase calls
+// isProbe=true: failures don't count toward circuit breaker (used for diagnostics/boot tests)
+async function sbRest(method, table, params, body, extraHeaders, isProbe) {
+  if (_sbPaused && !isProbe) return {ok: false, data: null, paused: true};
+  const cfg = getSBConfig();
+  if (!cfg || !cfg.url || !cfg.key) return {ok: false, data: null, noConfig: true};
+  const url = cfg.url.replace(/\/+$/, '') + '/rest/v1/' + table + (params ? '?' + params : '');
+  const headers = Object.assign({
+    'apikey': cfg.key,
+    'Authorization': 'Bearer ' + cfg.key,
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  }, extraHeaders || {});
+  try {
+    const opts = {method, headers};
+    if (body !== undefined && body !== null) opts.body = JSON.stringify(body);
+    const res = await fetch(url, opts);
+    const text = await res.text();
+    let data = null;
+    try { data = text ? JSON.parse(text) : null; } catch(_) { data = text || null; }
+    if (res.ok || res.status === 201 || res.status === 204) {
+      _sbMarkOk();
+      return {ok: true, data, status: res.status};
+    } else {
+      _sbMarkFail(table + ' ' + method, 'HTTP ' + res.status + ': ' + String(text).slice(0, 200), isProbe);
+      return {ok: false, data, status: res.status};
+    }
+  } catch(e) {
+    _sbMarkFail(table + ' ' + method, e, isProbe);
+    return {ok: false, data: null, err: e};
+  }
+}
+
+// Test connection — uses isProbe so failures don't trip the circuit breaker
+async function testSBConnection() {
+  const cfg = getSBConfig();
+  if (!cfg) return false;
+  const r = await sbRest('GET', 'pw_credentials', 'select=email&limit=1', null, null, true);
+  return r.ok;
+}
+
+/* ══ SUPABASE DATA LAYER — REST only ══ */
 
 async function saveToSupabase() {
-  if(!currentUser||currentUser.role!=='employee'||!sbClient) return;
+  if (!currentUser || currentUser.role !== 'employee') return;
+  if (_sbPaused) return; // don't attempt while circuit is open
   const payload = {
     email: currentUser.email,
     name: currentUser.name,
@@ -1005,679 +1307,696 @@ async function saveToSupabase() {
     },
     updated_at: new Date().toISOString()
   };
-  // Try sbClient first, then fall back to direct REST upsert
-  let saved = false;
-  if(sbClient) {
-    try {
-      const {error} = await sbClient.from('pw_employees').upsert(payload, {onConflict:'email'});
-      if(!error) { setDBStatus('connected'); saved = true; }
-      else console.warn('sbClient save error:', error);
-    } catch(_) {}
-  }
-  if(!saved) {
-    // Direct REST fallback
-    const cfg = getSBConfig();
-    if(cfg) {
-      try {
-        const res = await fetch(cfg.url + '/rest/v1/pw_employees', {
-          method: 'POST',
-          headers: {
-            'apikey': cfg.key,
-            'Authorization': 'Bearer ' + cfg.key,
-            'Content-Type': 'application/json',
-            'Prefer': 'resolution=merge-duplicates,return=minimal'
-          },
-          body: JSON.stringify(payload)
-        });
-        if(res.ok || res.status === 201 || res.status === 204) {
-          setDBStatus('connected');
-        } else {
-          console.error('REST save failed:', res.status);
-          // Don't flip dot to error on a single failed save — transient
-        }
-      } catch(e){ console.error('Save REST exception:', e); }
-    }
-  }
+  await sbRest('POST', 'pw_employees', null, payload, {'Prefer': 'resolution=merge-duplicates,return=minimal'});
 }
 
 async function loadFromSupabase(email) {
-  if(!sbClient) return null;
-  try {
-    const {data,error} = await sbClient.from('pw_employees').select('data').eq('email',email).single();
-    if(error||!data) return null;
-    const d = data.data;
-    if(d && d.savedDate === todayIST()) return d;
-    return null;
-  } catch(_){ return null; }
+  const r = await sbRest('GET', 'pw_employees', 'select=data&email=eq.' + encodeURIComponent(email));
+  if (r.ok && Array.isArray(r.data) && r.data.length > 0) {
+    const d = r.data[0].data;
+    if (d && d.savedDate === todayIST()) return d;
+  }
+  return null;
 }
 
 async function loadAllEmployees() {
-  const cfg = getSBConfig();
+  if (_sbPaused) return _getCachedEmployees();
   const today = todayIST();
-  const process = (data) => (data||[])
-    .map(r=>r.data||{})
-    .filter(d=>d.email && d.email!==MANAGER_EMAIL && d.role!=='manager')
-    .filter(d=>d.savedDate===today || (d.savedAt&&Date.now()-d.savedAt<43200000));
+  const process = rows => (rows || [])
+    .map(r => r.data || {})
+    .filter(d => d.email && d.email !== MANAGER_EMAIL && d.role !== 'manager')
+    .filter(d => d.savedDate === today || (d.savedAt && Date.now() - d.savedAt < 43200000));
 
-  // Try sbClient first
-  if(sbClient) {
-    try {
-      const {data,error} = await sbClient.from('pw_employees').select('*').order('updated_at',{ascending:false});
-      if(!error) { setDBStatus('connected'); return process(data); }
-    } catch(_) {}
+  const r = await sbRest('GET', 'pw_employees', 'select=*&order=updated_at.desc.nullslast');
+  if (r.ok && Array.isArray(r.data)) {
+    const result = process(r.data);
+    // Cache for fallback
+    try { localStorage.setItem('pwt_emp_cache', JSON.stringify({ts: Date.now(), data: r.data})); } catch(_) {}
+    return result;
   }
-  // Direct REST fallback — correct PostgREST order syntax
-  if(!cfg) return [];
+  return _getCachedEmployees();
+}
+
+function _getCachedEmployees() {
   try {
-    const res = await fetch(cfg.url + '/rest/v1/pw_employees?select=*&order=updated_at.desc.nullslast', {
-      headers: { 'apikey': cfg.key, 'Authorization': 'Bearer ' + cfg.key, 'Accept': 'application/json' }
-    });
-    if(res.ok) {
-      const data = await res.json();
-      setDBStatus('connected');
-      return process(Array.isArray(data) ? data : []);
+    const raw = JSON.parse(localStorage.getItem('pwt_emp_cache') || 'null');
+    if (raw && raw.data && Date.now() - raw.ts < 300000) { // 5min cache
+      const today = todayIST();
+      return (raw.data || []).map(r => r.data || {})
+        .filter(d => d.email && d.email !== MANAGER_EMAIL && d.role !== 'manager')
+        .filter(d => d.savedDate === today || (d.savedAt && Date.now() - d.savedAt < 43200000));
     }
-    console.warn('loadAllEmployees REST status:', res.status);
-  } catch(e) { console.error('loadAllEmployees REST fallback failed:', e); }
-  // Don't flip to error if we were connected — transient failures happen
-  // Only set error if we never got a good response
-  if(currentUser) setDBStatus('connected'); // keep dot green during polling blips
+  } catch(_) {}
   return [];
 }
 
 async function saveCredential(email, pass, name) {
   const norm = email.toLowerCase();
   const payload = {email: norm, pass, name};
-
-  // Always cache locally first (instant)
+  // Always write to local cache immediately
   try {
-    const store = JSON.parse(localStorage.getItem(LOCAL_CRED)||'{}');
+    const store = JSON.parse(localStorage.getItem(LOCAL_CRED) || '{}');
     store[norm] = {pass, name};
     localStorage.setItem(LOCAL_CRED, JSON.stringify(store));
-  } catch(_){}
-
-  // Try sbClient
-  let saved = false;
-  if(sbClient) {
-    try {
-      const {error} = await sbClient.from('pw_credentials').upsert(payload, {onConflict:'email'});
-      if(!error) { saved = true; }
-      else console.warn('saveCredential sbClient error:', error);
-    } catch(e){ console.warn('saveCredential sbClient threw:', e.message); }
-  }
-
-  // REST fallback — critical for manager adding employees
-  if(!saved) {
-    const cfg = getSBConfig();
-    if(cfg) {
-      try {
-        const res = await fetch(cfg.url + '/rest/v1/pw_credentials', {
-          method: 'POST',
-          headers: {
-            'apikey': cfg.key,
-            'Authorization': 'Bearer ' + cfg.key,
-            'Content-Type': 'application/json',
-            'Prefer': 'resolution=merge-duplicates,return=minimal'
-          },
-          body: JSON.stringify(payload)
-        });
-        if(res.ok || res.status===201 || res.status===204) {
-          console.log('saveCredential REST OK for', norm);
-        } else {
-          console.error('saveCredential REST failed:', res.status, await res.text());
-        }
-      } catch(e){ console.error('saveCredential REST exception:', e); }
-    }
-  }
+  } catch(_) {}
+  // Also update local emp list
+  addLocalEmp({email: norm, pass, name});
+  // Remote — fire and don't block UI
+  sbRest('POST', 'pw_credentials', null, payload, {'Prefer': 'resolution=merge-duplicates,return=minimal'});
 }
 
 async function getCredential(email) {
   const norm = email.toLowerCase();
-
-  // 1. Check local cache first (fastest, works offline)
+  // 1. Local cache — always fastest
   try {
-    const store = JSON.parse(localStorage.getItem(LOCAL_CRED)||'{}');
-    if(store[norm]) return store[norm];
-  } catch(_){}
-
-  const cfg = getSBConfig();
-
-  // 2. Try sbClient
-  if(sbClient) {
+    const store = JSON.parse(localStorage.getItem(LOCAL_CRED) || '{}');
+    if (store[norm]) return store[norm];
+  } catch(_) {}
+  // 2. Remote REST
+  const r = await sbRest('GET', 'pw_credentials', 'select=pass,name&email=eq.' + encodeURIComponent(norm));
+  if (r.ok && Array.isArray(r.data) && r.data.length > 0) {
+    const rec = r.data[0];
+    // Cache locally
     try {
-      const {data,error} = await sbClient.from('pw_credentials')
-        .select('pass,name').eq('email',norm).single();
-      if(!error && data) {
-        // Cache locally so next login is instant
-        try {
-          const store = JSON.parse(localStorage.getItem(LOCAL_CRED)||'{}');
-          store[norm] = {pass:data.pass, name:data.name};
-          localStorage.setItem(LOCAL_CRED, JSON.stringify(store));
-        } catch(_){}
-        return {pass:data.pass, name:data.name};
-      }
-    } catch(_) { /* sbClient failed, try REST */ }
+      const store = JSON.parse(localStorage.getItem(LOCAL_CRED) || '{}');
+      store[norm] = {pass: rec.pass, name: rec.name};
+      localStorage.setItem(LOCAL_CRED, JSON.stringify(store));
+    } catch(_) {}
+    return rec;
   }
-
-  // 3. Direct REST fallback — works even when sbClient has internal errors
-  if(!cfg) return null;
-  try {
-    const res = await fetch(
-      cfg.url + '/rest/v1/pw_credentials?select=pass,name&email=eq.' + encodeURIComponent(norm),
-      { headers: { 'apikey': cfg.key, 'Authorization': 'Bearer ' + cfg.key, 'Accept': 'application/json' } }
-    );
-    if(res.ok) {
-      const rows = await res.json();
-      if(Array.isArray(rows) && rows.length > 0) {
-        const rec = rows[0];
-        // Cache locally
-        try {
-          const store = JSON.parse(localStorage.getItem(LOCAL_CRED)||'{}');
-          store[norm] = {pass:rec.pass, name:rec.name};
-          localStorage.setItem(LOCAL_CRED, JSON.stringify(store));
-        } catch(_){}
-        return {pass:rec.pass, name:rec.name};
-      }
-    }
-  } catch(e) { console.error('getCredential REST failed:', e); }
-
-  return null; // truly not found
+  return null;
 }
 
 async function loadCredentials() {
-  // Try sbClient first, fall back to direct REST fetch (bypasses any client issues)
-  if(sbClient) {
-    try {
-      const {data,error} = await sbClient.from('pw_credentials').select('*');
-      if(!error) { setDBStatus('connected'); return data||[]; }
-    } catch(_) {}
+  if (_sbPaused) {
+    // Return from local emp list — no network needed
+    return getLocalEmps().map(e => ({email: e.email, pass: e.pass, name: e.name}));
   }
-  // Direct REST fallback — works independently of sbClient state
-  const cfg = getSBConfig();
-  if(!cfg) return [];
-  try {
-    const res = await fetch(cfg.url + '/rest/v1/pw_credentials?select=*', {
-      headers: { 'apikey': cfg.key, 'Authorization': 'Bearer ' + cfg.key }
-    });
-    if(res.ok) {
-      const data = await res.json();
-      setDBStatus('connected');
-      return Array.isArray(data) ? data : [];
-    }
-  } catch(e) { console.error('loadCredentials REST fallback failed:', e); }
-  // Don't flip dot to error — maybe a transient blip
-  return [];
+  const r = await sbRest('GET', 'pw_credentials', 'select=*');
+  if (r.ok && Array.isArray(r.data)) return r.data;
+  // Fallback to local
+  return getLocalEmps().map(e => ({email: e.email, pass: e.pass, name: e.name}));
 }
 
-function subscribeRealtime() {
-  // Disabled — realtime causes DataCloneError; polling handles updates
-}
-
-/* ═══════════════════════════════════════════════════════
-   URL-BASED INVITE AUTO-LOGIN
-   ═══════════════════════════════════════════════════════ */
+/* ══ INVITE URL ══ */
 function buildInviteUrl(email, pass, name) {
   const base = window.location.href.split('?')[0];
-  return `${base}?e=${encodeURIComponent(btoa(email))}&p=${encodeURIComponent(btoa(pass))}&n=${encodeURIComponent(btoa(name))}`;
+  return base + '?e=' + encodeURIComponent(btoa(email)) + '&p=' + encodeURIComponent(btoa(pass)) + '&n=' + encodeURIComponent(btoa(name));
 }
 
 async function handleInviteUrl() {
   const params = new URLSearchParams(window.location.search);
-  const e64=params.get('e'), p64=params.get('p'), n64=params.get('n');
-  if(!e64||!p64) return false;
+  const e64 = params.get('e'), p64 = params.get('p'), n64 = params.get('n');
+  if (!e64 || !p64) return false;
   try {
     const email = atob(decodeURIComponent(e64));
     const pass  = atob(decodeURIComponent(p64));
     const name  = n64 ? atob(decodeURIComponent(n64)) : email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
-    if(!email.endsWith('@pw.live')||email===MANAGER_EMAIL) return false;
+    if (!email.endsWith('@pw.live') || email === MANAGER_EMAIL) return false;
     await saveCredential(email, pass, name);
-    window.history.replaceState({},document.title,window.location.pathname);
-    showSplash(`Welcome, ${name.split(' ')[0]}! Signing you in…`);
-    await new Promise(r=>setTimeout(r,1200));
+    window.history.replaceState({}, document.title, window.location.pathname);
+    showSplash('Welcome, ' + name.split(' ')[0] + '! Signing you in…');
+    await new Promise(r => setTimeout(r, 1200));
     hideSplash();
     await doLoginSuccess({name, email, role:'employee'});
     return true;
-  } catch(e){ console.warn('Invite URL error:',e); return false; }
+  } catch(e) { console.warn('Invite URL error:', e); return false; }
 }
 
-/* ═══════════════════════════════════════════════════════
-   AUTH
-   ═══════════════════════════════════════════════════════ */
+/* ══ AUTH ══ */
 function selectRole(r) {
   selectedRole = r;
-  const re=$('rb-emp'), rm=$('rb-mgr');
-  const warn=$('mgr-warn'), he=$('hint-emp'), hm=$('hint-mgr');
-  if(r==='employee'){
-    re.className='role-btn active'; rm.className='role-btn';
-    if(warn)warn.style.display='none'; if(he)he.classList.remove('hidden'); if(hm)hm.classList.add('hidden');
+  const re = $('rb-emp'), rm = $('rb-mgr');
+  const warn = $('mgr-warn'), he = $('hint-emp'), hm = $('hint-mgr');
+  if (r === 'employee') {
+    re.className = 'role-btn active'; rm.className = 'role-btn';
+    if (warn) warn.style.display = 'none';
+    if (he) he.classList.remove('hidden');
+    if (hm) hm.classList.add('hidden');
   } else {
-    rm.className='role-btn active mgr'; re.className='role-btn';
-    if(warn)warn.style.display='block'; if(he)he.classList.add('hidden'); if(hm)hm.classList.remove('hidden');
+    rm.className = 'role-btn active mgr'; re.className = 'role-btn';
+    if (warn) warn.style.display = 'block';
+    if (he) he.classList.add('hidden');
+    if (hm) hm.classList.remove('hidden');
   }
 }
 
 async function doLogin() {
-  const raw  = $('email-input').value.trim();
-  const pass = $('pass-input').value;
-  const email= raw.includes('@') ? raw.toLowerCase() : raw.toLowerCase()+'@pw.live';
-  const err  = $('login-err');
+  const raw  = ($('email-input').value || '').trim();
+  const pass = ($('pass-input').value || '');
+  const email = raw.includes('@') ? raw.toLowerCase() : raw.toLowerCase() + '@pw.live';
 
-  if(!raw) { showErr('⚠ Enter your username.'); return; }
-  if(!email.endsWith('@pw.live')){ showErr('⚠ Only @pw.live accounts allowed.'); return; }
-  if(!pass){ showErr('⚠ Enter your password.'); return; }
+  if (!raw)  { showLoginErr('⚠ Enter your username.'); return; }
+  if (!email.endsWith('@pw.live')) { showLoginErr('⚠ Only @pw.live accounts allowed.'); return; }
+  if (!pass) { showLoginErr('⚠ Enter your password.'); return; }
 
-  if(selectedRole==='manager'){
-    if(email!==MANAGER_EMAIL){ showErr(`⚠ Manager access is restricted to ${MANAGER_EMAIL}.`); return; }
-    if(pass!==getMgrPass()){ showErr('⚠ Incorrect manager password.'); $('pass-input').value=''; return; }
-    err.classList.add('hidden');
+  if (selectedRole === 'manager') {
+    if (email !== MANAGER_EMAIL) { showLoginErr('⚠ Manager access restricted to ' + MANAGER_EMAIL); return; }
+    if (pass !== getMgrPass()) { showLoginErr('⚠ Incorrect manager password.'); $('pass-input').value = ''; return; }
+    $('login-err').classList.add('hidden');
     await doLoginSuccess({name:'Aditya Malik', email, role:'manager'});
     return;
   }
 
-  err.innerHTML='<span style="color:var(--amber)">Checking credentials…</span>';
-  err.classList.remove('hidden');
+  const errEl = $('login-err');
+  errEl.innerHTML = '<span style="color:var(--amber)">Checking credentials…</span>';
+  errEl.classList.remove('hidden');
+
   const cred = await getCredential(email);
-  if(!cred){
-    // Show a clear, actionable error with retry button
-    showErr(`⚠ Account not found for <b>${email}</b>.<br><br>
-<b>If your manager just added you:</b><br>
-• Use the magic link from your invite email (it auto-signs you in)<br>
-• Or wait 30 seconds and try again — Supabase sometimes needs a moment<br><br>
-<b>If you haven't received an invite email yet:</b><br>
-• Ask your manager (Aditya Malik) to send your invite from Settings`);
+  if (!cred) {
+    showLoginErr(
+      '⚠ Account not found for <b>' + email + '</b>.<br><br>' +
+      '<b>If your manager just added you:</b><br>' +
+      '• Use the magic link from your invite email<br>' +
+      '• Or wait 30 seconds and try again<br><br>' +
+      '<b>Haven\'t received an invite?</b><br>' +
+      '• Ask your manager to send your invite from Settings'
+    );
     return;
   }
-  if(pass !== cred.pass){
-    showErr('⚠ Incorrect password. Check your onboarding email.');
-    $('pass-input').value='';
+  if (pass !== cred.pass) {
+    showLoginErr('⚠ Incorrect password. Check your onboarding email.');
+    $('pass-input').value = '';
     return;
   }
-  err.classList.add('hidden');
-  const name = cred.name || email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+  errEl.classList.add('hidden');
+  const name = cred.name || email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g, c => c.toUpperCase());
   await doLoginSuccess({name, email, role:'employee'});
 }
 
-function showErr(msg){ const e=$('login-err'); e.innerHTML=msg; e.classList.remove('hidden'); }
-function showSplash(msg){ const s=$('splash'); s.style.display='flex'; setTxt('splash-msg',msg||'Loading…'); }
-function hideSplash(){ $('splash').style.display='none'; }
+function showLoginErr(msg) {
+  const e = $('login-err');
+  e.innerHTML = msg;
+  e.classList.remove('hidden');
+}
+function showSplash(msg) {
+  const s = $('splash');
+  s.style.display = 'flex';
+  setTxt('splash-msg', msg || 'Loading…');
+}
+function hideSplash() { $('splash').style.display = 'none'; }
 
 async function restoreSession() {
   try {
     const raw = sessionStorage.getItem(SS_KEY);
-    if(!raw) return false;
+    if (!raw) return false;
     const u = JSON.parse(raw);
-    if(!u||!u.email||!u.email.endsWith('@pw.live')) return false;
-    setTxt('splash-msg',`Welcome back, ${u.name.split(' ')[0]}!`);
-    if(u.role==='employee'){
+    if (!u || !u.email || !u.email.endsWith('@pw.live')) return false;
+    setTxt('splash-msg', 'Welcome back, ' + u.name.split(' ')[0] + '!');
+    if (u.role === 'employee') {
       const d = await loadFromSupabase(u.email);
-      if(d){
-        totalSeconds=d.totalSeconds||0; activeSeconds=d.activeSeconds||0;
-        idleSeconds=d.idleSeconds||0; sessionCount=d.sessionCount||0;
-        activityLog=d.activityLog||[]; qHistory=d.qHistory||[];
-        attendanceStatus=d.attendance||'present';
+      if (d) {
+        totalSeconds   = d.totalSeconds   || 0;
+        activeSeconds  = d.activeSeconds  || 0;
+        idleSeconds    = d.idleSeconds    || 0;
+        sessionCount   = d.sessionCount   || 0;
+        activityLog    = d.activityLog    || [];
+        qHistory       = d.qHistory       || [];
+        attendanceStatus = d.attendance   || 'present';
       }
     }
     await doLoginSuccess(u, true);
     return true;
-  } catch(_){ return false; }
+  } catch(_) { return false; }
 }
 
-async function doLoginSuccess(user, skipSave=false) {
+async function doLoginSuccess(user, skipSave) {
   currentUser = user;
-  if(!skipSave) {
-    try { sessionStorage.setItem(SS_KEY,JSON.stringify(user)); } catch(_){}
+  if (!skipSave) {
+    try { sessionStorage.setItem(SS_KEY, JSON.stringify(user)); } catch(_) {}
   }
   $('login-screen').style.display = 'none';
   $('app').style.display = 'flex';
 
-  const av=$('sb-av'); av.textContent=avI(user.name); av.style.background=avC(user.email);
+  const av = $('sb-av');
+  av.textContent = avI(user.name);
+  av.style.background = avC(user.email);
   setTxt('sb-name', user.name);
-  setTxt('sb-role', user.role==='manager'?'Manager · @pw.live':'Employee · @pw.live');
+  setTxt('sb-role', user.role === 'manager' ? 'Manager · @pw.live' : 'Employee · @pw.live');
   setTxt('my-email', user.email);
-  const ds = new Date().toLocaleDateString('en-IN',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
-  setTxt('topbar-date',ds); setTxt('today-date',ds);
-  setTxt('mgr-email-lbl', MANAGER_EMAIL); setTxt('mgr-email-warn', MANAGER_EMAIL);
-  setTxt('db-url-display', getSBConfig()?.url||'–');
+  const ds = new Date().toLocaleDateString('en-IN', {weekday:'short', month:'short', day:'numeric', year:'numeric'});
+  setTxt('topbar-date', ds);
+  setTxt('today-date', ds);
+  setTxt('mgr-email-lbl', MANAGER_EMAIL);
+  setTxt('mgr-email-warn', MANAGER_EMAIL);
+  setTxt('db-url-display', (getSBConfig() || {}).url || '–');
 
-  if(user.role==='employee'){
-    if(isSunday()) attendanceStatus='off';
-    updateTimerDisplay(); renderActivity(); renderQChips(); renderAttBtn(); renderTabBars();
-    $('nav-emp').classList.remove('hidden'); $('nav-mgr').classList.add('hidden');
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  if (user.role === 'employee') {
+    if (isSunday()) attendanceStatus = 'off';
+    updateTimerDisplay();
+    renderActivity();
+    renderQChips();
+    renderAttBtn();
+    renderTabBars();
+    $('nav-emp').classList.remove('hidden');
+    $('nav-mgr').classList.add('hidden');
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     $('page-tracker').classList.add('active');
-    renderGreeting('emp-',user.name);
-    startWatchdog(); startIdleDetect(); setupAway();
+    document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+    const firstNavItem = document.querySelector('#nav-emp .sb-item');
+    if (firstNavItem) firstNavItem.classList.add('active');
+    renderGreeting('emp-', user.name);
+    startWatchdog();
+    startIdleDetect();
+    setupAway();
   } else {
-    $('nav-emp').classList.add('hidden'); $('nav-mgr').classList.remove('hidden');
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    $('nav-emp').classList.add('hidden');
+    $('nav-mgr').classList.remove('hidden');
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     $('page-overview').classList.add('active');
-    renderGreeting('mgr-',user.name);
-    subscribeRealtime();
+    document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+    const firstMgrItem = document.querySelector('#nav-mgr .sb-item');
+    if (firstMgrItem) firstMgrItem.classList.add('active');
+    renderGreeting('mgr-', user.name);
     startMgrPolling();
     await loadDashboard();
-    setTimeout(()=>initCharts(),150);
-    setTimeout(()=>refreshEjsUI(),200);
-    // Sync employee list from Supabase into local store on login
-    syncEmpsFromSupabase().then(()=>{ if($('emp-list')) renderEmpList(); });
+    setTimeout(() => initCharts(), 150);
+    setTimeout(() => refreshEjsUI(), 200);
+    syncEmpsFromSupabase().then(() => { if ($('emp-list')) renderEmpList(); });
   }
-  // Login succeeded = Supabase is reachable. Mark connected immediately.
-  // No polling interval needed — save/load operations update the dot live.
   setDBStatus('connected');
 }
 
 function logout() {
-  if(tracking) stopTracking();
-  if(realtimeSub){ try{ sbClient.removeChannel(realtimeSub); }catch(_){} realtimeSub=null; }
-  // (no health-check interval to clear)
-  try{ sessionStorage.removeItem(SS_KEY); }catch(_){}
-  currentUser=null; tracking=false;
-  totalSeconds=activeSeconds=idleSeconds=sessionCount=0;
-  activityLog=[]; qHistory=[]; activeDomain=null;
-  $('app').style.display='none';
-  $('login-screen').style.display='flex';
-  $('email-input').value=''; $('pass-input').value='';
+  if (tracking) stopTracking();
+  try { sessionStorage.removeItem(SS_KEY); } catch(_) {}
+  currentUser = null; tracking = false;
+  totalSeconds = activeSeconds = idleSeconds = sessionCount = 0;
+  activityLog = []; qHistory = []; activeDomain = null;
+  if (mgrPollTimer) { clearInterval(mgrPollTimer); mgrPollTimer = null; }
+  if (workWatchdog)  { clearInterval(workWatchdog);  workWatchdog = null; }
+  if (idleDetectInterval) { clearInterval(idleDetectInterval); idleDetectInterval = null; }
+  $('app').style.display = 'none';
+  $('login-screen').style.display = 'flex';
+  $('email-input').value = '';
+  $('pass-input').value = '';
+  selectedRole = 'employee';
+  selectRole('employee');
 }
 
 /* ══ NAVIGATION ══ */
-function showPage(page,el){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  $('page-'+page).classList.add('active');
-  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
-  if(el) el.classList.add('active');
-  if(['overview','employees','reports'].includes(page)){ loadDashboard(); setTimeout(()=>initCharts(),80); }
-  if(page==='settings'){
-    // First show local data instantly, then sync from Supabase and refresh
+function showPage(page, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  $('page-' + page).classList.add('active');
+  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+  if (el) el.classList.add('active');
+  if (['overview','employees','reports'].includes(page)) {
+    loadDashboard();
+    setTimeout(() => initCharts(), 80);
+  }
+  if (page === 'settings') {
     renderEmpList();
-    syncEmpsFromSupabase().then(()=>renderEmpList());
+    syncEmpsFromSupabase().then(() => renderEmpList());
+    refreshEjsUI();
+    // Auto-run diagnostics so manager sees live status immediately
+    setTimeout(() => runDiagnostics(), 200);
   }
 }
 
 /* ══ FLASH BANNER ══ */
-function flash(html, type='amber'){
-  const b=$('flash-banner'); if(!b)return;
-  b.innerHTML=html;
-  const st={amber:'background:var(--amberbg);border:1px solid var(--amberborder);color:var(--amber)',
-    green:'background:var(--greenbg);border:1px solid var(--greenborder);color:var(--green)',
-    accent:'background:var(--accentbg);border:1px solid var(--accentbg2);color:var(--accent)',
-    red:'background:var(--redbg);border:1px solid var(--redborder);color:var(--red)'};
-  b.style.cssText=`display:block;padding:9px 14px;border-radius:var(--radius2);font-size:13px;font-weight:600;${st[type]||st.amber}`;
-  clearTimeout(b._t); b._t=setTimeout(()=>b.style.display='none',6000);
+function flash(html, type) {
+  type = type || 'amber';
+  const b = $('flash-banner');
+  if (!b) return;
+  b.innerHTML = html;
+  const st = {
+    amber:  'background:var(--amberbg);border:1px solid var(--amberborder);color:var(--amber)',
+    green:  'background:var(--greenbg);border:1px solid var(--greenborder);color:var(--green)',
+    accent: 'background:var(--accentbg);border:1px solid var(--accentbg2);color:var(--accent)',
+    red:    'background:var(--redbg);border:1px solid var(--redborder);color:var(--red)'
+  };
+  b.style.cssText = 'display:block;padding:9px 14px;border-radius:var(--radius2);font-size:13px;font-weight:600;' + (st[type] || st.amber);
+  clearTimeout(b._t);
+  b._t = setTimeout(() => b.style.display = 'none', 6000);
 }
 
 /* ══ ATTENDANCE ══ */
-const attLabel = s=>({present:'Present ✅',halfday:'Half Day 🕐',leave:'On Leave 🏖️',off:'Off 🔴'}[s]||s);
-const attColor = s=>({present:'var(--green)',halfday:'var(--amber)',leave:'var(--red)',off:'var(--text3)'}[s]||'var(--text3)');
-function getTargetMins(){ if(attendanceStatus==='leave'||attendanceStatus==='off')return 0; return attendanceStatus==='halfday'?225:450; }
-function computeScore(){
-  const t=getTargetMins(); if(!t)return null;
-  return Math.min(100,Math.round(((totalSeconds/60)+totalQToday()*5)*100/t));
+const attLabel = s => ({present:'Present ✅', halfday:'Half Day 🕐', leave:'On Leave 🏖️', off:'Off 🔴'}[s] || s);
+const attColor = s => ({present:'var(--green)', halfday:'var(--amber)', leave:'var(--red)', off:'var(--text3)'}[s] || 'var(--text3)');
+
+function setAttendance(s) {
+  if (isSunday() && s !== 'off') { flash('🔴 Today is Sunday.', 'amber'); return; }
+  if (tracking && (s === 'leave' || s === 'off')) stopTracking();
+  attendanceStatus = s;
+  renderAttBtn();
+  updateTimerDisplay();
+  saveToSupabase();
 }
-function setAttendance(s){
-  if(isSunday()&&s!=='off'){ flash('🔴 Today is Sunday.','amber'); return; }
-  if(tracking&&(s==='leave'||s==='off')) stopTracking();
-  attendanceStatus=s; renderAttBtn(); updateTimerDisplay(); saveToSupabase();
-}
-function renderAttBtn(){
-  ['present','halfday','leave','off'].forEach(s=>{
-    const b=$('att-'+s); if(!b) return;
-    const a=attendanceStatus===s;
-    b.style.background=a?attColor(s):'var(--bg3)';
-    b.style.color=a?'#fff':'var(--text2)';
-    b.style.borderColor=a?attColor(s):'var(--border)';
-    b.style.fontWeight=a?'700':'500';
+
+function renderAttBtn() {
+  ['present','halfday','leave','off'].forEach(s => {
+    const b = $('att-' + s); if (!b) return;
+    const a = attendanceStatus === s;
+    b.style.background  = a ? attColor(s) : 'var(--bg3)';
+    b.style.color       = a ? '#fff' : 'var(--text2)';
+    b.style.borderColor = a ? attColor(s) : 'var(--border)';
+    b.style.fontWeight  = a ? '700' : '500';
   });
-  const sl=$('att-status-lbl'); if(sl){sl.textContent=attLabel(attendanceStatus);sl.style.color=attColor(attendanceStatus);}
-  // Also update topbar attendance tag
-  const tag=$('att-topbar-tag');
-  if(tag){
-    tag.textContent=attLabel(attendanceStatus);
-    const colorMap={present:'var(--green)',halfday:'var(--amber)',leave:'var(--red)',off:'var(--text3)'};
-    const bgMap={present:'var(--greenbg)',halfday:'var(--amberbg)',leave:'var(--redbg)',off:'var(--bg3)'};
-    const borderMap={present:'var(--greenborder)',halfday:'var(--amberborder)',leave:'var(--redborder)',off:'var(--border)'};
-    tag.style.color=colorMap[attendanceStatus]||'var(--text3)';
-    tag.style.background=bgMap[attendanceStatus]||'var(--bg3)';
-    tag.style.border='1px solid '+(borderMap[attendanceStatus]||'var(--border)');
+  const sl = $('att-status-lbl');
+  if (sl) { sl.textContent = attLabel(attendanceStatus); sl.style.color = attColor(attendanceStatus); }
+  const tag = $('att-topbar-tag');
+  if (tag) {
+    tag.textContent = attLabel(attendanceStatus);
+    const colorMap  = {present:'var(--green)',  halfday:'var(--amber)', leave:'var(--red)',   off:'var(--text3)'};
+    const bgMap     = {present:'var(--greenbg)', halfday:'var(--amberbg)',leave:'var(--redbg)', off:'var(--bg3)'};
+    const borderMap = {present:'var(--greenborder)',halfday:'var(--amberborder)',leave:'var(--redborder)',off:'var(--border)'};
+    tag.style.color      = colorMap[attendanceStatus]  || 'var(--text3)';
+    tag.style.background = bgMap[attendanceStatus]     || 'var(--bg3)';
+    tag.style.border     = '1px solid ' + (borderMap[attendanceStatus] || 'var(--border)');
   }
 }
 
-/* ══ QUESTIONS ══ */
-function totalQToday(){ return qHistory.reduce((s,e)=>s+(parseInt(e.count)||0),0); }
-function addQ(){
-  const cnt=parseInt($('q-count').value)||0;
-  if(cnt<=0){alert('Enter at least 1.');return;}
-  const note=$('q-note').value.trim();
-  const now=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
-  qHistory.push({count:cnt,note:note||'General',time:now,ts:Date.now()});
-  $('q-count').value=''; $('q-note').value='';
-  renderQChips(); saveToSupabase();
-}
-function renderQChips(){
-  const c=$('q-chips'); if(!c)return;
-  const total=totalQToday();
-  setTxt('q-total',total); setTxt('my-questions',total);
-  if(!qHistory.length){c.innerHTML='<span style="font-size:12px;color:var(--text3)">No entries yet</span>';return;}
-  c.innerHTML=qHistory.slice().reverse().map(e=>`<div class="q-chip"><span class="q-chip-num">${e.count}</span><span>${e.note}</span><span style="color:var(--text3);font-size:10px">${e.time}</span></div>`).join('')+`<div class="q-total">Total: ${total}</div>`;
-}
-
 /* ══ TIMER DISPLAY ══ */
-function updateTimerDisplay(){
-  const h=Math.floor(totalSeconds/3600),m=Math.floor((totalSeconds%3600)/60),s=totalSeconds%60;
-  setTxt('timer',`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`);
-  setTxt('pill-active',fmtS(activeSeconds)); setTxt('pill-idle',fmtS(idleSeconds));
-  setTxt('stat-total',fmtS(totalSeconds)); setTxt('stat-idle',fmtS(idleSeconds)); setTxt('my-total',fmtS(totalSeconds));
-  const idlePct=totalSeconds>0?Math.round((idleSeconds/totalSeconds)*100):0;
-  const iss=$('stat-idle-sub'); if(iss)iss.textContent=`${idlePct}% of session`;
-  const sc=computeScore();
-  const scEl=$('stat-score');
-  if(sc===null){setTxt('stat-score','–');if(scEl)scEl.style.color='var(--text3)';}
-  else{setTxt('stat-score',sc+'%');if(scEl)scEl.style.color=sc>=80?'var(--green)':sc>=60?'var(--amber)':'var(--red)';}
-  const pct=Math.min(100,sc||0);
-  const pf=$('prog-fill'); if(pf)pf.style.width=pct+'%';
-  const pl=$('prog-label');
-  if(pl){if(attendanceStatus==='leave'||attendanceStatus==='off')pl.textContent=attLabel(attendanceStatus);
-    else{const tgt=getTargetMins();pl.textContent=`${Math.round(totalSeconds/60)}m + ${totalQToday()*5}m bonus = ${pct}% of ${tgt}m`;}}
+function updateTimerDisplay() {
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
+  const p = n => String(n).padStart(2, '0');
+  setTxt('timer', p(h) + ':' + p(m) + ':' + p(s));
+  setTxt('pill-active', fmtS(activeSeconds));
+  setTxt('pill-idle',   fmtS(idleSeconds));
+  setTxt('stat-total',  fmtS(totalSeconds));
+  setTxt('stat-idle',   fmtS(idleSeconds));
+  setTxt('my-total',    fmtS(totalSeconds));
+  const idlePct = totalSeconds > 0 ? Math.round((idleSeconds / totalSeconds) * 100) : 0;
+  const iss = $('stat-idle-sub');
+  if (iss) iss.textContent = idlePct + '% of session';
+  const sc = computeScore();
+  const scEl = $('stat-score');
+  if (sc === null) {
+    setTxt('stat-score', '–');
+    if (scEl) scEl.style.color = 'var(--text3)';
+  } else {
+    setTxt('stat-score', sc + '%');
+    if (scEl) scEl.style.color = sc >= 80 ? 'var(--green)' : sc >= 60 ? 'var(--amber)' : 'var(--red)';
+  }
+  const pct = Math.min(100, sc || 0);
+  const pf = $('prog-fill');
+  if (pf) pf.style.width = pct + '%';
+  const pl = $('prog-label');
+  if (pl) {
+    if (attendanceStatus === 'leave' || attendanceStatus === 'off') {
+      pl.textContent = attLabel(attendanceStatus);
+    } else {
+      const tgt = getTargetMins();
+      pl.textContent = Math.round(totalSeconds/60) + 'm + ' + totalQToday()*5 + 'm bonus = ' + pct + '% of ' + tgt + 'm';
+    }
+  }
 }
 
 /* ══ ACTIVITY LIST ══ */
-function renderActivity(){
-  const list=$('activity-list'); if(!list)return;
-  const CC={work:'#059669',neutral:'#d97706',distract:'#dc2626'};
-  if(!activityLog.length){list.innerHTML='<div style="padding:14px 16px;font-size:13px;color:var(--text3)">No activity yet.</div>';return;}
-  list.innerHTML=[...activityLog].reverse().map(a=>`<div style="display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--border);font-size:13px">
-    <div style="width:7px;height:7px;border-radius:50%;background:${CC[a.cat]||'#888'};flex-shrink:0"></div>
-    <div style="flex:1;font-weight:500">${a.domain}</div>
-    <span class="badge cat-${a.cat==='distract'?'distract':a.cat}" style="font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600">${a.cat==='distract'?'Distracting':a.cat[0].toUpperCase()+a.cat.slice(1)}</span>
-    <div style="color:var(--text3);font-size:12px">${a.time}</div>
-  </div>`).join('');
+function renderActivity() {
+  const list = $('activity-list'); if (!list) return;
+  const CC = {work:'#059669', neutral:'#d97706', distract:'#dc2626'};
+  if (!activityLog.length) {
+    list.innerHTML = '<div style="padding:14px 16px;font-size:13px;color:var(--text3)">No activity yet.</div>';
+    return;
+  }
+  list.innerHTML = activityLog.slice().reverse().map(a =>
+    '<div style="display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--border);font-size:13px">' +
+    '<div style="width:7px;height:7px;border-radius:50%;background:' + (CC[a.cat]||'#888') + ';flex-shrink:0"></div>' +
+    '<div style="flex:1;font-weight:500">' + a.domain + '</div>' +
+    '<span class="badge cat-' + (a.cat==='distract'?'distract':a.cat) + '" style="font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600">' + (a.cat==='distract'?'Distracting':a.cat[0].toUpperCase()+a.cat.slice(1)) + '</span>' +
+    '<div style="color:var(--text3);font-size:12px">' + a.time + '</div>' +
+    '</div>'
+  ).join('');
 }
 
 /* ══ TAB BARS ══ */
-function renderTabBars(){
-  const chart=$('tab-bars'); if(!chart)return;
-  if(!activityLog.length){chart.innerHTML='<div style="font-size:12px;color:var(--text3)">No tabs logged.</div>';setTxt('tab-badge','0 tabs');return;}
-  const total=activityLog.reduce((s,a)=>s+(a.timeSeconds||0),0);
-  const sorted=[...activityLog].sort((a,b)=>(b.timeSeconds||0)-(a.timeSeconds||0));
-  const CC={work:'var(--green)',neutral:'var(--amber)',distract:'var(--red)'};
-  chart.innerHTML=sorted.map(a=>{
-    const pct=total>0?Math.round(((a.timeSeconds||0)/total)*100):0;
-    const isAct=a.domain===activeDomain, col=CC[a.cat]||'var(--accent)';
-    const safeD=a.domain.replace(/'/g,"\\'");
-    return`<div style="margin-bottom:8px">
-      <div style="display:flex;align-items:center;gap:7px;margin-bottom:3px">
-        <div style="width:6px;height:6px;border-radius:50%;background:${col};flex-shrink:0${isAct?';box-shadow:0 0 0 3px rgba(99,102,241,.3)':''}"></div>
-        <span style="font-size:12px;font-weight:${isAct?700:500};flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px">${a.domain}</span>
-        ${isAct?'<span style="background:var(--accentbg);color:var(--accent);font-size:9px;padding:1px 5px;border-radius:6px;font-weight:700">●</span>':''}
-        <span style="font-size:11px;font-weight:700;margin-left:auto">${a.time}</span>
-        <span style="font-size:10px;color:var(--text3);min-width:24px;text-align:right">${pct}%</span>
-        <button onclick="setActiveTab('${safeD}')" style="background:${isAct?'var(--accent)':'var(--bg3)'};color:${isAct?'white':'var(--text3)'};border:1px solid ${isAct?'var(--accent)':'var(--border)'};border-radius:5px;padding:1px 6px;font-size:10px;cursor:pointer">${isAct?'✓':'Set'}</button>
-        <button onclick="removeTab('${safeD}')" style="background:var(--redbg);color:var(--red);border:1px solid var(--redborder);border-radius:5px;padding:1px 5px;font-size:10px;cursor:pointer">✕</button>
-      </div>
-      <div style="height:5px;background:var(--bg4);border-radius:3px;overflow:hidden">
-        <div style="width:${pct}%;height:100%;background:${col};border-radius:3px;transition:width .5s"></div>
-      </div>
-    </div>`;
+function renderTabBars() {
+  const chart = $('tab-bars'); if (!chart) return;
+  if (!activityLog.length) {
+    chart.innerHTML = '<div style="font-size:12px;color:var(--text3)">No tabs logged.</div>';
+    setTxt('tab-badge', '0 tabs');
+    return;
+  }
+  const total = activityLog.reduce((s, a) => s + (a.timeSeconds || 0), 0);
+  const sorted = activityLog.slice().sort((a, b) => (b.timeSeconds||0) - (a.timeSeconds||0));
+  const CC = {work:'var(--green)', neutral:'var(--amber)', distract:'var(--red)'};
+  chart.innerHTML = sorted.map(a => {
+    const pct = total > 0 ? Math.round(((a.timeSeconds||0) / total) * 100) : 0;
+    const isAct = a.domain === activeDomain;
+    const col = CC[a.cat] || 'var(--accent)';
+    const safeD = (a.domain || '').replace(/'/g, "\\'");
+    return '<div style="margin-bottom:8px">' +
+      '<div style="display:flex;align-items:center;gap:7px;margin-bottom:3px">' +
+      '<div style="width:6px;height:6px;border-radius:50%;background:' + col + ';flex-shrink:0"></div>' +
+      '<span style="font-size:12px;font-weight:' + (isAct?700:500) + ';flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px">' + a.domain + '</span>' +
+      (isAct ? '<span style="background:var(--accentbg);color:var(--accent);font-size:9px;padding:1px 5px;border-radius:6px;font-weight:700">●</span>' : '') +
+      '<span style="font-size:11px;font-weight:700;margin-left:auto">' + a.time + '</span>' +
+      '<span style="font-size:10px;color:var(--text3);min-width:24px;text-align:right">' + pct + '%</span>' +
+      '<button onclick="setActiveTab(\'' + safeD + '\')" style="background:' + (isAct?'var(--accent)':'var(--bg3)') + ';color:' + (isAct?'white':'var(--text3)') + ';border:1px solid ' + (isAct?'var(--accent)':'var(--border)') + ';border-radius:5px;padding:1px 6px;font-size:10px;cursor:pointer">' + (isAct?'✓':'Set') + '</button>' +
+      '<button onclick="removeTab(\'' + safeD + '\')" style="background:var(--redbg);color:var(--red);border:1px solid var(--redborder);border-radius:5px;padding:1px 5px;font-size:10px;cursor:pointer">✕</button>' +
+      '</div>' +
+      '<div style="height:5px;background:var(--bg4);border-radius:3px;overflow:hidden">' +
+      '<div style="width:' + pct + '%;height:100%;background:' + col + ';border-radius:3px;transition:width .5s"></div>' +
+      '</div></div>';
   }).join('');
-  setTxt('tab-badge',`${sorted.length} tab${sorted.length>1?'s':''} · ${Math.round(total/60)}m`);
+  setTxt('tab-badge', sorted.length + ' tab' + (sorted.length !== 1 ? 's' : '') + ' · ' + Math.round(total/60) + 'm');
 }
 
 /* ══ TRACKING ══ */
-function toggleTracking(){ if(!tracking)startTracking();else stopTracking(); }
-/* Show a persistent error message inside the tracker hero so employee can READ it */
-function showTrackBlock(msg, type='amber'){
+function toggleTracking() { if (!tracking) startTracking(); else stopTracking(); }
+
+function showTrackMsg(msg, type) {
+  type = type || 'amber';
   const sub = $('timer-sub');
-  if(sub){
-    sub.innerHTML = `<span style="color:${type==='red'?'var(--red)':type==='green'?'var(--green)':'var(--amber)'};font-weight:700;font-size:13px">${msg}</span>`;
-    setTimeout(()=>{ if(sub) sub.textContent = tracking?'Session active — log your tabs below':'Start tracking to begin your session'; }, 8000);
+  if (sub) {
+    const color = type==='red' ? 'var(--red)' : type==='green' ? 'var(--green)' : 'var(--amber)';
+    sub.innerHTML = '<span style="color:' + color + ';font-weight:700;font-size:13px">' + msg + '</span>';
+    setTimeout(() => {
+      if (sub) sub.textContent = tracking ? 'Session active — log your tabs below' : 'Start tracking to begin your session';
+    }, 8000);
   }
   flash(msg, type);
 }
 
-function startTracking(){
-  if(attendanceStatus==='leave'){
-    showTrackBlock('🏖️ You are marked On Leave. Change attendance above to start tracking.','red'); return;
+function startTracking() {
+  // Check attendance
+  if (attendanceStatus === 'leave') {
+    showTrackMsg('🏖️ You are marked On Leave. Change attendance to start tracking.', 'red');
+    return;
   }
-  if(attendanceStatus==='off'){
-    showTrackBlock('🔴 Marked as Off / Holiday. Change attendance above to start tracking.','amber'); return;
+  if (attendanceStatus === 'off') {
+    showTrackMsg('🔴 Marked as Off / Holiday. Change attendance to start tracking.', 'amber');
+    return;
   }
-  // Work hours check — permissive: if IST can't be determined, allow tracking
-  const istHour = getIST().getHours();
-  if(istHour < 9 || istHour >= 21){
-    showTrackBlock(`⛔ Tracking is available 9 AM–9 PM IST. Current IST time: ${String(istHour).padStart(2,'0')}:${String(getIST().getMinutes()).padStart(2,'0')}. Please try again during work hours.`,'amber'); return;
+  // Work hours check — warn but allow (employees may work outside normal hours)
+  const ist = getIST();
+  const istHour = ist.getHours();
+  if (istHour < 9 || istHour >= 21) {
+    showTrackMsg(
+      '⛔ Tracking is available 9 AM–9 PM IST. Current time: ' +
+      String(istHour).padStart(2,'0') + ':' + String(ist.getMinutes()).padStart(2,'0') + ' IST',
+      'amber'
+    );
+    return;
   }
-  tracking=true; sessionCount++; lastActivity=Date.now(); isIdle=false; hiddenSince=null;
-  $('track-btn').className='track-btn stop'; setTxt('track-btn-txt','Stop tracking');
-  $('timer').classList.add('running'); setTxt('timer-sub','Session active — log your tabs below');
-  $('pulse-dot').classList.add('live'); $('pill-live').classList.remove('hidden');
-  $('tracking-tag').className='tag tag-live'; $('tracking-tag').textContent='● Tracking';
+
+  tracking = true;
+  sessionCount++;
+  lastActivity = Date.now();
+  isIdle = false;
+  hiddenSince = null;
+
+  const btn = $('track-btn');
+  btn.className = 'track-btn stop';
+  setTxt('track-btn-txt', 'Stop tracking');
+  $('timer').classList.add('running');
+  setTxt('timer-sub', 'Session active — log your tabs below');
+  $('pulse-dot').classList.add('live');
+  $('pill-live').classList.remove('hidden');
+  $('tracking-tag').className = 'tag tag-live';
+  $('tracking-tag').textContent = '● Tracking';
   $('tab-card').classList.remove('hidden');
-  timerInterval=setInterval(()=>{
-    // Only auto-stop if we can reliably confirm it's past 9 PM (not just unknown)
+
+  timerInterval = setInterval(function() {
+    // Auto-stop at 9 PM
     try {
-      const h = getIST().getHours();
-      if(h >= 21) { stopTracking(); flash('🕘 9 PM IST — tracking auto-stopped. Great work!','green'); return; }
-    } catch(_) {} // if time check fails, keep tracking
+      if (getIST().getHours() >= 21) {
+        stopTracking();
+        flash('🕘 9 PM IST — tracking auto-stopped. Great work!', 'green');
+        return;
+      }
+    } catch(_) {}
+
     totalSeconds++;
-    if(isIdle)idleSeconds++;else activeSeconds++;
-    if(activeDomain&&!isIdle){
-      const e=activityLog.find(a=>a.domain===activeDomain);
-      if(e){e.timeSeconds=(e.timeSeconds||0)+1;e.time=secToMin(e.timeSeconds);}
-      if(totalSeconds%15===0)renderTabBars();
+    if (isIdle) idleSeconds++; else activeSeconds++;
+
+    if (activeDomain && !isIdle) {
+      const e = activityLog.find(a => a.domain === activeDomain);
+      if (e) {
+        e.timeSeconds = (e.timeSeconds || 0) + 1;
+        e.time = secToMin(e.timeSeconds);
+      }
+      if (totalSeconds % 15 === 0) renderTabBars();
     }
+
     updateTimerDisplay();
-    if(totalSeconds%5===0) saveToSupabase();
-  },1000);
+
+    if (totalSeconds % 5 === 0) saveToSupabase();
+  }, 1000);
+
   saveToSupabase();
 }
-function stopTracking(){
-  tracking=false; clearInterval(timerInterval); timerInterval=null;
-  if(awayTabTimer){clearInterval(awayTabTimer);awayTabTimer=null;}
-  activeDomain=null; awayStart=null; awayTabDomain=null;
-  $('track-btn').className='track-btn start'; setTxt('track-btn-txt','Start tracking');
-  $('timer').classList.remove('running'); setTxt('timer-sub','Session stopped — data saved ✓');
-  $('pulse-dot').classList.remove('live'); $('pill-live').classList.add('hidden');
-  $('tracking-tag').className='tag tag-idle'; $('tracking-tag').textContent='● Idle';
-  renderTabBars(); saveToSupabase();
+
+function stopTracking() {
+  tracking = false;
+  clearInterval(timerInterval);
+  timerInterval = null;
+  activeDomain = null;
+  awayStart = null;
+
+  const btn = $('track-btn');
+  if (btn) btn.className = 'track-btn start';
+  setTxt('track-btn-txt', 'Start tracking');
+  const timerEl = $('timer');
+  if (timerEl) timerEl.classList.remove('running');
+  setTxt('timer-sub', 'Session stopped — data saved ✓');
+  const pd = $('pulse-dot');
+  if (pd) pd.classList.remove('live');
+  const pl = $('pill-live');
+  if (pl) pl.classList.add('hidden');
+  const tt = $('tracking-tag');
+  if (tt) { tt.className = 'tag tag-idle'; tt.textContent = '● Idle'; }
+
+  renderTabBars();
+  saveToSupabase();
 }
 
 /* ══ DOMAIN LOGGING ══ */
-function logDomain(){
-  const inp=$('domain-inp');
-  const raw=(inp?inp.value.trim():'').toLowerCase().replace(/^https?:\/\//,'').replace(/^www\./,'').replace(/\/.*/,'').split('?')[0].trim();
-  if(!raw)return;
-  const minsEl=$('domain-mins'), catEl=$('cat-sel');
-  const mins=(minsEl&&minsEl.value?parseInt(minsEl.value):null)||1;
-  const cat=(catEl?catEl.value:null)||catD(raw);
-  const seconds=mins*60;
-  const ex=activityLog.find(a=>a.domain===raw);
-  if(ex){ex.timeSeconds=(ex.timeSeconds||0)+seconds;ex.time=secToMin(ex.timeSeconds);ex.cat=cat;}
-  else activityLog.push({domain:raw,cat,timeSeconds:seconds,time:secToMin(seconds)});
-  activeDomain=raw;
-  if(inp)inp.value=''; if(minsEl)minsEl.value=''; if(catEl)catEl.value='work';
-  renderActivity(); renderTabBars(); saveToSupabase();
+function logDomain() {
+  const inp = $('domain-inp');
+  const raw = ((inp ? inp.value : '') || '').trim()
+    .toLowerCase()
+    .replace(/^https?:\/\//,'')
+    .replace(/^www\./,'')
+    .replace(/\/.*/,'')
+    .split('?')[0]
+    .trim();
+  if (!raw) return;
+  const minsEl = $('domain-mins'), catEl = $('cat-sel');
+  const mins = (minsEl && minsEl.value ? parseInt(minsEl.value) : null) || 1;
+  const cat  = (catEl ? catEl.value : null) || catD(raw);
+  const seconds = mins * 60;
+  const ex = activityLog.find(a => a.domain === raw);
+  if (ex) {
+    ex.timeSeconds = (ex.timeSeconds || 0) + seconds;
+    ex.time = secToMin(ex.timeSeconds);
+    ex.cat  = cat;
+  } else {
+    activityLog.push({domain: raw, cat, timeSeconds: seconds, time: secToMin(seconds)});
+  }
+  activeDomain = raw;
+  if (inp) inp.value = '';
+  if (minsEl) minsEl.value = '';
+  if (catEl) catEl.value = 'work';
+  renderActivity();
+  renderTabBars();
+  saveToSupabase();
 }
-function setActiveTab(d){ activeDomain=(activeDomain===d)?null:d; renderTabBars(); }
-function removeTab(d){ activityLog=activityLog.filter(a=>a.domain!==d); if(activeDomain===d)activeDomain=null; renderActivity();renderTabBars();saveToSupabase(); }
+function setActiveTab(d) { activeDomain = (activeDomain === d) ? null : d; renderTabBars(); }
+function removeTab(d) {
+  activityLog = activityLog.filter(a => a.domain !== d);
+  if (activeDomain === d) activeDomain = null;
+  renderActivity();
+  renderTabBars();
+  saveToSupabase();
+}
 
 /* ══ IDLE DETECTION ══ */
-function startIdleDetect(){
+function startIdleDetect() {
   clearInterval(idleDetectInterval);
-  const reset=()=>{ lastActivity=Date.now(); hiddenSince=null; if(isIdle)wakeIdle(); };
-  ['mousemove','mousedown','keydown','touchstart','scroll','click'].forEach(ev=>document.addEventListener(ev,reset,{passive:true}));
-  document.addEventListener('visibilitychange',()=>{
-    if(document.hidden){if(hiddenSince===null)hiddenSince=Date.now();}
-    else{hiddenSince=null;reset();}
+  const reset = () => {
+    lastActivity = Date.now();
+    hiddenSince = null;
+    if (isIdle) wakeIdle();
+  };
+  ['mousemove','mousedown','keydown','touchstart','scroll','click'].forEach(ev =>
+    document.addEventListener(ev, reset, {passive: true})
+  );
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { if (hiddenSince === null) hiddenSince = Date.now(); }
+    else { hiddenSince = null; reset(); }
   });
-  idleDetectInterval=setInterval(()=>{
-    if(!tracking)return;
-    if(Date.now()-lastActivity>3*60*1000&&!isIdle)goIdle();
-    if(hiddenSince&&Date.now()-hiddenSince>30000&&!isIdle)goIdle();
-  },5000);
+  idleDetectInterval = setInterval(() => {
+    if (!tracking) return;
+    if (Date.now() - lastActivity > 3 * 60 * 1000 && !isIdle) goIdle();
+    if (hiddenSince && Date.now() - hiddenSince > 30000 && !isIdle) goIdle();
+  }, 5000);
 }
-function goIdle(){ isIdle=true; const t=$('tracking-tag'); if(t){t.className='tag tag-idle';t.textContent='💤 Idle';} }
-function wakeIdle(){ isIdle=false; const t=$('tracking-tag'); if(t&&tracking){t.className='tag tag-live';t.textContent='● Tracking';} }
+function goIdle() {
+  isIdle = true;
+  const t = $('tracking-tag');
+  if (t) { t.className = 'tag tag-idle'; t.textContent = '💤 Idle'; }
+}
+function wakeIdle() {
+  isIdle = false;
+  const t = $('tracking-tag');
+  if (t && tracking) { t.className = 'tag tag-live'; t.textContent = '● Tracking'; }
+}
 
-/* ══ WORK HOURS WATCHDOG ══ */
-function startWatchdog(){
+/* ══ WATCHDOG ══ */
+function startWatchdog() {
   clearInterval(workWatchdog);
-  let hb=0;
-  workWatchdog=setInterval(()=>{
-    const d=getIST(),h=d.getHours(),m=d.getMinutes(),s=d.getSeconds();
-    if(h===21&&m===0&&s===0&&tracking){stopTracking();flash('🕘 9 PM IST — tracking stopped. Great work!','green');}
-    if(h===0&&m===0&&s===0&&currentUser){
-      totalSeconds=activeSeconds=idleSeconds=sessionCount=0;
-      activityLog=[]; qHistory=[]; activeDomain=null;
-      attendanceStatus=isSunday()?'off':'present';
-      updateTimerDisplay();renderActivity();renderQChips();renderAttBtn();renderTabBars();
+  workWatchdog = setInterval(() => {
+    const d = getIST(), h = d.getHours(), m = d.getMinutes(), s = d.getSeconds();
+    if (h === 21 && m === 0 && s === 0 && tracking) {
+      stopTracking();
+      flash('🕘 9 PM IST — tracking stopped. Great work!', 'green');
     }
-    if(tracking){hb++;if(hb%15===0)saveToSupabase();}
-  },1000);
+    if (h === 0 && m === 0 && s === 0 && currentUser) {
+      totalSeconds = activeSeconds = idleSeconds = sessionCount = 0;
+      activityLog = []; qHistory = []; activeDomain = null;
+      attendanceStatus = isSunday() ? 'off' : 'present';
+      updateTimerDisplay(); renderActivity(); renderQChips(); renderAttBtn(); renderTabBars();
+    }
+  }, 1000);
 }
 
 /* ══ AWAY DETECTION ══ */
-function setupAway(){
-  document.addEventListener('visibilitychange',()=>{
-    if(document.hidden){if(tracking&&awayStart===null){awayStart=Date.now();awayTabDomain=null;}}
-    else{
-      if(awayStart&&tracking){
-        const dur=Math.round((Date.now()-awayStart)/1000);
-        if(awayTabTimer){clearInterval(awayTabTimer);awayTabTimer=null;}
-        if(awayTabDomain&&dur>5){
-          const e=activityLog.find(a=>a.domain===awayTabDomain);
-          if(e){e.timeSeconds=(e.timeSeconds||0)+dur;e.time=secToMin(e.timeSeconds);}
-          else activityLog.push({domain:awayTabDomain,cat:catD(awayTabDomain),timeSeconds:dur,time:secToMin(dur)});
-          activeDomain=awayTabDomain;
-          renderActivity();renderTabBars();saveToSupabase();
-          flash(`✅ Auto-logged ${dur<60?dur+'s':Math.round(dur/60)+'m'} on ${awayTabDomain}`,'green');
+function setupAway() {
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      if (tracking && awayStart === null) awayStart = Date.now();
+    } else {
+      if (awayStart && tracking) {
+        const dur = Math.round((Date.now() - awayStart) / 1000);
+        awayStart = null;
+        if (dur > 5) {
+          flash('↩ Back after ' + (dur < 60 ? dur + 's' : Math.round(dur/60) + 'm') + ' away', 'accent');
         }
-        awayStart=null; awayTabDomain=null;
       }
     }
-  },true);
+  }, true);
 }
 
-/* ══ DATA DELETE ══ */
-async function deleteSelf(){
-  if(!currentUser||!sbClient)return;
-  if(!confirm('Delete all your tracking data?'))return;
-  await sbClient.from('pw_employees').delete().eq('email',currentUser.email);
-  totalSeconds=activeSeconds=idleSeconds=sessionCount=0; activityLog=[]; qHistory=[]; activeDomain=null;
-  updateTimerDisplay();renderActivity();renderQChips();renderTabBars();
+/* ══ DELETE SELF ══ */
+async function deleteSelf() {
+  if (!currentUser) return;
+  if (!confirm('Delete all your tracking data?')) return;
+  await sbRest('DELETE', 'pw_employees', 'email=eq.' + encodeURIComponent(currentUser.email));
+  totalSeconds = activeSeconds = idleSeconds = sessionCount = 0;
+  activityLog = []; qHistory = []; activeDomain = null;
+  updateTimerDisplay(); renderActivity(); renderQChips(); renderTabBars();
   alert('Data deleted.');
 }
 
 /* ═══════════════════════════════════════════════════════
    MANAGER DASHBOARD
    ═══════════════════════════════════════════════════════ */
-let mgrPollTimer = null;
-function startMgrPolling(){
-  if(mgrPollTimer) clearInterval(mgrPollTimer);
-  mgrPollTimer = setInterval(()=>{ if(currentUser?.role==='manager') loadDashboard(); }, 4000);
+function startMgrPolling() {
+  if (mgrPollTimer) clearInterval(mgrPollTimer);
+  // Poll every 10s (not 4s) — reduces console noise and server load
+  mgrPollTimer = setInterval(() => {
+    if (currentUser && currentUser.role === 'manager' && !_sbPaused) loadDashboard();
+  }, 10000);
 }
 
-async function loadDashboard(){
-  if(!sbClient||currentUser?.role!=='manager') return;
-  const emps = await loadAllEmployees(); // ← setDBStatus called inside loadAllEmployees
-  setTxt('last-refreshed','↻ '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'}));
+async function loadDashboard() {
+  if (!currentUser || currentUser.role !== 'manager') return;
+  const emps = await loadAllEmployees();
+  setTxt('last-refreshed', '↻ ' + new Date().toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', second:'2-digit'}));
   updateNotice(emps);
   updateKPIs(emps);
   renderOverviewTable(emps);
@@ -1685,600 +2004,612 @@ async function loadDashboard(){
   updateAlerts(emps);
 }
 
-function updateNotice(emps){
-  const n=$('overview-notice'); if(!n)return;
-  if(!emps.length){
-    n.className='notice info';
-    n.innerHTML='<div class="notice-icon">⚠️</div><div><strong>No employee data yet</strong><span>Add employees in Settings → send them their invite email → they sign in → data appears here automatically.</span></div>';
+function updateNotice(emps) {
+  const n = $('overview-notice'); if (!n) return;
+  if (!emps.length) {
+    n.className = 'notice info';
+    n.innerHTML = '<div class="notice-icon">⚠️</div><div><strong>No employee data yet</strong><span>Add employees in Settings → send them their invite email → they sign in → data appears here automatically.</span></div>';
   } else {
-    const act=emps.filter(e=>e.tracking).length;
-    n.className='notice ok';
-    n.innerHTML=`<div class="notice-icon">✅</div><div><strong>${emps.length} employee${emps.length>1?'s':''} tracked today — ${act} live now</strong><span>Auto-refreshing every 4 seconds via Supabase.</span></div>`;
+    const act = emps.filter(e => e.tracking).length;
+    n.className = 'notice ok';
+    n.innerHTML = '<div class="notice-icon">✅</div><div><strong>' + emps.length + ' employee' + (emps.length>1?'s':'') + ' tracked today — ' + act + ' live now</strong><span>Auto-refreshing every 4 seconds.</span></div>';
   }
 }
 
-function updateKPIs(emps){
-  if(!emps.length){['kpi-hrs','kpi-score','kpi-q','kpi-live'].forEach(id=>setTxt(id,'–'));return;}
-  const tracked=emps.filter(e=>e.attendance!=='leave'&&e.attendance!=='off');
-  const avgH=tracked.length?(tracked.reduce((a,e)=>a+(e.totalSeconds||0),0)/tracked.length/3600).toFixed(1):'–';
-  const avgSc=tracked.length?Math.round(tracked.reduce((a,e)=>a+(e.score||0),0)/tracked.length):'–';
-  const totalQ=emps.reduce((a,e)=>a+(e.totalQuestions||0),0);
-  const act=emps.filter(e=>e.tracking).length;
-  setTxt('kpi-hrs',avgH==='–'?'–':avgH+'h');
-  setTxt('kpi-score',isNaN(avgSc)||avgSc==='–'?'–':avgSc+'%');
-  setTxt('kpi-q',totalQ);
-  setTxt('kpi-live',act);
-  setTxt('kpi-hrs-sub',avgH!=='–'?`${Math.round(parseFloat(avgH)/7.5*100)}% of 7.5h target`:'');
-  setTxt('kpi-score-sub','Category-weighted');
-  setTxt('kpi-live-sub',`of ${emps.length} tracked today`);
+function updateKPIs(emps) {
+  if (!emps.length) { ['kpi-hrs','kpi-score','kpi-q','kpi-live'].forEach(id => setTxt(id,'–')); return; }
+  const tracked = emps.filter(e => e.attendance !== 'leave' && e.attendance !== 'off');
+  const avgH = tracked.length ? (tracked.reduce((a,e) => a+(e.totalSeconds||0),0) / tracked.length / 3600).toFixed(1) : '–';
+  const avgSc = tracked.length ? Math.round(tracked.reduce((a,e) => a+(e.score||0),0) / tracked.length) : '–';
+  const totalQ = emps.reduce((a,e) => a+(e.totalQuestions||0), 0);
+  const act = emps.filter(e => e.tracking).length;
+  setTxt('kpi-hrs',   avgH === '–' ? '–' : avgH + 'h');
+  setTxt('kpi-score', isNaN(avgSc) || avgSc === '–' ? '–' : avgSc + '%');
+  setTxt('kpi-q',     totalQ);
+  setTxt('kpi-live',  act);
+  setTxt('kpi-hrs-sub',   avgH !== '–' ? Math.round(parseFloat(avgH)/7.5*100) + '% of 7.5h target' : '');
+  setTxt('kpi-score-sub', 'Category-weighted');
+  setTxt('kpi-live-sub',  'of ' + emps.length + ' tracked today');
 }
 
-function renderOverviewTable(emps){
-  const t=$('tbody-overview'); if(!t)return;
-  const aL=s=>({present:'Present ✅',halfday:'Half Day 🕐',leave:'On Leave 🏖️',off:'Off 🔴'}[s]||s);
-  const aC=s=>({present:'var(--green)',halfday:'var(--amber)',leave:'var(--red)',off:'var(--text3)'}[s]||'var(--text3)');
-  if(!emps.length){t.innerHTML='<tr><td colspan="6" style="padding:24px;text-align:center;color:var(--text3);font-size:13px">No employee data yet.</td></tr>';return;}
-  t.innerHTML=emps.map(e=>{
-    const col=avC(e.email),ini=avI(e.name),sc=e.score,q=e.totalQuestions||0;
-    const att=e.attendance||'present',isAct=e.tracking&&att!=='leave'&&att!=='off';
-    const scC=sc==null?'var(--text3)':sc>=80?'var(--green)':sc>=60?'var(--amber)':'var(--red)';
-    return`<tr>
-      <td><div class="emp-name"><div class="emp-av" style="background:${col}">${ini}</div><div><b style="font-size:13px">${e.name}</b><div style="font-size:11px;color:var(--text3)">${e.email}</div></div></div></td>
-      <td style="font-weight:600;color:var(--accent)">${att==='leave'||att==='off'?'–':fmtS(e.totalSeconds||0)}</td>
-      <td><span style="color:${scC};font-weight:700">${sc==null?aL(att):sc+'%'}</span>${sc!=null?`<div class="score-bar"><div class="score-fill" style="width:${Math.min(100,sc)}%;background:${scC}"></div></div>`:''}</td>
-      <td><span style="background:var(--purplebg);color:var(--purple);border:1px solid #ddd6fe;border-radius:20px;padding:2px 9px;font-size:11px;font-weight:700">${q} Qs</span></td>
-      <td><span style="background:${att==='present'?'var(--greenbg)':att==='halfday'?'var(--amberbg)':att==='leave'?'var(--redbg)':'var(--bg3)'};color:${aC(att)};border-radius:20px;padding:2px 8px;font-size:11px;font-weight:700">${aL(att)}</span></td>
-      <td><span class="badge ${isAct?'cat-work':'cat-neutral'}">${isAct?'● Active':'○ Away'}</span></td>
-    </tr>`;
+function renderOverviewTable(emps) {
+  const t = $('tbody-overview'); if (!t) return;
+  const aL = s => ({present:'Present ✅',halfday:'Half Day 🕐',leave:'On Leave 🏖️',off:'Off 🔴'}[s] || s);
+  const aC = s => ({present:'var(--green)',halfday:'var(--amber)',leave:'var(--red)',off:'var(--text3)'}[s] || 'var(--text3)');
+  if (!emps.length) {
+    t.innerHTML = '<tr><td colspan="6" style="padding:24px;text-align:center;color:var(--text3);font-size:13px">No employee data yet.</td></tr>';
+    return;
+  }
+  t.innerHTML = emps.map(e => {
+    const col = avC(e.email), ini = avI(e.name), sc = e.score, q = e.totalQuestions || 0;
+    const att = e.attendance || 'present', isAct = e.tracking && att !== 'leave' && att !== 'off';
+    const scC = sc == null ? 'var(--text3)' : sc >= 80 ? 'var(--green)' : sc >= 60 ? 'var(--amber)' : 'var(--red)';
+    return '<tr>' +
+      '<td><div class="emp-name"><div class="emp-av" style="background:' + col + '">' + ini + '</div>' +
+      '<div><b style="font-size:13px">' + e.name + '</b><div style="font-size:11px;color:var(--text3)">' + e.email + '</div></div></div></td>' +
+      '<td style="font-weight:600;color:var(--accent)">' + (att==='leave'||att==='off'?'–':fmtS(e.totalSeconds||0)) + '</td>' +
+      '<td><span style="color:' + scC + ';font-weight:700">' + (sc==null?aL(att):sc+'%') + '</span>' +
+        (sc!=null?'<div class="score-bar"><div class="score-fill" style="width:'+Math.min(100,sc)+'%;background:'+scC+'"></div></div>':'') + '</td>' +
+      '<td><span style="background:var(--purplebg);color:var(--purple);border:1px solid #ddd6fe;border-radius:20px;padding:2px 9px;font-size:11px;font-weight:700">' + q + ' Qs</span></td>' +
+      '<td><span style="background:' + (att==='present'?'var(--greenbg)':att==='halfday'?'var(--amberbg)':att==='leave'?'var(--redbg)':'var(--bg3)') + ';color:' + aC(att) + ';border-radius:20px;padding:2px 8px;font-size:11px;font-weight:700">' + aL(att) + '</span></td>' +
+      '<td><span class="badge ' + (isAct?'cat-work':'cat-neutral') + '">' + (isAct?'● Active':'○ Away') + '</span></td>' +
+      '</tr>';
   }).join('');
 }
 
-function renderDetailTable(emps){
-  const t=$('tbody-detail'); if(!t)return;
-  const aL=s=>({present:'Present ✅',halfday:'Half Day 🕐',leave:'On Leave 🏖️',off:'Off 🔴'}[s]||s);
-  const aC=s=>({present:'var(--green)',halfday:'var(--amber)',leave:'var(--red)',off:'var(--text3)'}[s]||'var(--text3)');
-  const CC={work:'var(--green)',neutral:'var(--amber)',distract:'var(--red)'};
-  if(!emps.length){t.innerHTML='<tr><td colspan="8" style="padding:24px;text-align:center;color:var(--text3);font-size:13px">No employee data yet.</td></tr>';return;}
-  t.innerHTML=emps.map(e=>{
-    const col=avC(e.email),ini=avI(e.name),sc=e.score,q=e.totalQuestions||0;
-    const att=e.attendance||'present',isAct=e.tracking&&att!=='leave'&&att!=='off';
-    const scC=sc==null?'var(--text3)':sc>=80?'var(--green)':sc>=60?'var(--amber)':'var(--red)';
-    const uid=e.email.replace(/[@.]/g,'_');
-    const totalMin=Math.round((e.totalSeconds||0)/60), idleMin=Math.round((e.idleSeconds||0)/60);
-    const idlePct=totalMin>0?Math.round((idleMin/totalMin)*100):0;
-    const tgtMin=att==='halfday'?225:att==='leave'||att==='off'?0:450;
-
-    const domRows=(e.activityLog&&e.activityLog.length)
-      ?[...e.activityLog].sort((a,b)=>(b.timeSeconds||0)-(a.timeSeconds||0)).slice(0,8).map(a=>{
-          const ttl=e.activityLog.reduce((s,x)=>s+(x.timeSeconds||0),0);
-          const p=ttl?Math.round(((a.timeSeconds||0)/ttl)*100):0;
-          return`<div style="margin-bottom:5px"><div style="display:flex;align-items:center;gap:7px;margin-bottom:2px"><div style="width:6px;height:6px;border-radius:50%;background:${CC[a.cat]||'#888'};flex-shrink:0"></div><span style="font-size:12px;font-weight:600;flex:1">${a.domain}</span><span style="font-size:11px;font-weight:700;color:${CC[a.cat]||'var(--text3)'}">${a.time}</span></div><div style="height:4px;background:var(--bg4);border-radius:3px;overflow:hidden"><div style="width:${p}%;height:100%;background:${CC[a.cat]||'var(--accent)'};border-radius:3px"></div></div></div>`;
+function renderDetailTable(emps) {
+  const t = $('tbody-detail'); if (!t) return;
+  const aL = s => ({present:'Present ✅',halfday:'Half Day 🕐',leave:'On Leave 🏖️',off:'Off 🔴'}[s] || s);
+  const aC = s => ({present:'var(--green)',halfday:'var(--amber)',leave:'var(--red)',off:'var(--text3)'}[s] || 'var(--text3)');
+  const CC = {work:'var(--green)', neutral:'var(--amber)', distract:'var(--red)'};
+  if (!emps.length) {
+    t.innerHTML = '<tr><td colspan="8" style="padding:24px;text-align:center;color:var(--text3);font-size:13px">No employee data yet.</td></tr>';
+    return;
+  }
+  t.innerHTML = emps.map(e => {
+    const col = avC(e.email), ini = avI(e.name), sc = e.score, q = e.totalQuestions || 0;
+    const att = e.attendance || 'present', isAct = e.tracking && att !== 'leave' && att !== 'off';
+    const scC = sc == null ? 'var(--text3)' : sc >= 80 ? 'var(--green)' : sc >= 60 ? 'var(--amber)' : 'var(--red)';
+    const uid = e.email.replace(/[@.]/g, '_');
+    const totalMin = Math.round((e.totalSeconds||0)/60), idleMin = Math.round((e.idleSeconds||0)/60);
+    const idlePct = totalMin > 0 ? Math.round((idleMin/totalMin)*100) : 0;
+    const tgtMin  = att==='halfday' ? 225 : (att==='leave'||att==='off' ? 0 : 450);
+    const domRows = (e.activityLog && e.activityLog.length)
+      ? e.activityLog.slice().sort((a,b)=>(b.timeSeconds||0)-(a.timeSeconds||0)).slice(0,8).map(a => {
+          const ttl = e.activityLog.reduce((s,x)=>s+(x.timeSeconds||0),0);
+          const p = ttl ? Math.round(((a.timeSeconds||0)/ttl)*100) : 0;
+          return '<div style="margin-bottom:5px">' +
+            '<div style="display:flex;align-items:center;gap:7px;margin-bottom:2px">' +
+            '<div style="width:6px;height:6px;border-radius:50%;background:' + (CC[a.cat]||'#888') + ';flex-shrink:0"></div>' +
+            '<span style="font-size:12px;font-weight:600;flex:1">' + a.domain + '</span>' +
+            '<span style="font-size:11px;font-weight:700;color:' + (CC[a.cat]||'var(--text3)') + '">' + a.time + '</span></div>' +
+            '<div style="height:4px;background:var(--bg4);border-radius:3px;overflow:hidden"><div style="width:' + p + '%;height:100%;background:' + (CC[a.cat]||'var(--accent)') + ';border-radius:3px"></div></div></div>';
         }).join('')
-      :'<div style="font-size:12px;color:var(--text3)">No tabs logged.</div>';
-
-    const qRows=(e.qHistory&&e.qHistory.length)
-      ?e.qHistory.map(x=>`<span style="background:var(--purplebg);border:1px solid #ddd6fe;border-radius:12px;padding:2px 8px;font-size:11px;color:var(--purple);font-weight:700;display:inline-flex;gap:3px;margin:2px"><b>${x.count}</b>${x.note}<span style="opacity:.5">${x.time}</span></span>`).join('')
-      :'<span style="font-size:12px;color:var(--text3)">None.</span>';
-
-    return`
-    <tr style="cursor:pointer" onclick="toggleRow('${uid}')">
-      <td><div class="emp-name"><div class="emp-av" style="background:${col}">${ini}</div><div><div style="font-weight:600;font-size:13px">${e.name}</div><div style="font-size:11px;color:var(--text3)">${e.email}</div></div></div></td>
-      <td><div style="font-weight:700;color:var(--accent)">${att==='leave'||att==='off'?'–':fmtS(e.totalSeconds||0)}</div>${totalMin>0?`<div style="font-size:10px;color:var(--text3)">${totalMin-idleMin}m active · <span style="color:var(--amber)">${idleMin}m idle</span></div>`:''}</td>
-      <td><span style="color:${scC};font-weight:700">${sc==null?aL(att):sc+'%'}</span></td>
-      <td><span style="background:var(--purplebg);color:var(--purple);border:1px solid #ddd6fe;border-radius:20px;padding:2px 9px;font-size:11px;font-weight:700">${q} Qs</span></td>
-      <td>${e.activityLog&&e.activityLog.length?`<span style="font-size:11px;color:var(--accent);font-weight:600">${e.activityLog.length} tabs</span>`:'–'}</td>
-      <td><span style="color:${aC(att)};font-weight:700;font-size:11px">${aL(att)}</span></td>
-      <td><span class="badge ${isAct?'cat-work':'cat-neutral'}">${isAct?'● Active':'○ Away'}</span></td>
-      <td style="color:var(--text3);font-size:11px">▼</td>
-    </tr>
-    <tr id="row-${uid}" style="display:none">
-      <td colspan="8" style="background:var(--bg3);padding:16px 20px;border-top:2px solid var(--accentbg2)">
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
-          <div><div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">📊 Tab Breakdown</div>${domRows}</div>
-          <div>
-            <div style="font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">⏱ Active vs Idle</div>
-            <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:10px;font-size:12px">
-              <div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="color:var(--text2)">Total</span><b style="color:var(--accent)">${fmtS(e.totalSeconds||0)}</b></div>
-              <div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="color:var(--text2)">Active</span><b style="color:var(--green)">${fmtS(e.activeSeconds||0)}</b></div>
-              <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="color:var(--text2)">Idle</span><b style="color:var(--amber)">${fmtS(e.idleSeconds||0)} (${idlePct}%)</b></div>
-              <div style="height:6px;background:var(--bg4);border-radius:3px;overflow:hidden;display:flex">
-                <div style="width:${100-idlePct}%;background:var(--green)"></div>
-                <div style="width:${idlePct}%;background:var(--amber)"></div>
-              </div>
-            </div>
-            <div style="margin-top:6px;padding:8px;background:${att==='present'?'var(--greenbg)':att==='halfday'?'var(--amberbg)':'var(--redbg)'};border-radius:var(--radius2);font-size:12px">
-              <b style="color:${aC(att)}">${aL(att)}</b>${tgtMin?`<span style="color:var(--text3);margin-left:5px">Target: ${tgtMin}m</span>`:''}
-            </div>
-          </div>
-          <div>
-            <div style="font-size:11px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">❓ Questions + Score</div>
-            <div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:8px">${qRows}</div>
-            <div style="padding:8px;background:linear-gradient(135deg,var(--purplebg),var(--accentbg));border:1px solid var(--accentbg2);border-radius:var(--radius2);font-size:11px">
-              <code style="display:block;background:white;padding:3px 7px;border-radius:4px;color:var(--text)">(${totalMin}m + ${(e.totalQuestions||0)*5}m) ÷ ${tgtMin||450} = <b style="color:var(--accent)">${sc==null?aL(att):sc+'%'}</b></code>
-            </div>
-          </div>
-        </div>
-      </td>
-    </tr>`;
+      : '<div style="font-size:12px;color:var(--text3)">No tabs logged.</div>';
+    const qRows = (e.qHistory && e.qHistory.length)
+      ? e.qHistory.map(x =>
+          '<span style="background:var(--purplebg);border:1px solid #ddd6fe;border-radius:12px;padding:2px 8px;font-size:11px;color:var(--purple);font-weight:700;display:inline-flex;gap:3px;margin:2px"><b>' + x.count + '</b>' + x.note + '<span style="opacity:.5">' + x.time + '</span></span>'
+        ).join('')
+      : '<span style="font-size:12px;color:var(--text3)">None.</span>';
+    return '<tr style="cursor:pointer" onclick="toggleRow(\'' + uid + '\')">' +
+      '<td><div class="emp-name"><div class="emp-av" style="background:' + col + '">' + ini + '</div>' +
+      '<div><div style="font-weight:600;font-size:13px">' + e.name + '</div><div style="font-size:11px;color:var(--text3)">' + e.email + '</div></div></div></td>' +
+      '<td><div style="font-weight:700;color:var(--accent)">' + (att==='leave'||att==='off'?'–':fmtS(e.totalSeconds||0)) + '</div>' +
+        (totalMin>0?'<div style="font-size:10px;color:var(--text3)">'+(totalMin-idleMin)+'m active · <span style="color:var(--amber)">'+idleMin+'m idle</span></div>':'') + '</td>' +
+      '<td><span style="color:' + scC + ';font-weight:700">' + (sc==null?aL(att):sc+'%') + '</span></td>' +
+      '<td><span style="background:var(--purplebg);color:var(--purple);border:1px solid #ddd6fe;border-radius:20px;padding:2px 9px;font-size:11px;font-weight:700">' + q + ' Qs</span></td>' +
+      '<td>' + (e.activityLog&&e.activityLog.length?'<span style="font-size:11px;color:var(--accent);font-weight:600">'+e.activityLog.length+' tabs</span>':'–') + '</td>' +
+      '<td><span style="color:' + aC(att) + ';font-weight:700;font-size:11px">' + aL(att) + '</span></td>' +
+      '<td><span class="badge ' + (isAct?'cat-work':'cat-neutral') + '">' + (isAct?'● Active':'○ Away') + '</span></td>' +
+      '<td style="color:var(--text3);font-size:11px">▼</td>' +
+      '</tr>' +
+      '<tr id="row-' + uid + '" style="display:none">' +
+      '<td colspan="8" style="background:var(--bg3);padding:16px 20px;border-top:2px solid var(--accentbg2)">' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">' +
+      '<div><div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">📊 Tab Breakdown</div>' + domRows + '</div>' +
+      '<div><div style="font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">⏱ Active vs Idle</div>' +
+      '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:10px;font-size:12px">' +
+      '<div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="color:var(--text2)">Total</span><b style="color:var(--accent)">' + fmtS(e.totalSeconds||0) + '</b></div>' +
+      '<div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="color:var(--text2)">Active</span><b style="color:var(--green)">' + fmtS(e.activeSeconds||0) + '</b></div>' +
+      '<div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="color:var(--text2)">Idle</span><b style="color:var(--amber)">' + fmtS(e.idleSeconds||0) + ' (' + idlePct + '%)</b></div>' +
+      '<div style="height:6px;background:var(--bg4);border-radius:3px;overflow:hidden;display:flex"><div style="width:' + (100-idlePct) + '%;background:var(--green)"></div><div style="width:' + idlePct + '%;background:var(--amber)"></div></div></div>' +
+      '<div style="margin-top:6px;padding:8px;background:' + (att==='present'?'var(--greenbg)':att==='halfday'?'var(--amberbg)':'var(--redbg)') + ';border-radius:var(--radius2);font-size:12px">' +
+      '<b style="color:' + aC(att) + '">' + aL(att) + '</b>' + (tgtMin?'<span style="color:var(--text3);margin-left:5px">Target: '+tgtMin+'m</span>':'') + '</div></div>' +
+      '<div><div style="font-size:11px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">❓ Questions + Score</div>' +
+      '<div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:8px">' + qRows + '</div>' +
+      '<div style="padding:8px;background:linear-gradient(135deg,var(--purplebg),var(--accentbg));border:1px solid var(--accentbg2);border-radius:var(--radius2);font-size:11px">' +
+      '<code style="display:block;background:white;padding:3px 7px;border-radius:4px;color:var(--text)">(' + totalMin + 'm + ' + (e.totalQuestions||0)*5 + 'm) ÷ ' + (tgtMin||450) + ' = <b style="color:var(--accent)">' + (sc==null?aL(att):sc+'%') + '</b></code></div></div>' +
+      '</div></td></tr>';
   }).join('');
 }
 
-function toggleRow(uid){ const r=$('row-'+uid); if(r)r.style.display=r.style.display==='none'?'table-row':'none'; }
+function toggleRow(uid) { const r = $('row-' + uid); if (r) r.style.display = r.style.display === 'none' ? 'table-row' : 'none'; }
 
-function updateAlerts(emps){
-  const p=$('alerts-panel'); if(!p)return;
-  if(!emps.length){p.innerHTML='<div style="font-size:13px;color:var(--text3);padding:8px 0">No data yet.</div>';return;}
-  const alerts=[];
-  emps.forEach(e=>{
-    if(e.attendance==='leave'||e.attendance==='off')return;
-    const im=Math.round((e.idleSeconds||0)/60),th=(e.totalSeconds||0)/3600;
-    if(im>60)alerts.push(`<div style="padding:9px 12px;background:var(--amberbg);border:1px solid var(--amberborder);border-radius:var(--radius2);font-size:13px;font-weight:600;color:var(--amber);margin-bottom:5px">⚠ High idle: ${e.name} — ${im}m</div>`);
-    if(th<3.75&&th>0)alerts.push(`<div style="padding:9px 12px;background:var(--redbg);border:1px solid var(--redborder);border-radius:var(--radius2);font-size:13px;font-weight:600;color:var(--red);margin-bottom:5px">⬇ Low: ${e.name} — ${fmtS(e.totalSeconds||0)}</div>`);
+function updateAlerts(emps) {
+  const p = $('alerts-panel'); if (!p) return;
+  if (!emps.length) { p.innerHTML = '<div style="font-size:13px;color:var(--text3);padding:8px 0">No data yet.</div>'; return; }
+  var alerts = [];
+  emps.forEach(e => {
+    if (e.attendance === 'leave' || e.attendance === 'off') return;
+    const im = Math.round((e.idleSeconds||0)/60), th = (e.totalSeconds||0)/3600;
+    if (im > 60) alerts.push('<div style="padding:9px 12px;background:var(--amberbg);border:1px solid var(--amberborder);border-radius:var(--radius2);font-size:13px;font-weight:600;color:var(--amber);margin-bottom:5px">⚠ High idle: ' + e.name + ' — ' + im + 'm</div>');
+    if (th < 3.75 && th > 0) alerts.push('<div style="padding:9px 12px;background:var(--redbg);border:1px solid var(--redborder);border-radius:var(--radius2);font-size:13px;font-weight:600;color:var(--red);margin-bottom:5px">⬇ Low: ' + e.name + ' — ' + fmtS(e.totalSeconds||0) + '</div>');
   });
-  if(!alerts.length)alerts.push(`<div style="padding:9px 12px;background:var(--greenbg);border:1px solid var(--greenborder);border-radius:var(--radius2);font-size:13px;font-weight:600;color:var(--green)">✓ All good</div>`);
-  p.innerHTML=alerts.join('');
+  if (!alerts.length) alerts.push('<div style="padding:9px 12px;background:var(--greenbg);border:1px solid var(--greenborder);border-radius:var(--radius2);font-size:13px;font-weight:600;color:var(--green)">✓ All good</div>');
+  p.innerHTML = alerts.join('');
 }
 
 /* ═══════════════════════════════════════════════════════
    SETTINGS — EMPLOYEE MANAGEMENT
-   LOCAL-FIRST: localStorage is instant source of truth.
-   Supabase syncs in background — never blocks the UI.
    ═══════════════════════════════════════════════════════ */
-
-/* ── Local employee store helpers ── */
-function getLocalEmps() {
-  try { return JSON.parse(localStorage.getItem(LOCAL_EMPS)||'[]'); } catch(_){ return []; }
-}
-function saveLocalEmps(list) {
-  try { localStorage.setItem(LOCAL_EMPS, JSON.stringify(list)); } catch(_){}
-}
-function addLocalEmp(emp) {
-  const list = getLocalEmps().filter(e=>e.email!==emp.email);
-  list.push(emp);
-  saveLocalEmps(list);
-}
+function getLocalEmps()    { try { return JSON.parse(localStorage.getItem(LOCAL_EMPS) || '[]'); } catch(_) { return []; } }
+function saveLocalEmps(l)  { try { localStorage.setItem(LOCAL_EMPS, JSON.stringify(l)); } catch(_) {} }
+function addLocalEmp(emp)  { const l = getLocalEmps().filter(e => e.email !== emp.email); l.push(emp); saveLocalEmps(l); }
 function removeLocalEmp(email) {
-  saveLocalEmps(getLocalEmps().filter(e=>e.email!==email));
-  try{const s=JSON.parse(localStorage.getItem(LOCAL_CRED)||'{}');delete s[email];localStorage.setItem(LOCAL_CRED,JSON.stringify(s));}catch(_){}
+  saveLocalEmps(getLocalEmps().filter(e => e.email !== email));
+  try { const s = JSON.parse(localStorage.getItem(LOCAL_CRED)||'{}'); delete s[email]; localStorage.setItem(LOCAL_CRED, JSON.stringify(s)); } catch(_) {}
 }
 
-/* ── Sync remote Supabase credentials into local store (background) ── */
 async function syncEmpsFromSupabase() {
+  if (_sbPaused) return; // skip when circuit breaker is open
   try {
-    const remote = await loadCredentials();
-    const empRemote = remote.filter(c=>c.email!==MANAGER_EMAIL);
-    if(empRemote.length > 0) {
+    const r = await sbRest('GET', 'pw_credentials', 'select=email,pass,name');
+    if (!r.ok || !Array.isArray(r.data)) return;
+    const empRemote = r.data.filter(c => c.email !== MANAGER_EMAIL);
+    if (empRemote.length > 0) {
       const local = getLocalEmps();
       const merged = [...empRemote];
-      local.forEach(le => { if(!merged.find(r=>r.email===le.email)) merged.push(le); });
+      local.forEach(le => { if (!merged.find(rv => rv.email === le.email)) merged.push(le); });
       saveLocalEmps(merged);
+      // Update credential cache too
+      try {
+        const store = JSON.parse(localStorage.getItem(LOCAL_CRED) || '{}');
+        empRemote.forEach(c => { if (c.pass) store[c.email] = {pass: c.pass, name: c.name}; });
+        localStorage.setItem(LOCAL_CRED, JSON.stringify(store));
+      } catch(_) {}
     }
-  } catch(_){}
+  } catch(_) {} // completely silent background sync
 }
 
-async function addEmployee(){
-  const nameEl=$('inv-name'), emailEl=$('inv-email');
-  const rawEmail=(emailEl?emailEl.value.trim():'');
-  const email=rawEmail.includes('@')?rawEmail.toLowerCase():rawEmail.toLowerCase()+'@pw.live';
-  const name=(nameEl?nameEl.value.trim():'')||email.split('@')[0].replace(/[._-]/g,' ').replace(/\w/g,c=>c.toUpperCase());
-  if(!rawEmail){if(emailEl)emailEl.focus();return;}
-  if(!email.endsWith('@pw.live')){alert('Only @pw.live emails.');return;}
-  if(email===MANAGER_EMAIL){alert('Cannot add manager as employee.');return;}
-  if(getLocalEmps().find(e=>e.email===email)){alert(email+' is already added.');if(emailEl)emailEl.value='';return;}
-  const w1=['Swift','Bright','Bold','Sharp','Quick','Clear','Smart','Keen','Brave','Cool'];
-  const w2=['Falcon','Tiger','Eagle','Hawk','Lion','Wolf','Fox','Bear','Shark','Storm'];
-  const pass=w1[Math.floor(Math.random()*w1.length)]+w2[Math.floor(Math.random()*w2.length)]+(100+Math.floor(Math.random()*900));
+async function addEmployee() {
+  const nameEl = $('inv-name'), emailEl = $('inv-email');
+  const rawEmail = (emailEl ? emailEl.value.trim() : '');
+  const email = rawEmail.includes('@') ? rawEmail.toLowerCase() : rawEmail.toLowerCase() + '@pw.live';
+  const name  = (nameEl ? nameEl.value.trim() : '') || email.split('@')[0].replace(/[._-]/g,' ').replace(/\w/g, c => c.toUpperCase());
+  if (!rawEmail) { if (emailEl) emailEl.focus(); return; }
+  if (!email.endsWith('@pw.live')) { alert('Only @pw.live emails.'); return; }
+  if (email === MANAGER_EMAIL) { alert('Cannot add manager as employee.'); return; }
+  if (getLocalEmps().find(e => e.email === email)) { alert(email + ' is already added.'); if (emailEl) emailEl.value = ''; return; }
+  const w1 = ['Swift','Bright','Bold','Sharp','Quick','Clear','Smart','Keen','Brave','Cool'];
+  const w2 = ['Falcon','Tiger','Eagle','Hawk','Lion','Wolf','Fox','Bear','Shark','Storm'];
+  const pass = w1[Math.floor(Math.random()*w1.length)] + w2[Math.floor(Math.random()*w2.length)] + (100+Math.floor(Math.random()*900));
   const emp = {email, pass, name};
-  // Step 1: Save locally IMMEDIATELY — UI shows employee right away
   addLocalEmp(emp);
-  if(nameEl)nameEl.value=''; if(emailEl)emailEl.value='';
-  renderEmpList(); // instant — reads from local store
-  // Show success flash
+  if (nameEl) nameEl.value = '';
+  if (emailEl) emailEl.value = '';
+  renderEmpList();
   const addBtn = document.querySelector('[onclick="addEmployee()"]');
-  if(addBtn){const orig=addBtn.textContent;addBtn.textContent='✓ Added!';addBtn.style.background='var(--green)';setTimeout(()=>{addBtn.textContent=orig;addBtn.style.background='';},2000);}
-  // Step 2: Sync to Supabase in background — never blocks UI
-  saveCredential(email, pass, name).catch(e=>console.warn('Background Supabase sync failed (local save succeeded):',e));
+  if (addBtn) {
+    const orig = addBtn.textContent;
+    addBtn.textContent = '✓ Added!';
+    addBtn.style.background = 'var(--green)';
+    setTimeout(() => { addBtn.textContent = orig; addBtn.style.background = ''; }, 2000);
+  }
+  saveCredential(email, pass, name).catch(e => console.warn('Supabase sync failed (local save succeeded):', e));
 }
 
-function renderEmpList(){
-  const list=$('emp-list'), sar=$('send-all-row');
-  if(!list)return;
-  // Read from LOCAL store — instant, no network needed
-  const empList = getLocalEmps().filter(c=>c.email!==MANAGER_EMAIL);
-  if(sar) sar.style.display=empList.length?'flex':'none';
+function renderEmpList() {
+  const list = $('emp-list'), sar = $('send-all-row');
+  if (!list) return;
+  const empList = getLocalEmps().filter(c => c.email !== MANAGER_EMAIL);
+  if (sar) sar.style.display = empList.length ? 'flex' : 'none';
   refreshEjsUI();
-  if(!empList.length){
-    list.innerHTML='<div style="text-align:center;padding:14px;color:var(--text3);font-size:13px">No employees added yet. Enter a name and username above and click + Add.</div>';
-    // Sync from Supabase in background in case employees were added from another device
-    syncEmpsFromSupabase().then(()=>{
-      if(getLocalEmps().filter(c=>c.email!==MANAGER_EMAIL).length>0) renderEmpList();
-    });
+  if (!empList.length) {
+    list.innerHTML = '<div style="text-align:center;padding:14px;color:var(--text3);font-size:13px">No employees added yet.</div>';
     return;
   }
   const ejsOn = ejsReady();
-  list.innerHTML = empList.map(c=>{
-    const invUrl = buildInviteUrl(c.email, c.pass, c.name||'');
-    const safeUrl = invUrl.replace(/'/g,"\'");
-    const safeE = c.email.replace(/'/g,"\'");
-    const sendBtnLabel = ejsOn ? '📧 Send Invite' : '📧 Open Gmail';
-    const sendBtnColor = ejsOn
+  list.innerHTML = empList.map(c => {
+    const invUrl = buildInviteUrl(c.email, c.pass, c.name || '');
+    const safeUrl = invUrl.replace(/'/g, "\\'");
+    const safeE  = c.email.replace(/'/g, "\\'");
+    const sendLabel = ejsOn ? '📧 Send Invite' : '📧 Open Gmail';
+    const sendStyle = ejsOn
       ? 'background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;border:none'
       : 'background:linear-gradient(135deg,#ea4335,#fbbc04);color:white;border:none';
-    return`<div style="padding:11px 14px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius2);display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap">
-      <div style="width:34px;height:34px;border-radius:50%;background:${avC(c.email)};display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;color:white;flex-shrink:0;margin-top:2px">${avI(c.name||c.email)}</div>
-      <div style="flex:1;min-width:160px">
-        <div style="font-weight:600;font-size:13px">${c.name||c.email}</div>
-        <div style="font-size:11px;color:var(--text3);margin-top:1px">${c.email}</div>
-        <div style="margin-top:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-          <span style="font-size:10px;color:var(--text3)">Password:</span>
-          <code style="font-size:11px;background:var(--purplebg);color:var(--purple);padding:1px 7px;border-radius:4px;font-weight:700">${c.pass}</code>
-          <button onclick="navigator.clipboard.writeText('${safeUrl}').then(()=>{this.textContent='✓ Copied!';setTimeout(()=>this.textContent='📋 Copy link',1500)})" style="background:var(--accentbg);color:var(--accent);border:1px solid var(--accentbg2);border-radius:4px;padding:2px 8px;font-size:10px;font-weight:700;cursor:pointer">📋 Copy link</button>
-        </div>
-      </div>
-      <div style="display:flex;gap:6px;flex-shrink:0;margin-top:2px">
-        <button data-send-btn="${c.email}" onclick="sendInviteById('${safeE}')" style="${sendBtnColor};border-radius:var(--radius2);padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">${sendBtnLabel}</button>
-        <button onclick="removeEmployee('${safeE}')" style="background:var(--redbg);color:var(--red);border:1px solid var(--redborder);border-radius:var(--radius2);padding:7px 9px;font-size:11px;cursor:pointer">✕</button>
-      </div>
-    </div>`;
+    return '<div style="padding:11px 14px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius2);display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap">' +
+      '<div style="width:34px;height:34px;border-radius:50%;background:' + avC(c.email) + ';display:flex;align-items:center;justify-content:center;font-family:\'Syne\',sans-serif;font-weight:700;font-size:12px;color:white;flex-shrink:0;margin-top:2px">' + avI(c.name||c.email) + '</div>' +
+      '<div style="flex:1;min-width:160px">' +
+        '<div style="font-weight:600;font-size:13px">' + (c.name||c.email) + '</div>' +
+        '<div style="font-size:11px;color:var(--text3);margin-top:1px">' + c.email + '</div>' +
+        '<div style="margin-top:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">' +
+          '<span style="font-size:10px;color:var(--text3)">Password:</span>' +
+          '<code style="font-size:11px;background:var(--purplebg);color:var(--purple);padding:1px 7px;border-radius:4px;font-weight:700">' + c.pass + '</code>' +
+          '<button onclick="navigator.clipboard.writeText(\'' + safeUrl + '\').then(()=>{this.textContent=\'✓ Copied!\';setTimeout(()=>this.textContent=\'📋 Copy link\',1500)})" style="background:var(--accentbg);color:var(--accent);border:1px solid var(--accentbg2);border-radius:4px;padding:2px 8px;font-size:10px;font-weight:700;cursor:pointer">📋 Copy link</button>' +
+        '</div>' +
+      '</div>' +
+      '<div style="display:flex;gap:6px;flex-shrink:0;margin-top:2px">' +
+        '<button data-send-btn="' + c.email + '" onclick="sendInviteById(\'' + safeE + '\')" style="' + sendStyle + ';border-radius:var(--radius2);padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">' + sendLabel + '</button>' +
+        '<button onclick="removeEmployee(\'' + safeE + '\')" style="background:var(--redbg);color:var(--red);border:1px solid var(--redborder);border-radius:var(--radius2);padding:7px 9px;font-size:11px;cursor:pointer">✕</button>' +
+      '</div></div>';
   }).join('');
 }
 
-// Send invite using LOCAL credential data — zero network dependency
 async function sendInviteById(email) {
-  const btn = document.querySelector('[data-send-btn="'+email+'"]');
-  if(btn){btn.disabled=true;btn.textContent='Sending…';btn.style.background='var(--amber)';}
+  const btn = document.querySelector('[data-send-btn="' + email + '"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; btn.style.background = 'var(--amber)'; }
   try {
-    // Get from local store first — always has the password
-    let c = getLocalEmps().find(e=>e.email===email);
-    if(!c){
+    let c = getLocalEmps().find(e => e.email === email);
+    if (!c) {
       const cred = await getCredential(email);
-      if(cred) c={email,pass:cred.pass,name:cred.name};
+      if (cred) c = {email, pass: cred.pass, name: cred.name};
     }
-    if(!c) throw new Error('No credentials found for '+email+'. Please add the employee first using the form above.');
+    if (!c) throw new Error('No credentials found for ' + email);
     const result = await sendInviteEmail(c);
-    if(btn){
-      btn.textContent=result.method==='emailjs'?'✓ Sent!':'✓ Gmail opened';
-      btn.style.background='var(--green)';
-      setTimeout(()=>{btn.disabled=false;btn.textContent='📧 Send Invite';btn.style.background='';},3000);
+    if (btn) {
+      btn.textContent = result.method === 'emailjs' ? '✓ Sent!' : '✓ Gmail opened';
+      btn.style.background = 'var(--green)';
+      setTimeout(() => { btn.disabled = false; btn.textContent = '📧 Send Invite'; btn.style.background = ''; }, 3000);
     }
-  } catch(e){
-    console.error('sendInviteById failed for',email,e);
-    if(btn){btn.disabled=false;btn.textContent='❌ Failed — retry';btn.style.background='var(--red)';
-      setTimeout(()=>{btn.textContent='📧 Send Invite';btn.style.background='';},5000);}
-    alert('Failed to send invite to '+email+':\n\n'+(e?.text||e?.message||String(e))+'\n\nOpen F12 console for details.');
+  } catch(e) {
+    console.error('sendInviteById failed:', e);
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = '❌ Failed — retry';
+      btn.style.background = 'var(--red)';
+      setTimeout(() => { btn.textContent = '📧 Send Invite'; btn.style.background = ''; }, 5000);
+    }
+    alert('Failed to send invite to ' + email + ':\n\n' + (e.message || String(e)));
   }
 }
 
-async function removeEmployee(email){
-  if(!confirm('Remove '+email+'?'))return;
+async function removeEmployee(email) {
+  if (!confirm('Remove ' + email + '?')) return;
   removeLocalEmp(email);
   renderEmpList();
-  try{
-    if(sbClient){
-      sbClient.from('pw_credentials').delete().eq('email',email).then(()=>{});
-      sbClient.from('pw_employees').delete().eq('email',email).then(()=>{});
-    } else {
-      const cfg=getSBConfig();
-      if(cfg){
-        fetch(cfg.url+'/rest/v1/pw_credentials?email=eq.'+encodeURIComponent(email),{method:'DELETE',headers:{'apikey':cfg.key,'Authorization':'Bearer '+cfg.key}});
-        fetch(cfg.url+'/rest/v1/pw_employees?email=eq.'+encodeURIComponent(email),{method:'DELETE',headers:{'apikey':cfg.key,'Authorization':'Bearer '+cfg.key}});
-      }
-    }
-  } catch(e){console.warn('Supabase delete failed (local removal succeeded):',e);}
+  // Fire-and-forget remote deletes
+  sbRest('DELETE', 'pw_credentials', 'email=eq.' + encodeURIComponent(email));
+  sbRest('DELETE', 'pw_employees',   'email=eq.' + encodeURIComponent(email));
 }
 
-async function clearEmployees(){
-  if(!confirm('Remove ALL employees? This cannot be undone.'))return;
+async function clearEmployees() {
+  if (!confirm('Remove ALL employees? This cannot be undone.')) return;
+  const empList = getLocalEmps().filter(c => c.email !== MANAGER_EMAIL);
   saveLocalEmps([]);
   localStorage.removeItem(LOCAL_CRED);
   renderEmpList();
-  try{
-    const creds=await loadCredentials();
-    for(const c of creds.filter(x=>x.email!==MANAGER_EMAIL)){
-      if(sbClient){
-        sbClient.from('pw_credentials').delete().eq('email',c.email).then(()=>{});
-        sbClient.from('pw_employees').delete().eq('email',c.email).then(()=>{});
-      }
-    }
-  }catch(e){console.warn('Supabase clear error:',e);}
+  // Remote deletes — fire and forget
+  for (const c of empList) {
+    sbRest('DELETE', 'pw_credentials', 'email=eq.' + encodeURIComponent(c.email));
+    sbRest('DELETE', 'pw_employees',   'email=eq.' + encodeURIComponent(c.email));
+  }
 }
 
 /* ═══════════════════════════════════════════════════════
-   EMAILJS — real email sending from the browser
+   EMAILJS
    ═══════════════════════════════════════════════════════ */
-const EJS_CFG_KEY = 'pwt_emailjs';
-
-function getEjsConfig() {
-  try { return JSON.parse(localStorage.getItem(EJS_CFG_KEY)||'null'); } catch(_){ return null; }
-}
-
-function ejsReady() {
-  const c = getEjsConfig();
-  return !!(c && c.serviceId && c.templateId && c.publicKey);
-}
+function getEjsConfig() { try { return JSON.parse(localStorage.getItem(EJS_CFG_KEY) || 'null'); } catch(_) { return null; } }
+function ejsReady()     { const c = getEjsConfig(); return !!(c && c.serviceId && c.templateId && c.publicKey); }
 
 function refreshEjsUI() {
   const cfg = getEjsConfig();
   const ready = !!(cfg && cfg.serviceId);
   const configuredRow = $('ejs-configured-row');
   const toggleBtn = $('ejs-toggle-btn');
-  if(configuredRow) configuredRow.style.display = ready ? 'flex' : 'none';
-  if(toggleBtn) toggleBtn.style.display = ready ? 'none' : 'block';
-  if(ready && window.emailjs) {
-    window.emailjs.init({ publicKey: cfg.publicKey });
-  }
+  if (configuredRow) configuredRow.style.display = ready ? 'flex' : 'none';
+  if (toggleBtn) toggleBtn.style.display = ready ? 'none' : 'block';
+  if (ready && window.emailjs) window.emailjs.init({publicKey: cfg.publicKey});
 }
 
 function toggleEjsSetup() {
-  const body = $('ejs-setup-body');
-  if(!body) return;
+  const body = $('ejs-setup-body'); if (!body) return;
   const isOpen = body.style.display !== 'none';
   body.style.display = isOpen ? 'none' : 'block';
   const btn = $('ejs-toggle-btn');
-  if(btn) btn.textContent = isOpen ? 'Configure ▼' : 'Hide ▲';
+  if (btn) btn.textContent = isOpen ? 'Configure ▼' : 'Hide ▲';
 }
 
 async function saveEjsConfig() {
-  const serviceId  = ($('ejs-service') ||{}).value?.trim();
-  const templateId = ($('ejs-template')||{}).value?.trim();
-  const publicKey  = ($('ejs-pubkey')  ||{}).value?.trim();
-  const msg = $('ejs-status-msg');
-
-  if(!serviceId||!templateId||!publicKey) {
-    showEjsMsg('⚠ All three fields are required.', false); return;
-  }
-
-  // Init EmailJS and send a test email to manager
+  const serviceId  = ($('ejs-service')  || {}).value || '';
+  const templateId = ($('ejs-template') || {}).value || '';
+  const publicKey  = ($('ejs-pubkey')   || {}).value || '';
+  if (!serviceId.trim() || !templateId.trim() || !publicKey.trim()) { showEjsMsg('⚠ All three fields are required.', false); return; }
   try {
-    window.emailjs.init({ publicKey });
-    showEjsMsg('⏳ Sending test email to verify…', null);
+    window.emailjs.init({publicKey: publicKey.trim()});
+    showEjsMsg('⏳ Sending test email…', null);
     const testParams = {
-      to_email:   MANAGER_EMAIL,
-      to_name:    'Aditya Malik',
-      from_name:  'PW.live Tracker',
-      invite_url: window.location.href.split('?')[0],
-      password:   '(test)',
-      app_url:    window.location.href.split('?')[0],
+      to_email: MANAGER_EMAIL, to_name: 'Aditya Malik', from_name: 'PW.live Tracker',
+      invite_url: window.location.href.split('?')[0], password: '(test)', app_url: window.location.href.split('?')[0]
     };
-    await window.emailjs.send(serviceId, templateId, testParams);
-    localStorage.setItem(EJS_CFG_KEY, JSON.stringify({serviceId, templateId, publicKey}));
-    showEjsMsg('✅ Test email sent to your Gmail! EmailJS is working. Configuration saved.', true);
-    setTimeout(()=>{ refreshEjsUI(); renderEmpList(); }, 1500);
+    await window.emailjs.send(serviceId.trim(), templateId.trim(), testParams);
+    localStorage.setItem(EJS_CFG_KEY, JSON.stringify({serviceId: serviceId.trim(), templateId: templateId.trim(), publicKey: publicKey.trim()}));
+    showEjsMsg('✅ Test email sent! EmailJS is working. Configuration saved.', true);
+    setTimeout(() => { refreshEjsUI(); renderEmpList(); }, 1500);
   } catch(e) {
     console.error('EmailJS test failed:', e);
-    showEjsMsg('❌ Failed: '+(e?.text||e?.message||JSON.stringify(e))+'. Check your IDs and try again.', false);
+    showEjsMsg('❌ Failed: ' + (e.text || e.message || JSON.stringify(e)) + '. Check your IDs.', false);
   }
 }
 
 function showEjsMsg(txt, ok) {
-  const msg = $('ejs-status-msg');
-  if(!msg) return;
+  const msg = $('ejs-status-msg'); if (!msg) return;
   msg.style.display = 'block';
   msg.textContent = txt;
-  if(ok === true)  { msg.style.background='var(--greenbg)'; msg.style.color='var(--green)'; msg.style.border='1px solid var(--greenborder)'; }
-  if(ok === false) { msg.style.background='var(--redbg)'; msg.style.color='var(--red)'; msg.style.border='1px solid var(--redborder)'; }
-  if(ok === null)  { msg.style.background='var(--amberbg)'; msg.style.color='var(--amber)'; msg.style.border='1px solid var(--amberborder)'; }
+  if (ok === true)  { msg.style.background='var(--greenbg)'; msg.style.color='var(--green)'; msg.style.border='1px solid var(--greenborder)'; }
+  if (ok === false) { msg.style.background='var(--redbg)'; msg.style.color='var(--red)'; msg.style.border='1px solid var(--redborder)'; }
+  if (ok === null)  { msg.style.background='var(--amberbg)'; msg.style.color='var(--amber)'; msg.style.border='1px solid var(--amberborder)'; }
 }
 
 function clearEjsConfig() {
-  if(!confirm('Remove EmailJS configuration? You can reconfigure anytime.')) return;
+  if (!confirm('Remove EmailJS configuration?')) return;
   localStorage.removeItem(EJS_CFG_KEY);
   refreshEjsUI();
-  const body = $('ejs-setup-body');
-  if(body) body.style.display = 'none';
-  const btn = $('ejs-toggle-btn');
-  if(btn) { btn.style.display = 'block'; btn.textContent = 'Configure ▼'; }
+  const body = $('ejs-setup-body'); if (body) body.style.display = 'none';
+  const btn  = $('ejs-toggle-btn'); if (btn) { btn.style.display = 'block'; btn.textContent = 'Configure ▼'; }
 }
 
-// Send one invite — real email via EmailJS, Gmail compose as fallback
 async function sendInviteEmail(c) {
   const cfg = getEjsConfig();
-  const inviteUrl = buildInviteUrl(c.email, c.pass, c.name||'');
-
-  if(cfg && cfg.serviceId && cfg.templateId && cfg.publicKey) {
-    // Always re-init before sending — page reload can lose the init state
-    if(window.emailjs) {
-      window.emailjs.init({ publicKey: cfg.publicKey });
-    } else {
-      throw new Error('EmailJS library not loaded. Check your internet connection and reload.');
-    }
+  const inviteUrl = buildInviteUrl(c.email, c.pass, c.name || '');
+  if (cfg && cfg.serviceId && cfg.templateId && cfg.publicKey) {
+    if (!window.emailjs) throw new Error('EmailJS library not loaded. Check your internet connection and reload.');
+    window.emailjs.init({publicKey: cfg.publicKey});
     const params = {
-      to_email:   c.email,
-      to_name:    c.name || c.email.split('@')[0],
-      from_name:  'Aditya Malik · PW.live',
-      invite_url: inviteUrl,
-      password:   c.pass,
-      app_url:    window.location.href.split('?')[0],
+      to_email: c.email, to_name: c.name || c.email.split('@')[0],
+      from_name: 'Aditya Malik · PW.live', invite_url: inviteUrl,
+      password: c.pass, app_url: window.location.href.split('?')[0]
     };
-    console.log('Sending invite email to', c.email, 'via EmailJS...');
-    const response = await window.emailjs.send(cfg.serviceId, cfg.templateId, params);
-    console.log('EmailJS send response:', response);
-    return { method: 'emailjs' };
+    await window.emailjs.send(cfg.serviceId, cfg.templateId, params);
+    return {method: 'emailjs'};
   } else {
-    // Fallback: Gmail compose
-    console.log('EmailJS not configured, opening Gmail compose for', c.email);
     window.open(buildGmailUrl(c), '_blank');
-    return { method: 'gmail_compose' };
+    return {method: 'gmail_compose'};
   }
 }
 
-// sendInvite removed — use sendInviteById() which reads from local store
-
-async function sendAllInvites(){
-  // Use local store — instant, no network needed for the employee list
-  const emp = getLocalEmps().filter(c=>c.email!==MANAGER_EMAIL);
-  if(!emp.length){ 
-    alert('No employees added yet. Add employees first using the form above, then click Send invites to all.'); 
-    return; 
+async function sendAllInvites() {
+  const emp = getLocalEmps().filter(c => c.email !== MANAGER_EMAIL);
+  if (!emp.length) { alert('No employees added yet.'); return; }
+  if (!ejsReady()) {
+    if (!confirm('EmailJS not configured — emails will open in Gmail compose. Continue?')) return;
   }
-  if(!ejsReady()){ 
-    if(!confirm('EmailJS is not configured — emails will open in Gmail compose (you must click Send manually for each).
-
-Continue anyway?')) return;
-  }
-
   const btn = $('send-all-btn'), prog = $('send-all-progress'), lbl = $('send-all-label');
-  if(btn) btn.disabled = true;
-  if(prog) prog.style.display='block';
-
-  // Re-init EmailJS before batch send
+  if (btn) btn.disabled = true;
+  if (prog) prog.style.display = 'block';
   const ejsCfg = getEjsConfig();
-  if(ejsCfg && window.emailjs) {
-    window.emailjs.init({ publicKey: ejsCfg.publicKey });
-  }
-
-  let sent=0, failed=0, failedNames=[];
-  for(let i=0; i<emp.length; i++){
+  if (ejsCfg && window.emailjs) window.emailjs.init({publicKey: ejsCfg.publicKey});
+  var sent = 0, failed = 0, failedNames = [];
+  for (var i = 0; i < emp.length; i++) {
     const c = emp[i];
-    if(prog) prog.textContent = `Sending ${i+1}/${emp.length}: ${c.name||c.email}…`;
+    if (prog) prog.textContent = 'Sending ' + (i+1) + '/' + emp.length + ': ' + (c.name||c.email) + '…';
     try {
       await sendInviteEmail(c);
       sent++;
     } catch(e) {
-      console.error('sendAllInvites failed for '+c.email, e);
+      console.error('Failed for ' + c.email, e);
       failed++;
-      failedNames.push(c.name||c.email);
+      failedNames.push(c.name || c.email);
     }
-    // 600ms delay between sends to stay within EmailJS rate limits
-    if(i < emp.length-1) await new Promise(r=>setTimeout(r,600));
+    if (i < emp.length - 1) await new Promise(r => setTimeout(r, 600));
   }
-
-  if(btn) btn.disabled = false;
-  if(lbl) lbl.textContent = 'Send invites to all';
-  if(prog) {
+  if (btn) btn.disabled = false;
+  if (lbl) lbl.textContent = 'Send invites to all';
+  if (prog) {
     prog.textContent = sent > 0
-      ? `✓ ${sent} sent${failed>0?' · ⚠ '+failed+' failed: '+failedNames.join(', '):''}`
-      : `⚠ All ${failed} failed — check console`;
-    setTimeout(()=>{ prog.style.display='none'; }, 8000);
+      ? '✓ ' + sent + ' sent' + (failed > 0 ? ' · ⚠ ' + failed + ' failed: ' + failedNames.join(', ') : '')
+      : '⚠ All ' + failed + ' failed — check console';
+    setTimeout(() => { prog.style.display = 'none'; }, 8000);
   }
-  if(failed > 0) {
-    alert(`${sent} sent, ${failed} failed:\n${failedNames.join('\n')}\n\nOpen browser console (F12) for error details.`);
-  }
+  if (failed > 0) alert(sent + ' sent, ' + failed + ' failed:\n' + failedNames.join('\n'));
 }
 
-function buildGmailUrl(c){
-  const inviteUrl=buildInviteUrl(c.email,c.pass,c.name||'');
-  const subject=encodeURIComponent("You're invited to PW.live Time Tracker 🕐");
-  const body=encodeURIComponent(
-`Hi ${(c.name||c.email).split(' ')[0]},
-
-You've been added to the PW.live Time Tracker.
-
-━━━━━━━━━━━━━━━━━━━━━━━━
-🔗 YOUR PERSONAL INVITE LINK (click this to sign in):
-${inviteUrl}
-━━━━━━━━━━━━━━━━━━━━━━━━
-
-👆 Click the link — it auto-signs you in on your device instantly.
-Bookmark it for future logins.
-
-📋 MANUAL LOGIN (alternative):
-  URL:      ${window.location.href.split('?')[0]}
-  Email:    ${c.email}
-  Password: ${c.pass}
-  Role:     Employee
-
-⏰ WORK HOURS: 9:00 AM – 9:00 PM IST
-🎯 DAILY TARGET: 7.5 hours
-
-STEPS:
-1. Mark your attendance
-2. Click "Start tracking"
-3. Log tabs/domains you use
-4. Add Questions Curated count
-
-Best,
-Aditya Malik · PW.live`
-  );
-  return `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(c.email)}&su=${subject}&body=${body}`;
+function buildGmailUrl(c) {
+  const inviteUrl = buildInviteUrl(c.email, c.pass, c.name || '');
+  const subject = encodeURIComponent("You're invited to PW.live Time Tracker");
+  const bodyLines = [
+    'Hi ' + ((c.name||c.email).split(' ')[0]) + ',',
+    '',
+    "You've been added to the PW.live Time Tracker.",
+    '',
+    '━━━━━━━━━━━━━━━━━━━━━━━━',
+    '🔗 YOUR PERSONAL INVITE LINK:',
+    inviteUrl,
+    '━━━━━━━━━━━━━━━━━━━━━━━━',
+    '',
+    '📋 MANUAL LOGIN:',
+    '  URL:      ' + window.location.href.split('?')[0],
+    '  Email:    ' + c.email,
+    '  Password: ' + c.pass,
+    '',
+    '⏰ WORK HOURS: 9:00 AM – 9:00 PM IST',
+    '🎯 DAILY TARGET: 7.5 hours',
+    '',
+    'Best,',
+    'Aditya Malik · PW.live'
+  ];
+  return 'https://mail.google.com/mail/?view=cm&to=' + encodeURIComponent(c.email) + '&su=' + subject + '&body=' + encodeURIComponent(bodyLines.join('\n'));
 }
 
 /* ══ EXPORT CSV ══ */
-async function exportCSV(){
-  const emps=await loadAllEmployees(); if(!emps.length){alert('No data.');return;}
-  const rows=[['Name','Email','Total','Active','Idle','Score%','Attendance','Questions','Status','Top Tab']];
-  emps.forEach(e=>{
-    const top=e.activityLog&&e.activityLog.length?[...e.activityLog].sort((a,b)=>(b.timeSeconds||0)-(a.timeSeconds||0))[0].domain:'–';
-    rows.push([e.name,e.email,fmtS(e.totalSeconds||0),fmtS(e.activeSeconds||0),fmtS(e.idleSeconds||0),(e.score||0)+'%',e.attendance||'present',e.totalQuestions||0,e.tracking?'Active':'Away',top]);
+async function exportCSV() {
+  const emps = await loadAllEmployees();
+  if (!emps.length) { alert('No data.'); return; }
+  const rows = [['Name','Email','Total','Active','Idle','Score%','Attendance','Questions','Status','Top Tab']];
+  emps.forEach(e => {
+    const top = (e.activityLog && e.activityLog.length) ? e.activityLog.slice().sort((a,b)=>(b.timeSeconds||0)-(a.timeSeconds||0))[0].domain : '–';
+    rows.push([e.name, e.email, fmtS(e.totalSeconds||0), fmtS(e.activeSeconds||0), fmtS(e.idleSeconds||0), (e.score||0)+'%', e.attendance||'present', e.totalQuestions||0, e.tracking?'Active':'Away', top]);
   });
-  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
-  a.download='pw-tracker-'+todayIST()+'.csv';a.click();
+  const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g,'""') + '"').join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'pw-tracker-' + todayIST() + '.csv';
+  a.click();
 }
 
 /* ══ CHARTS ══ */
-function initCharts(){
-  const L=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],gc='rgba(79,70,229,.06)',tc='#8b90b8',df={family:"'DM Sans',sans-serif",size:11};
-  const mk=(id,cfg)=>{if(chartInstances[id])chartInstances[id].destroy();const el=$(id);if(!el)return;chartInstances[id]=new Chart(el,cfg);};
-  mk('chartActivity',{type:'bar',data:{labels:L,datasets:[{label:'Active hrs',data:[7.2,7.5,6.8,7.6,7.4,3.2,0.8],backgroundColor:'rgba(99,102,241,.75)',borderRadius:4,borderSkipped:false},{label:'Idle hrs',data:[0.5,0.4,0.8,0.4,0.5,0.2,0.1],backgroundColor:'rgba(217,119,6,.5)',borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc,font:df,boxWidth:9}}},scales:{x:{stacked:true,grid:{color:gc},ticks:{color:tc,font:df}},y:{stacked:true,grid:{color:gc},ticks:{color:tc,font:df,callback:v=>v+'h'},max:9}}}});
+function initCharts() {
+  const L = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], gc = 'rgba(79,70,229,.06)', tc = '#8b90b8', df = {family:"'DM Sans',sans-serif", size:11};
+  const mk = (id, cfg) => {
+    if (chartInstances[id]) { try { chartInstances[id].destroy(); } catch(_) {} }
+    const el = $(id); if (!el) return;
+    chartInstances[id] = new Chart(el, cfg);
+  };
+  mk('chartActivity',{type:'bar',data:{labels:L,datasets:[
+    {label:'Active hrs',data:[7.2,7.5,6.8,7.6,7.4,3.2,0.8],backgroundColor:'rgba(99,102,241,.75)',borderRadius:4,borderSkipped:false},
+    {label:'Idle hrs',data:[0.5,0.4,0.8,0.4,0.5,0.2,0.1],backgroundColor:'rgba(217,119,6,.5)',borderRadius:4,borderSkipped:false}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc,font:df,boxWidth:9}}},scales:{x:{stacked:true,grid:{color:gc},ticks:{color:tc,font:df}},y:{stacked:true,grid:{color:gc},ticks:{color:tc,font:df,callback:v=>v+'h'},max:9}}}});
   mk('chartDonut',{type:'doughnut',data:{labels:['Work','Neutral','Distracting'],datasets:[{data:[72,20,8],backgroundColor:['rgba(5,150,105,.85)','rgba(217,119,6,.8)','rgba(220,38,38,.75)'],borderWidth:0,hoverOffset:5}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{color:tc,font:df,boxWidth:9,padding:11}}}}});
-  mk('chartWeekly',{type:'line',data:{labels:['W1','W2','W3','W4','W5','W6','W7','W8'],datasets:[{label:'Avg %',data:[74,71,76,74,79,77,80,82],borderColor:'#6366f1',backgroundColor:'rgba(99,102,241,.08)',borderWidth:2,fill:true,tension:.4,pointRadius:3,pointBackgroundColor:'#6366f1'},{label:'Target',data:[85,85,85,85,85,85,85,85],borderColor:'rgba(5,150,105,.5)',borderWidth:1.5,borderDash:[4,4],pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc,font:df}}},scales:{x:{grid:{color:gc},ticks:{color:tc,font:df}},y:{grid:{color:gc},ticks:{color:tc,font:df,callback:v=>v+'%'},min:60,max:100}}}});
-  mk('chartStacked',{type:'bar',data:{labels:L,datasets:[{label:'Work',data:[5.2,5.5,5.0,5.8,5.4,2.2,0.5],backgroundColor:'rgba(5,150,105,.75)',borderRadius:3,borderSkipped:false},{label:'Neutral',data:[1.6,1.5,1.3,1.3,1.5,0.7,0.2],backgroundColor:'rgba(217,119,6,.65)',borderRadius:3,borderSkipped:false},{label:'Distracting',data:[0.4,0.5,0.5,0.5,0.5,0.3,0.1],backgroundColor:'rgba(220,38,38,.55)',borderRadius:3,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc,font:df,boxWidth:9}}},scales:{x:{stacked:true,grid:{color:gc},ticks:{color:tc,font:df}},y:{stacked:true,grid:{color:gc},ticks:{color:tc,font:df,callback:v=>v+'h'},max:9}}}});
+  mk('chartWeekly',{type:'line',data:{labels:['W1','W2','W3','W4','W5','W6','W7','W8'],datasets:[
+    {label:'Avg %',data:[74,71,76,74,79,77,80,82],borderColor:'#6366f1',backgroundColor:'rgba(99,102,241,.08)',borderWidth:2,fill:true,tension:.4,pointRadius:3,pointBackgroundColor:'#6366f1'},
+    {label:'Target',data:[85,85,85,85,85,85,85,85],borderColor:'rgba(5,150,105,.5)',borderWidth:1.5,borderDash:[4,4],pointRadius:0}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc,font:df}}},scales:{x:{grid:{color:gc},ticks:{color:tc,font:df}},y:{grid:{color:gc},ticks:{color:tc,font:df,callback:v=>v+'%'},min:60,max:100}}}});
+  mk('chartStacked',{type:'bar',data:{labels:L,datasets:[
+    {label:'Work',data:[5.2,5.5,5.0,5.8,5.4,2.2,0.5],backgroundColor:'rgba(5,150,105,.75)',borderRadius:3,borderSkipped:false},
+    {label:'Neutral',data:[1.6,1.5,1.3,1.3,1.5,0.7,0.2],backgroundColor:'rgba(217,119,6,.65)',borderRadius:3,borderSkipped:false},
+    {label:'Distracting',data:[0.4,0.5,0.5,0.5,0.5,0.3,0.1],backgroundColor:'rgba(220,38,38,.55)',borderRadius:3,borderSkipped:false}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc,font:df,boxWidth:9}}},scales:{x:{stacked:true,grid:{color:gc},ticks:{color:tc,font:df}},y:{stacked:true,grid:{color:gc},ticks:{color:tc,font:df,callback:v=>v+'h'},max:9}}}});
 }
 
-/* ══ CHANGE MANAGER PASSWORD ══ */
-function changeMgrPassword(){
-  const cur=$('mgr-pass-current'),nw=$('mgr-pass-new'),cf=$('mgr-pass-confirm'),msg=$('mgr-pass-msg');
-  const showMsg=(txt,ok)=>{msg.style.display='block';msg.textContent=txt;msg.style.background=ok?'var(--greenbg)':'var(--redbg)';msg.style.color=ok?'var(--green)':'var(--red)';msg.style.border='1px solid '+(ok?'var(--greenborder)':'var(--redborder)');};
-  if(!cur||!nw||!cf)return;
-  if(cur.value!==getMgrPass()){showMsg('⚠ Current password is incorrect.',false);cur.value='';return;}
-  if(nw.value.length<8){showMsg('⚠ New password must be at least 8 characters.',false);return;}
-  if(nw.value!==cf.value){showMsg('⚠ Passwords do not match.',false);cf.value='';return;}
+/* ══ MANAGER PASSWORD ══ */
+function changeMgrPassword() {
+  const cur = $('mgr-pass-current'), nw = $('mgr-pass-new'), cf = $('mgr-pass-confirm'), msg = $('mgr-pass-msg');
+  const showMsg = (txt, ok) => {
+    msg.style.display = 'block'; msg.textContent = txt;
+    msg.style.background = ok ? 'var(--greenbg)' : 'var(--redbg)';
+    msg.style.color = ok ? 'var(--green)' : 'var(--red)';
+    msg.style.border = '1px solid ' + (ok ? 'var(--greenborder)' : 'var(--redborder)');
+  };
+  if (!cur || !nw || !cf) return;
+  if (cur.value !== getMgrPass()) { showMsg('⚠ Current password is incorrect.', false); cur.value = ''; return; }
+  if (nw.value.length < 8) { showMsg('⚠ New password must be at least 8 characters.', false); return; }
+  if (nw.value !== cf.value) { showMsg('⚠ Passwords do not match.', false); cf.value = ''; return; }
   setMgrPass(nw.value);
-  cur.value='';nw.value='';cf.value='';
-  showMsg('✅ Password updated successfully! Use it on your next login.',true);
-  setTimeout(()=>{if(msg)msg.style.display='none';},5000);
+  cur.value = ''; nw.value = ''; cf.value = '';
+  showMsg('✅ Password updated successfully!', true);
+  setTimeout(() => { if (msg) msg.style.display = 'none'; }, 5000);
 }
 
 /* ══ BOOKMARKLET ══ */
-function showBkmkModal(){const m=$('bkmk-modal');if(m)m.style.display='flex';}
-function closeBkmkModal(){const m=$('bkmk-modal');if(m)m.style.display='none';}
+function showBkmkModal() { const m = $('bkmk-modal'); if (m) m.style.display = 'flex'; }
+function closeBkmkModal() { const m = $('bkmk-modal'); if (m) m.style.display = 'none'; }
+
+/* ══ SUPABASE SETUP ══ */
+async function saveSupabaseConfig() {
+  const url = ($('sb-url-input').value || '').trim().replace(/\/+$/, '');
+  const key = ($('sb-key-input').value || '').trim();
+  if (!url || !key) { showSetupErr('Both fields are required.'); return; }
+  if (!url.startsWith('https://')) { showSetupErr('URL must start with https://'); return; }
+  // Test the connection before saving
+  const btn = document.querySelector('.setup-btn');
+  if (btn) { btn.textContent = 'Testing connection…'; btn.disabled = true; }
+  $('setup-err').style.display = 'none';
+  // Temporarily save so testSBConnection can use it
+  saveSBConfig(url, key);
+  const ok = await testSBConnection();
+  if (!ok && !_sbPaused) {
+    showSetupErr('⚠ Could not connect. Check your Project URL and API key are correct, and that the SQL schema has been run. (' + (_sbFails + ' attempts') + ')');
+    if (btn) { btn.textContent = 'Save & Connect →'; btn.disabled = false; }
+    localStorage.removeItem(SB_CFG_KEY); // don't save bad config
+    return;
+  }
+  $('setup-screen').innerHTML = '<div class="setup-card" style="text-align:center"><div class="splash-logo" style="margin:0 auto 16px">PW</div><div style="color:#a5b4fc;font-size:14px;margin-bottom:8px">Connected ✓ Loading…</div><div class="splash-spinner" style="margin:16px auto 0"></div></div>';
+  setTimeout(() => location.reload(), 1200);
+}
+function showSetupErr(msg) { const e = $('setup-err'); if (e) { e.textContent = msg; e.style.display = 'block'; } }
 
 /* ═══════════════════════════════════════════════════════
-   BOOT SEQUENCE
+   BOOT
    ═══════════════════════════════════════════════════════ */
-async function boot(){
-  const cfg = getSBConfig();
-  if(!cfg){
-    $('setup-screen').style.display='flex';
+/* ══ SANDBOX / IFRAME DETECTION ══ */
+function isInSandbox() {
+  try {
+    // Claude artifact preview: window !== window.top, or sandboxed origin
+    if (window !== window.top) return true;
+    // file:// protocol also can't fetch cross-origin
+    if (window.location.protocol === 'file:') return false; // file:// is fine for local use
+    // Claude's sandbox has a null/blob/sandboxed origin
+    const origin = window.location.origin;
+    if (!origin || origin === 'null' || origin.startsWith('blob:')) return true;
+    // Claude artifact domains
+    if (origin.includes('claude.ai') || origin.includes('anthropic') ||
+        origin.includes('artifacts') || origin.includes('preview')) return true;
+    return false;
+  } catch(e) {
+    // Cross-origin frame — definitely sandboxed
+    return true;
+  }
+}
+
+async function boot() {
+  // ── Sandbox check FIRST — before anything else ──
+  if (isInSandbox()) {
+    $('sandbox-screen').style.display = 'flex';
     return;
   }
 
-  initSupabase(cfg.url, cfg.key);
-  showSplash('Loading…');
+  const cfg = getSBConfig();
+  if (!cfg || !cfg.url || !cfg.key) {
+    $('setup-screen').style.display = 'flex';
+    return;
+  }
 
-  // Supabase client ready. Status dot will update once user logs in.
+  // initSupabase is a no-op now (REST only), just set status
+  setDBStatus('connecting');
+  showSplash('Connecting to database…');
 
-  if(await handleInviteUrl()) return;
+  // Handle magic link invite first (no connection needed for session restore)
+  if (await handleInviteUrl()) return;
 
-  setTxt('splash-msg','Restoring session…');
-  if(await restoreSession()){ hideSplash(); return; }
+  // Test connection — but don't block if we have a cached session
+  const hasCachedSession = !!sessionStorage.getItem(SS_KEY);
+  if (!hasCachedSession) {
+    setTxt('splash-msg', 'Testing connection…');
+    const connected = await testSBConnection();
+    if (!connected) {
+      setTxt('splash-msg', 'Connection issue — local login available');
+      await new Promise(r => setTimeout(r, 1000));
+    }
+  }
+
+  setTxt('splash-msg', 'Restoring session…');
+  if (await restoreSession()) { hideSplash(); return; }
 
   hideSplash();
-  $('login-screen').style.display='flex';
+  $('login-screen').style.display = 'flex';
+  if (_sbFails > 0 && !_sbOk) {
+    const w = document.createElement('div');
+    w.style.cssText = 'margin:10px 0 0;font-size:11px;color:var(--amber);text-align:center;padding:6px 10px;background:var(--amberbg);border-radius:8px;border:1px solid var(--amberborder)';
+    w.textContent = '⚠ Database unreachable — you can still log in if your credentials are cached locally.';
+    const card = document.querySelector('.login-card');
+    if (card) card.appendChild(w);
+  }
 }
 
 // Build bookmarklet
-(function(){
-  const code=`(function(){try{var d=window.location.hostname.replace(/^www\\./,'');try{var bc=new BroadcastChannel('pwt_channel');bc.postMessage({type:'tab',domain:d});bc.close();}catch(e){}var b=document.createElement('div');b.style='position:fixed;top:16px;right:16px;z-index:99999;background:#4f46e5;color:white;padding:10px 18px;border-radius:20px;font-family:sans-serif;font-size:13px;font-weight:bold;box-shadow:0 4px 14px rgba(79,70,229,.4);pointer-events:none';b.textContent='✓ '+d+' sent to PW Tracker';document.body.appendChild(b);setTimeout(function(){b.remove()},3000);}catch(e){alert('Bookmarklet error: '+e.message);}})()`;
-  const link=$('bkmk-link');
-  if(link) link.href='javascript:'+encodeURIComponent(code);
+(function() {
+  const code = '(function(){try{var d=window.location.hostname.replace(/^www\\./,"");var b=document.createElement("div");b.style="position:fixed;top:16px;right:16px;z-index:99999;background:#4f46e5;color:white;padding:10px 18px;border-radius:20px;font-family:sans-serif;font-size:13px;font-weight:bold;box-shadow:0 4px 14px rgba(79,70,229,.4);pointer-events:none";b.textContent="✓ "+d+" sent to PW Tracker";document.body.appendChild(b);setTimeout(function(){b.remove()},3000);}catch(e){alert("Bookmarklet error: "+e.message);}})()';
+  const link = $('bkmk-link');
+  if (link) link.href = 'javascript:' + encodeURIComponent(code);
 })();
 
-try{
-  const bkCh=new BroadcastChannel('pwt_channel');
-  bkCh.onmessage=e=>{
-    if(e.data&&e.data.type==='tab'&&e.data.domain&&tracking){
-      const inp=$('domain-inp'); if(inp)inp.value=e.data.domain;
-      flash(`📌 ${e.data.domain} auto-filled`,'accent');
+// BroadcastChannel for bookmarklet
+try {
+  const bkCh = new BroadcastChannel('pwt_channel');
+  bkCh.onmessage = e => {
+    if (e.data && e.data.type === 'tab' && e.data.domain && tracking) {
+      const inp = $('domain-inp'); if (inp) inp.value = e.data.domain;
+      flash('📌 ' + e.data.domain + ' auto-filled', 'accent');
     }
   };
-}catch(_){}
+} catch(_) {}
 
-document.addEventListener('DOMContentLoaded',()=>{
-  const el=$('mgr-email-warn'); if(el)el.textContent=MANAGER_EMAIL;
+// Set manager email label on DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+  const el = $('mgr-email-warn');
+  if (el) el.textContent = MANAGER_EMAIL;
 });
 
+// Boot!
 boot();
 </script>
 </body>
