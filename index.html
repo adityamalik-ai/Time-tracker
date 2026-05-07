@@ -48,7 +48,7 @@ input,select,textarea{font-family:inherit;outline:none}
 .setup-steps ol{padding-left:16px}
 .setup-btn{width:100%;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;padding:14px;border-radius:var(--radius2);transition:all .2s;box-shadow:0 4px 14px rgba(79,70,229,.4);cursor:pointer}
 .setup-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(79,70,229,.5)}
-.setup-err{font-size:12px;color:#f87171;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:9px 12px;margin-bottom:14px}
+.setup-err{font-size:12px;color:#f87171;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:12px 14px;margin-bottom:14px;line-height:1.8}
 
 /* ── SPLASH ── */
 #splash{position:fixed;inset:0;background:linear-gradient(135deg,#eef0ff,#f0f9ff,#fdf4ff);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:16px}
@@ -322,15 +322,22 @@ create policy "anon all credentials" on pw_credentials for all using (true) with
     </div>
     <div class="setup-field">
       <label>Supabase Project URL</label>
-      <input id="sb-url-input" type="text" placeholder="https://xxxxxxxxxxxx.supabase.co"/>
+      <input id="sb-url-input" type="text" placeholder="https://xxxxxxxxxxxx.supabase.co"
+        oninput="validateSetupInputs()" onpaste="setTimeout(validateSetupInputs,50)"/>
+      <div id="sb-url-hint" style="font-size:11px;margin-top:5px;display:none"></div>
     </div>
     <div class="setup-field">
       <label>Supabase Anon Public Key</label>
-      <input id="sb-key-input" type="text" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9…"/>
+      <input id="sb-key-input" type="text" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9…"
+        oninput="validateSetupInputs()" onpaste="setTimeout(validateSetupInputs,50)"/>
+      <div id="sb-key-hint" style="font-size:11px;margin-top:5px;display:none"></div>
     </div>
     <div id="setup-err" style="display:none" class="setup-err"></div>
-    <button class="setup-btn" onclick="saveSupabaseConfig()">Save &amp; Connect →</button>
-    <div style="margin-top:12px;font-size:11px;color:rgba(255,255,255,.3);text-align:center">Credentials stored in localStorage. Employees never see this screen.</div>
+    <!-- Progress steps shown during test -->
+    <div id="setup-progress" style="display:none;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;font-family:monospace;line-height:2;color:rgba(255,255,255,.7)"></div>
+    <button class="setup-btn" id="setup-save-btn" onclick="saveSupabaseConfig()">Save &amp; Connect →</button>
+    <button class="setup-btn" id="setup-skip-btn" onclick="saveSupabaseConfigForce()" style="display:none;margin-top:8px;background:rgba(255,255,255,.08);box-shadow:none;border:1px solid rgba(255,255,255,.15)">Save anyway (skip connection test) →</button>
+    <div style="margin-top:12px;font-size:11px;color:rgba(255,255,255,.3);text-align:center">Credentials stored in your browser's localStorage. Employees never see this screen.</div>
   </div>
 </div>
 
@@ -2494,28 +2501,167 @@ function showBkmkModal() { const m = $('bkmk-modal'); if (m) m.style.display = '
 function closeBkmkModal() { const m = $('bkmk-modal'); if (m) m.style.display = 'none'; }
 
 /* ══ SUPABASE SETUP ══ */
+/* ══ SETUP SCREEN HELPERS ══ */
+function cleanSupabaseUrl(raw) {
+  let url = (raw || '').trim();
+  // Remove trailing slashes and any /rest/v1 path accidentally included
+  url = url.replace(/\/rest\/v1.*$/i, '').replace(/\/+$/, '');
+  // Auto-add https:// if missing
+  if (url && !url.startsWith('http')) url = 'https://' + url;
+  // Fix common paste issue: supabase.co missing the final letter
+  // (nothing we can do — just clean whitespace)
+  return url;
+}
+
+function validateSetupInputs() {
+  const urlRaw = $('sb-url-input') ? $('sb-url-input').value : '';
+  const keyRaw = $('sb-key-input') ? $('sb-key-input').value : '';
+  const urlHint = $('sb-url-hint'), keyHint = $('sb-key-hint');
+
+  // URL validation
+  if (urlRaw.trim()) {
+    const url = cleanSupabaseUrl(urlRaw);
+    const urlOk = url.startsWith('https://') && url.includes('.supabase.co');
+    if (urlHint) {
+      urlHint.style.display = 'block';
+      if (urlOk) {
+        urlHint.innerHTML = '<span style="color:#6ee7b7">✓ Looks good: ' + url + '</span>';
+      } else if (url.includes('supabase') && !url.includes('.supabase.co')) {
+        urlHint.innerHTML = '<span style="color:#fcd34d">⚠ Should be: https://[project-id].supabase.co</span>';
+      } else {
+        urlHint.innerHTML = '<span style="color:#fca5a5">✗ Must be a Supabase project URL</span>';
+      }
+    }
+  } else {
+    if (urlHint) urlHint.style.display = 'none';
+  }
+
+  // Key validation
+  if (keyRaw.trim()) {
+    const keyOk = keyRaw.trim().startsWith('eyJ') && keyRaw.trim().length > 100;
+    if (keyHint) {
+      keyHint.style.display = 'block';
+      keyHint.innerHTML = keyOk
+        ? '<span style="color:#6ee7b7">✓ Key format looks correct</span>'
+        : '<span style="color:#fca5a5">✗ Anon key should start with "eyJ" and be ~200 characters</span>';
+    }
+  } else {
+    if (keyHint) keyHint.style.display = 'none';
+  }
+}
+
+function setupProgress(lines) {
+  const p = $('setup-progress');
+  if (!p) return;
+  p.style.display = 'block';
+  p.innerHTML = lines.map(l => l).join('<br>');
+}
+function setupProgressAdd(line) {
+  const p = $('setup-progress');
+  if (!p) return;
+  p.style.display = 'block';
+  p.innerHTML += (p.innerHTML ? '<br>' : '') + line;
+}
+
 async function saveSupabaseConfig() {
-  const url = ($('sb-url-input').value || '').trim().replace(/\/+$/, '');
-  const key = ($('sb-key-input').value || '').trim();
-  if (!url || !key) { showSetupErr('Both fields are required.'); return; }
-  if (!url.startsWith('https://')) { showSetupErr('URL must start with https://'); return; }
-  // Test the connection before saving
-  const btn = document.querySelector('.setup-btn');
-  if (btn) { btn.textContent = 'Testing connection…'; btn.disabled = true; }
-  $('setup-err').style.display = 'none';
-  // Temporarily save so testSBConnection can use it
-  saveSBConfig(url, key);
-  const ok = await testSBConnection();
-  if (!ok && !_sbPaused) {
-    showSetupErr('⚠ Could not connect. Check your Project URL and API key are correct, and that the SQL schema has been run. (' + (_sbFails + ' attempts') + ')');
-    if (btn) { btn.textContent = 'Save & Connect →'; btn.disabled = false; }
-    localStorage.removeItem(SB_CFG_KEY); // don't save bad config
+  const urlRaw = ($('sb-url-input') ? $('sb-url-input').value : '');
+  const key    = ($('sb-key-input') ? $('sb-key-input').value : '').trim();
+  const url    = cleanSupabaseUrl(urlRaw);
+
+  // ── Validation ──
+  if (!url) { showSetupErr('⚠ Paste your Supabase Project URL.'); return; }
+  if (!url.startsWith('https://')) { showSetupErr('⚠ URL must start with https://'); return; }
+  if (!url.includes('.supabase.co')) {
+    showSetupErr('⚠ URL must be a Supabase project URL ending in .supabase.co\nYou entered: ' + url);
     return;
   }
-  $('setup-screen').innerHTML = '<div class="setup-card" style="text-align:center"><div class="splash-logo" style="margin:0 auto 16px">PW</div><div style="color:#a5b4fc;font-size:14px;margin-bottom:8px">Connected ✓ Loading…</div><div class="splash-spinner" style="margin:16px auto 0"></div></div>';
-  setTimeout(() => location.reload(), 1200);
+  if (!key) { showSetupErr('⚠ Paste your Supabase Anon public key.'); return; }
+  if (!key.startsWith('eyJ')) { showSetupErr('⚠ The anon key should start with "eyJ…" — check you copied the right value from Supabase → Settings → API → Project API keys → anon public'); return; }
+  if (key.length < 100) { showSetupErr('⚠ The anon key looks too short (' + key.length + ' chars). Make sure you copied the full key.'); return; }
+
+  const btn  = $('setup-save-btn'), skipBtn = $('setup-skip-btn');
+  if (btn)  { btn.textContent = 'Testing connection…'; btn.disabled = true; }
+  if (skipBtn) skipBtn.style.display = 'none';
+  $('setup-err').style.display = 'none';
+
+  setupProgress(['<span style="color:#a5b4fc">Saving config…</span>']);
+  saveSBConfig(url, key);
+  _sbResetCircuit();
+
+  setupProgressAdd('<span style="color:#a5b4fc">⏳ Pinging Supabase REST API…</span>');
+  const r = await sbRest('GET', 'pw_credentials', 'select=email&limit=1', null, null, true);
+
+  if (r.ok) {
+    setupProgressAdd('<span style="color:#6ee7b7">✓ Connected to pw_credentials ✓</span>');
+    setupProgressAdd('<span style="color:#6ee7b7">✓ All good! Loading app…</span>');
+    _sbMarkOk();
+    setTimeout(() => {
+      $('setup-screen').innerHTML =
+        '<div class="setup-card" style="text-align:center">' +
+        '<div class="splash-logo" style="margin:0 auto 16px">PW</div>' +
+        '<div style="color:#6ee7b7;font-size:18px;font-weight:700;margin-bottom:8px">✓ Connected!</div>' +
+        '<div style="color:rgba(255,255,255,.5);font-size:13px;margin-bottom:16px">Loading your dashboard…</div>' +
+        '<div class="splash-spinner" style="margin:0 auto"></div></div>';
+      setTimeout(() => location.reload(), 800);
+    }, 600);
+    return;
+  }
+
+  // ── Connection failed — show specific diagnosis ──
+  let errMsg = '', hint = '';
+
+  if (r.err && r.err.message && r.err.message.includes('fetch')) {
+    errMsg = '✗ Network error — "Failed to fetch"';
+    hint = [
+      '• Double-check your <b>Project URL</b>:',
+      '&nbsp;&nbsp;Go to Supabase → Settings → API → copy <b>Project URL</b>',
+      '&nbsp;&nbsp;It should look like: https://abcdef.supabase.co',
+      '• Make sure your Supabase project is <b>not paused</b>',
+      '&nbsp;&nbsp;(Free projects pause after 1 week of inactivity)',
+      '• Check you have internet access',
+    ].join('<br>');
+  } else if (r.status === 404) {
+    errMsg = '✗ Tables not found (404)';
+    hint = 'The SQL schema hasn\'t been run yet. Go to Supabase → SQL Editor and run the schema shown above, then try again.';
+  } else if (r.status === 401 || r.status === 403) {
+    errMsg = '✗ Auth error (' + r.status + ')';
+    hint = 'Your anon key may be wrong, or RLS policies are missing. Copy the key again from Supabase → Settings → API → <b>anon public</b>.';
+  } else {
+    errMsg = '✗ Unexpected error' + (r.status ? ' (HTTP ' + r.status + ')' : '');
+    hint = 'Check your Supabase project dashboard for errors.';
+  }
+
+  setupProgressAdd('<span style="color:#fca5a5">' + errMsg + '</span>');
+
+  $('setup-err').innerHTML =
+    '<b>' + errMsg + '</b><br><br>' + hint +
+    '<br><br><span style="color:rgba(255,100,100,.7);font-size:11px">URL saved: ' + url + '</span>';
+  $('setup-err').style.display = 'block';
+
+  if (btn)  { btn.textContent = 'Retry →'; btn.disabled = false; }
+  // Show skip button so user can bypass test if they're sure config is right
+  if (skipBtn) skipBtn.style.display = 'block';
 }
-function showSetupErr(msg) { const e = $('setup-err'); if (e) { e.textContent = msg; e.style.display = 'block'; } }
+
+// Force-save without connection test (for users who know their config is right
+// but hit a transient network issue)
+function saveSupabaseConfigForce() {
+  const url = cleanSupabaseUrl($('sb-url-input') ? $('sb-url-input').value : '');
+  const key = ($('sb-key-input') ? $('sb-key-input').value : '').trim();
+  if (!url || !key) { showSetupErr('Both fields are required.'); return; }
+  saveSBConfig(url, key);
+  $('setup-screen').innerHTML =
+    '<div class="setup-card" style="text-align:center">' +
+    '<div class="splash-logo" style="margin:0 auto 16px">PW</div>' +
+    '<div style="color:#a5b4fc;font-size:14px;margin-bottom:8px">Config saved. Loading…</div>' +
+    '<div class="splash-spinner" style="margin:16px auto 0"></div></div>';
+  setTimeout(() => location.reload(), 1000);
+}
+
+function showSetupErr(msg) {
+  const e = $('setup-err');
+  if (e) { e.innerHTML = msg; e.style.display = 'block'; }
+}
 
 /* ═══════════════════════════════════════════════════════
    BOOT
